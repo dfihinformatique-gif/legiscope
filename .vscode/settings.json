@@ -4,8 +4,8 @@
 	"editor.codeActionsOnSave": {
 		"source.fixAll": "always",
 		"source.organizeImports": "always",
-		"source.sortImports": "always",
-		"source.sortMembers": "always"
+		"source.sortImports": "never",
+		"source.sortMembers": "never"
 	},
 	"editor.quickSuggestions": {
 		"strings": "on"
