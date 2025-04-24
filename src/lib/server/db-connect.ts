@@ -15,9 +15,15 @@ export async function dbConnection() {
 		return sql
 	} catch (error: unknown) {
 		if (typeof error === "string") {
-			console.log("An error occured while calling oracledb.createPool:\n", error)
+			console.log(
+				"An error occured while calling oracledb.createPool:\n",
+				error,
+			)
 		} else if (error instanceof Error) {
-			console.log("An error occured while calling oracledb.createPool:\n", error.stack)
+			console.log(
+				"An error occured while calling oracledb.createPool:\n",
+				error.stack,
+			)
 		}
 		throw error
 	}
