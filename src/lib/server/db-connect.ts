@@ -4,7 +4,7 @@ import config from "$lib/server/config"
 
 export async function dbConnection() {
 	try {
-		const sql = postgres("postgres://username:password@host:port/database", {
+		const sql = postgres({
 			host: config.db.host,
 			database: config.db.database,
 			port: config.db.port,
