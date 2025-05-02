@@ -1,10 +1,15 @@
 import { error, json } from "@sveltejs/kit"
+import type { LegiArticle } from "@tricoteuses/legifrance"
 import type { RequestHandler } from "./$types"
+
+interface dataArticle {
+	data: LegiArticle
+}
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const { article } = params as { article: string }
 	const { sql } = locals
-	const articleTxtFromDb: JSON[] = await sql<JSON>`
+	const articleTxtFromDb: dataArticle[] = await sql<JSON>`
 		select data
 		from article
 		where id=${article}`
