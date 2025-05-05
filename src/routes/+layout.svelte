@@ -1,6 +1,7 @@
 <script lang="ts">
 	import "../app.css"
 	import NavBar from "./lib/components/NavBar.svelte"
+	import TableOfContent from "./lib/components/TableOfContent.svelte"
 
 	let { children } = $props()
 </script>
@@ -13,7 +14,8 @@
 	<div class="flex flex-1 overflow-hidden">
 		<!-- Sidebar -->
 		<aside class="w-64 overflow-y-auto border-r bg-gray-100 p-4">
-			<nav class="space-y-2"></nav>
+			<!-- <nav class="space-y-2"></nav> -->
+			<TableOfContent></TableOfContent>
 		</aside>
 
 		<!-- Zone principale -->

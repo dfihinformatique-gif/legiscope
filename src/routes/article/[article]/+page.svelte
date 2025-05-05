@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { displayedArticle } from "$lib/stores/article"
 	import type { LegiArticle } from "@tricoteuses/legifrance"
 	import type { PageProps } from "./$types"
 	let { data }: PageProps = $props()
-	const articleJson = data.article as LegiArticle | null
+	let articleJson = $state(data.article) as LegiArticle | null
 	let articleNum: String | undefined = $state(),
 		articleTextcontent: String | undefined = $state()
 
 	if (articleJson !== null) {
+		displayedArticle.set(articleJson)
 		articleNum = articleJson.META.META_SPEC.META_ARTICLE.NUM!
 		if (articleJson.BLOC_TEXTUEL !== undefined) {
 			articleTextcontent = articleJson.BLOC_TEXTUEL.CONTENU
