@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { LegiArticle } from "@tricoteuses/legifrance"
-	import type { PageData } from "./$types"
-	export let data: PageData
+	import type { PageProps } from "./$types"
+	let { data }: PageProps = $props()
 	const articleJson = data.article as LegiArticle | null
-	let articleNum: String, articleTextcontent: String
+	let articleNum: String | undefined = $state(),
+		articleTextcontent: String | undefined = $state()
 
 	if (articleJson !== null) {
 		articleNum = articleJson.META.META_SPEC.META_ARTICLE.NUM!
