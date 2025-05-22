@@ -8,13 +8,30 @@
 	$effect(() => {
 		if (!container || !billHTML) return
 
-		// Crée un Shadow DOM pour l'isolation CSS complète
 		if (!container.shadowRoot) {
-			container.attachShadow({ mode: "open" })
-		}
+      const shadow = container.attachShadow({ mode: "open" });
 
-		// Injecte le contenu dans le Shadow DOM
-		container.shadowRoot!.innerHTML = billHTML
+      // Crée un conteneur position:relative dans le Shadow DOM
+      shadow.innerHTML = `
+        <style>
+          :host {
+            display: block;
+            height: 100%;
+            position: relative;
+            overflow: auto;
+          }
+          .content-wrapper {
+            position: relative;
+            min-height: 100%;
+          }
+        </style>
+        <div class="content-wrapper">${billHTML}</div>
+      `;
+    } else {
+      // Met à jour seulement le contenu, pas la structure
+      const wrapper = container.shadowRoot!.querySelector('.content-wrapper');
+      if (wrapper) wrapper.innerHTML = billHTML;
+    }
 	})
 
 	let { billHTML }: Props = $props()

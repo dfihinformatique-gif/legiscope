@@ -10,7 +10,7 @@
 	<meta name="description" content="Explorateur de legislation LexImpact" />
 </svelte:head>
 <!-- Zone principale -->
-<main class="absolute inset-0 min-h-full">
+<main class="absolute inset-0 min-h-full overflow-hidden">
 	{@render children()}
 </main>
 <!-- Navbar -->

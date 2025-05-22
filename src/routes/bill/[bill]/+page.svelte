@@ -10,9 +10,9 @@
 	let billHTML = $state(data.billHTML)
 </script>
 
-<div class="flex min-h-full w-full flex-row">
-	<div class="w-1/2"><Bill {billHTML}></Bill></div>
-	<div class="w-1/2 bg-amber-200">
+<div class="flex min-h-full w-full flex-row fixed overflow-hidden">
+	<div class="h-screen w-1/2 overflow-y-auto"><Bill {billHTML}></Bill></div>
+	<div class="w-1/2 bg-amber-200 h-screen overflow-y-auto">
 		<p>Ici la loi</p>
 		<p>lorem ipsum</p>
 	</div>
