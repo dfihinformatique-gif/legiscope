@@ -8,7 +8,7 @@
 	const scrollToAnchor = (hash: string, shadowRoot: ShadowRoot) => {
 		if (!hash) return
 
-		const id = hash.substring(1) // Enlève le #
+		const id = hash.substring(1) // Remove #
 		const element = shadowRoot.getElementById(id)
 		if (element) {
 			element.scrollIntoView({ behavior: "smooth" })
@@ -21,7 +21,6 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			// Crée un conteneur position:relative dans le Shadow DOM
 			shadow.innerHTML = `
         <style>
           :host {
@@ -45,14 +44,12 @@
 					e.preventDefault()
 					const hash = link.getAttribute("href")
 					if (hash) {
-						// Met à jour l'URL du navigateur
 						window.history.pushState(null, "", hash)
 						scrollToAnchor(hash, shadow)
 					}
 				}
 			})
 		} else {
-			// Met à jour seulement le contenu, pas la structure
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = billHTML
 		}
