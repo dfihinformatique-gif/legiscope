@@ -4,6 +4,39 @@
 	}
 
 	let container: HTMLDivElement
+	let { billHTML }: Props = $props()
+	let resizeObserver: ResizeObserver
+
+	const baseWidth = 800
+
+	const adjustSizes = (shadowRoot: ShadowRoot) => {
+		if (!shadowRoot) return
+
+		const currentWidth = shadowRoot.host.clientWidth
+		const scaleFactor = Math.min(1.5, currentWidth / baseWidth) // Limite l'agrandissement
+
+		// Applique le facteur d'échelle
+		const body = shadowRoot.querySelector("body")
+		if (body) {
+			body.style.fontSize = `${scaleFactor * 100}%`
+			body.style.width = `${baseWidth}px` // Maintient la largeur de référence
+		}
+
+		// Ajuste les images
+		shadowRoot.querySelectorAll("img").forEach((img) => {
+			const originalWidth = parseInt(
+				img.dataset.originalWidth || img.getAttribute("width") || "0",
+			)
+			if (originalWidth) {
+				const newWidth = originalWidth * scaleFactor
+				img.style.width = `${newWidth}px`
+				img.style.height = "auto"
+				img.style.maxWidth = "none"
+				img.style.display = "block"
+				img.style.margin = "0 auto"
+			}
+		})
+	}
 
 	const scrollToAnchor = (hash: string, shadowRoot: ShadowRoot) => {
 		if (!hash) return
@@ -21,6 +54,13 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
+			const processedHTML = billHTML.replace(
+				/<img([^>]*)width="([^"]+)"([^>]*)>/g,
+				(match, before, width, after) => {
+					return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
+				},
+			)
+
 			shadow.innerHTML = `
         <style>
           :host {
@@ -31,28 +71,31 @@
             padding: 0 16px;
           }
           body {
-            width: 100% !important;
-            max-width: 800px; /* 600pt ≈ 800px */
+            width: ${baseWidth}px;
+            max-width: 100%;
             margin: 0 auto !important;
+						transform-origin: top center;
           }
           img {
 						display: block !important;
-						max-width: 100% !important;
 						height: auto !important;
-						margin-left: auto !important;
-						margin-right: auto !important;
+						margin: 0 auto !important;
 					}
-          img[width], img[height] {
-            width: auto !important;
-            height: auto !important;
+					p[style*="text-align:center"] img,
+          p[style*="text-align: center"] img {
+            display: inline-block !important;
           }
           .content-wrapper {
             position: relative;
             min-height: 100%;
           }
         </style>
-        <div class="content-wrapper">${billHTML}</div>
+        <div class="content-wrapper">${processedHTML}</div>
       `
+
+			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
+			resizeObserver.observe(container)
+			requestAnimationFrame(() => adjustSizes(shadow))
 
 			scrollToAnchor(window.location.hash, shadow)
 			shadow.addEventListener("click", (e) => {
@@ -70,9 +113,8 @@
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = billHTML
 		}
+		return () => resizeObserver?.disconnect()
 	})
-
-	let { billHTML }: Props = $props()
 </script>
 
 <div bind:this={container} class="block h-full w-full"></div>
