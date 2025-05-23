@@ -25,9 +25,26 @@
         <style>
           :host {
             display: block;
+            width: 100%;
             height: 100%;
-            position: relative;
             overflow: auto;
+            padding: 0 16px;
+          }
+          body {
+            width: 100% !important;
+            max-width: 800px; /* 600pt ≈ 800px */
+            margin: 0 auto !important;
+          }
+          img {
+						display: block !important;
+						max-width: 100% !important;
+						height: auto !important;
+						margin-left: auto !important;
+						margin-right: auto !important;
+					}
+          img[width], img[height] {
+            width: auto !important;
+            height: auto !important;
           }
           .content-wrapper {
             position: relative;
