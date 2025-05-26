@@ -1,4 +1,5 @@
 <script lang="ts">
+	import "iconify-icon"
 	import "../app.css"
 	import NavBar from "../lib/components/NavBar.svelte"
 

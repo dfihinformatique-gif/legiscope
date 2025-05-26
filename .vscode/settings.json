@@ -15,10 +15,6 @@
 	},
 	"prettier.documentSelectors": ["**/*.svelte"],
 	// Auto-complete Tailwind classes in tv(), cf https://www.tailwind-variants.org/docs/getting-started#intellisense-setup-optional
-	// For Shadcn
-	"tailwindCSS.experimental.classRegex": [
-		["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]
-	],
 	"[css]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
