@@ -1,9 +1,10 @@
 <script lang="ts">
+	import BillSummary from "./BillSummary.svelte"
 	interface Props {
 		billHTML: string | undefined
 	}
 
-	let container: HTMLDivElement
+	let container: HTMLDivElement | undefined = $state()
 	let { billHTML }: Props = $props()
 	let resizeObserver: ResizeObserver
 
@@ -117,4 +118,7 @@
 	})
 </script>
 
-<div bind:this={container} class="block h-full w-full"></div>
+<div class="flex h-full w-full flex-col">
+	<BillSummary {billHTML} {container} />
+	<div bind:this={container} class="flex-1 overflow-auto"></div>
+</div>
