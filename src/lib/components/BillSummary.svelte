@@ -46,11 +46,11 @@
 	})
 </script>
 
-<div class="sticky top-0 z-10 p-4 shadow-md">
+<div class="sticky top-0 z-10 px-4 py-2 shadow-md">
 	<div class="flex items-center justify-between">
 		<span>test 1235 sdjh</span>
 		<button
-			class="flex items-center px-4 py-2 font-medium text-gray-500 uppercase"
+			class="flex items-center font-medium text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
