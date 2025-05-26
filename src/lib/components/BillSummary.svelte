@@ -9,6 +9,37 @@
 	let summaryItems = $state<{ id: string; text: string; level: number }[]>([])
 	let summaryIsOpen = $state(false)
 
+	let currentTitle = $state<string>("")
+
+	function updateCurrentTitleFromScroll() {
+		if (!container?.shadowRoot) return
+
+		const anchors = summaryItems
+			.map((item) => container.shadowRoot!.getElementById(item.id))
+			.filter((el): el is HTMLElement => !!el)
+
+		const containerTop = container.getBoundingClientRect().top
+
+		let closestAnchor: HTMLElement | null = null
+		let closestDistance = -Infinity
+
+		for (const anchor of anchors) {
+			const rect = anchor.getBoundingClientRect()
+			const distance = rect.top - containerTop - 20
+
+			if (distance < 0 && distance > closestDistance) {
+				closestDistance = distance
+				closestAnchor = anchor
+			}
+		}
+
+		if (closestAnchor) {
+			const id = closestAnchor.id
+			const item = summaryItems.find((i) => i.id === id)
+			if (item) currentTitle = item.text
+		}
+	}
+
 	function extractAnchors(html: string) {
 		const parser = new DOMParser()
 		const doc = parser.parseFromString(html, "text/html")
@@ -44,11 +75,23 @@
 		if (!billHTML) return
 		summaryItems = extractAnchors(billHTML)
 	})
+	$effect(() => {
+		if (!container) return
+
+		const handler = () => updateCurrentTitleFromScroll()
+		container.addEventListener("scroll", handler)
+
+		handler()
+
+		return () => {
+			container.removeEventListener("scroll", handler)
+		}
+	})
 </script>
 
 <div class="sticky top-0 z-10 px-4 py-2 shadow-md">
 	<div class="flex items-center justify-between">
-		<span>test 1235 sdjh</span>
+		<span>{currentTitle}</span>
 		<button
 			class="flex items-center font-medium text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
