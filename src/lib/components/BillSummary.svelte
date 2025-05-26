@@ -6,22 +6,38 @@
 
 	let { billHTML, container }: Props = $props()
 
-	let summaryItems = $state<{ id: string; text: string }[]>([])
+	let summaryItems = $state<{ id: string; text: string; level: number }[]>([])
 	let summaryIsOpen = $state(false)
 
 	function extractAnchors(html: string) {
 		const parser = new DOMParser()
 		const doc = parser.parseFromString(html, "text/html")
-		const links = Array.from(doc.querySelectorAll('a[href^="#_"]'))
+		const paragraphs = Array.from(doc.querySelectorAll('p[class^="assnatTOC"]'))
 
-		return links
-			.map((link) => {
+		return paragraphs
+			.map((p) => {
+				const link = p.querySelector('a[href^="#_"]')
+				if (!link) return null
+
+				const levelMatch = p.className.match(/assnatTOC(\d+)/)
+				const level = levelMatch ? parseInt(levelMatch[1]) : 0
+
+				const text = Array.from(link.querySelectorAll("span"))
+					.map((span) => span.textContent)
+					.join("")
+					.trim()
+
 				return {
 					id: link.getAttribute("href")?.slice(1) || "",
-					text: link.textContent?.trim() || "",
+					text: text,
+					level: level,
 				}
 			})
-			.filter((item) => item.id && item.text)
+			.filter((item) => item !== null) as {
+			id: string
+			text: string
+			level: number
+		}[]
 	}
 
 	$effect(() => {
@@ -49,7 +65,7 @@
 		class:max-h-[60vh]={summaryIsOpen}
 	>
 		{#each summaryItems as item}
-			<li>
+			<li style="padding-left:{item.level * 5}px;">
 				<a
 					href={`#${item.id}`}
 					class="block py-1 text-blue-600 hover:underline"
