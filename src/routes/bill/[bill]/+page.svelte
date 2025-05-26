@@ -10,6 +10,8 @@
 	let billHTML = $state(data.billHTML)
 </script>
 
+<svelte:window bind:innerWidth={screenWidth} />
+<p>{screenWidth}</p>
 <div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 	<div class="h-screen w-1/2 overflow-y-auto"><Bill {billHTML}></Bill></div>
 	<div class="h-screen w-1/2 overflow-y-auto bg-amber-200">
