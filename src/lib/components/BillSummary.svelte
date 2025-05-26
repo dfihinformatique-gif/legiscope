@@ -73,6 +73,7 @@
 						if (container !== undefined) {
 							const target = container.shadowRoot?.getElementById(item.id)
 							target?.scrollIntoView({ behavior: "smooth" })
+							summaryIsOpen = false
 						}
 					}}
 				>
