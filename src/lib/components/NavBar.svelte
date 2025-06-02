@@ -5,6 +5,8 @@
 		<button class="rounded-full border-4 px-12 uppercase">Projet de loi</button>
 	</div>
 	<div class="basis-1/2">
-		<button class="rounded-full border-4 px-12 uppercase">Loi</button>
+		<button class="rounded-full border-4 bg-blue-100 px-12 uppercase"
+			>Loi</button
+		>
 	</div>
 </div>

@@ -13,11 +13,13 @@
 	)
 </script>
 
-{#if articleJson}
-	{#if articleNum !== undefined}
-		<span class="font-bold">Article {articleNum}</span>
+<div class="m-3 bg-blue-50 shadow">
+	{#if articleJson}
+		{#if articleNum !== undefined}
+			<span class="font-bold">Article {articleNum}</span>
+		{/if}
+		{#if articleTextcontent !== undefined}
+			<span>{@html articleTextcontent}</span>
+		{/if}
 	{/if}
-	{#if articleTextcontent !== undefined}
-		<span>{@html articleTextcontent}</span>
-	{/if}
-{/if}
+</div>
