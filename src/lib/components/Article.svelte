@@ -13,7 +13,7 @@
 	)
 </script>
 
-<div class="m-3 bg-blue-50 shadow">
+<div class="m-3 bg-blue-50 px-2 text-justify shadow">
 	{#if articleJson}
 		{#if articleNum !== undefined}
 			<span class="font-bold">Article {articleNum}</span>
