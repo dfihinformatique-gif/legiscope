@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { LegiArticle } from "@tricoteuses/legifrance"
+	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
 		articleJson: LegiArticle
 	}
 	let { articleJson }: Props = $props()
-	let articleNum: String | undefined = $derived(
-		articleJson ? articleJson.META?.META_SPEC?.META_ARTICLE?.NUM : undefined,
-	)
 	let articleTextcontent: String | undefined = $derived(
 		articleJson ? articleJson.BLOC_TEXTUEL?.CONTENU : undefined,
 	)
@@ -15,9 +13,7 @@
 
 <div class="m-3 mb-20 bg-blue-50 px-2 text-justify shadow">
 	{#if articleJson}
-		{#if articleNum !== undefined}
-			<span class="font-bold">Article {articleNum}</span>
-		{/if}
+		<ArticleSummary {articleJson}></ArticleSummary>
 		{#if articleTextcontent !== undefined}
 			<span>{@html articleTextcontent}</span>
 		{/if}
