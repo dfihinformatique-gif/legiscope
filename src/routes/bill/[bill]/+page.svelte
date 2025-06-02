@@ -21,6 +21,8 @@
 				.then((res) => (res.ok ? res.json() : null))
 				.then((data) => (articleJson = data))
 				.catch(() => (lawArticle = ""))
+		} else {
+			articleJson = undefined
 		}
 	})
 </script>
@@ -32,9 +34,23 @@
 		{#if articleJson !== undefined}
 			<Article {articleJson}></Article>
 		{:else}
-			<p>Cliquez sur une loi</p>
-			<p>dans le PLF</p>
-			<p>pour l'afficher</p>
+			<div
+				class="flex h-screen flex-col items-center justify-center p-4 text-center"
+			>
+				<iconify-icon class="text-8xl text-gray-500" icon="ri:book-marked-fill"
+				></iconify-icon>
+				<p class="flex items-center font-medium text-gray-500 uppercase">
+					Cliquez sur une loi
+				</p>
+				<p class="flex items-center font-medium text-gray-500 uppercase">
+					dans le PLF
+				</p>
+				<p class="flex items-center font-medium text-gray-500 uppercase">
+					pour l'afficher
+				</p>
+				<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
+				></iconify-icon>
+			</div>
 		{/if}
 	</div>
 </div>
