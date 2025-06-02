@@ -3,7 +3,7 @@ import type { RequestHandler } from "./$types"
 import fs from "fs/promises"
 import path from "path"
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, url }) => {
 	const { bill } = params as { bill: string }
 
 	const filePath = path.resolve(`static/${bill}.html`)
@@ -11,7 +11,18 @@ export const GET: RequestHandler = async ({ params }) => {
 	try {
 		const html = await fs.readFile(filePath, "utf-8")
 		// console.log({html})
-		return new Response(html, {
+
+		const htmlWithLinks = html
+			.replace(
+				'<span style="color:#000000">– A la première phrase du second alinéa de l’article</span><span style="color:#000000">&nbsp;</span><span style="color:#000000">196</span>',
+				`<a href='${url.origin}/bill/${bill}?lawArticle=LEGIARTI000046860788'>– A la première phrase du second alinéa de l’article 196 B</a>`,
+			)
+			.replace(
+				'<span style="color:#000000">I de l’article</span><span style="color:#000000">&nbsp;</span><span style="color:#000000">197</span>',
+				`<a href='${url.origin}/bill/${bill}?lawArticle=LEGIARTI000051212954'>I de l’article 197</a>`,
+			)
+
+		return new Response(htmlWithLinks, {
 			headers: {
 				"Content-Type": "text/html",
 			},
