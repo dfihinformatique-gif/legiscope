@@ -1,6 +1,12 @@
 # LexImpact Legi UI
 
-## Install
+## Install and configure
+
+```
+cp example.env .env
+```
+
+edit .env
 
 ```
 npm install
