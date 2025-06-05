@@ -38,5 +38,6 @@
 	},
 	"[typescript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+	},
+	"tailwindCSS.experimental.configFile": "src/app.css"
 }
