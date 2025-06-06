@@ -8,6 +8,7 @@
 	let { articleJson }: Props = $props()
 	$inspect(articleJson)
 	let tocIsOpen = $state(false)
+	let initToc = $state(false)
 
 	let articleNum: String | undefined = $derived(
 		articleJson ? articleJson.META?.META_SPEC?.META_ARTICLE?.NUM : undefined,
@@ -54,12 +55,15 @@
 
 <button
 	class="cursor-pointer underline"
-	onclick={() => (tocIsOpen = !tocIsOpen)}
+	onclick={() => {
+		tocIsOpen = !tocIsOpen
+		initToc = tocIsOpen ? true : false
+	}}
 >
 	&#62; {lastTMText}
 </button><br />
 {#if tocIsOpen}
-	<Toc {articleJson} lienSectionTA={undefined} init={true} open={true}></Toc>
+	<Toc {articleJson} lienSectionTA={undefined} init={initToc} open={true}></Toc>
 {/if}
 {#if articleNum !== undefined}
 	<span class="font-bold">Article {articleNum}</span>

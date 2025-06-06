@@ -16,7 +16,9 @@
 	let titreTM = $state("")
 	let structTA: LegiSectionTaLienSectionTa[] | undefined = $state(undefined)
 
-	if (init === true) {
+	const allContextTM = getAllTmIds(articleJson)
+
+	if (init === true && lienSectionTA === undefined) {
 		//Initialization - need to get SCTA struct from Textelr instead of section_ta
 		const legiTextId = articleJson.CONTEXTE.TEXTE["@cid"]
 		if (!legiTextId) {
@@ -55,9 +57,27 @@
 
 		return sortedEntries[0]?.["#text"]
 	}
+
+	function getAllTmIds(article: LegiArticle): string[] {
+		const ids: string[] = []
+		let currentTm = article.CONTEXTE?.TEXTE?.TM
+
+		while (currentTm) {
+			if (currentTm.TITRE_TM) {
+				for (const titre of currentTm.TITRE_TM) {
+					if (titre["@id"]) ids.push(titre["@id"])
+				}
+			}
+			currentTm = currentTm.TM
+		}
+
+		return ids
+	}
+
+	console.log(init)
 </script>
 
-<details bind:open>
+<details style="list-style: none;" bind:open>
 	<summary>
 		{titreTM}
 	</summary>
@@ -68,8 +88,8 @@
 					<Toc
 						{articleJson}
 						lienSectionTA={nextLienSectionTA}
-						init={false}
-						open={false}
+						{init}
+						open={allContextTM.includes(nextLienSectionTA?.["@id"]) && init}
 					/>
 				</li>
 			{/each}
