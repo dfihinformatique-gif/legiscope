@@ -10,10 +10,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id } = params as { id: string }
 	const { sql } = locals
 
-	const dbConnection = await sql.reserve()
-
 	switch (true) {
 		case id.startsWith("LEGITEXT"): {
+			const dbConnection = await sql.reserve()
+
 			const structDataFromDb: queryDataStructData[] = await dbConnection<JSON>`
 			select jsonb_path_query(data, '$.STRUCT') AS struct_data
 			from textelr
@@ -35,6 +35,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			}
 		}
 		case id.startsWith("LEGISCTA"): {
+			const dbConnection = await sql.reserve()
+
 			const structDataFromDb: queryDataStructData[] = await dbConnection<JSON>`
 			select jsonb_path_query(data, '$.STRUCTURE_TA') AS struct_data
 			from section_ta
