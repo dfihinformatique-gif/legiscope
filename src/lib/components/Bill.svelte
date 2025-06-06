@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BillSummary from "./BillSummary.svelte"
+	import BillSummary from "$lib/components/BillSummary.svelte"
 	interface Props {
 		billHTML: string | undefined
 	}

@@ -2,7 +2,7 @@ import postgres from "postgres"
 
 import config from "$lib/server/config"
 
-export async function dbConnection() {
+export async function dbConnect() {
 	try {
 		const sql = postgres({
 			host: config.db.host,
@@ -10,7 +10,7 @@ export async function dbConnection() {
 			port: config.db.port,
 			username: config.db.username,
 			password: config.db.password,
-			max: 10,
+			max: 20,
 		})
 		return sql
 	} catch (error: unknown) {

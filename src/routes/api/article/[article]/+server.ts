@@ -2,17 +2,20 @@ import { error, json } from "@sveltejs/kit"
 import type { LegiArticle } from "@tricoteuses/legifrance"
 import type { RequestHandler } from "./$types"
 
-interface dataArticle {
+interface queryDataArticle {
 	data: LegiArticle
 }
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const { article } = params as { article: string }
 	const { sql } = locals
-	const articleTxtFromDb: dataArticle[] = await sql<JSON>`
+	const dbConnection = await sql.reserve()
+
+	const articleTxtFromDb: queryDataArticle[] = await dbConnection<JSON>`
 		select data
 		from article
 		where id=${article}`
+	dbConnection.release()
 
 	if (articleTxtFromDb.length === 1) {
 		const data = json(articleTxtFromDb[0].data)
