@@ -8,6 +8,7 @@
 	let activePanel: "bill" | "law" = "bill"
 	let screenWidth = $state(1024)
 	let isMobilePhone = $derived(screenWidth < 768)
+	let isFetchingArticle = $state(false)
 
 	let { data }: PageProps = $props()
 
@@ -17,9 +18,13 @@
 
 	$effect(() => {
 		if (lawArticle) {
+			isFetchingArticle = true
 			fetch(`/api/article/${lawArticle}`)
 				.then((res) => (res.ok ? res.json() : null))
-				.then((data) => (articleJson = data))
+				.then((data) => {
+					isFetchingArticle = false
+					articleJson = data
+				})
 				.catch(() => (lawArticle = ""))
 		} else {
 			articleJson = undefined
@@ -31,6 +36,9 @@
 <div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 	<div class="h-screen w-1/2 overflow-y-auto"><Bill {billHTML}></Bill></div>
 	<div class="h-screen w-1/2 overflow-y-auto bg-blue-100">
+		{#if isFetchingArticle}
+			Article en cours de récupération...
+		{/if}
 		{#if articleJson !== undefined}
 			<Article {articleJson}></Article>
 		{:else}
