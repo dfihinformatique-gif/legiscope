@@ -4,10 +4,10 @@ export const load: PageLoad = async ({
 	fetch,
 	params,
 }): Promise<{ billHTML: string | undefined }> => {
-	const bill = params.bill
+	const pjl = params.pjl
 
-	if (bill !== undefined) {
-		const res = await fetch(`/api/bill/${bill}`, {
+	if (pjl !== undefined) {
+		const res = await fetch(`/api/pjl/${pjl}`, {
 			headers: {
 				Accept: "text/html",
 				"Content-Type": "text/html; charset=utf-8",

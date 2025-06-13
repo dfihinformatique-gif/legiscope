@@ -4,9 +4,9 @@ import fs from "fs/promises"
 import path from "path"
 
 export const GET: RequestHandler = async ({ params, url }) => {
-	const { bill } = params as { bill: string }
+	const { pjl } = params as { pjl: string }
 
-	const filePath = path.resolve(`static/${bill}.html`)
+	const filePath = path.resolve(`static/${pjl}.html`)
 
 	try {
 		const html = await fs.readFile(filePath, "utf-8")
@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 			/<a href="https:\/\/git\.tricoteuses\.fr.+\/([^/]+\.md)">([^<]+)<\/a>/g,
 			(match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
-				return `<a href='${url.origin}/bill/${bill}?lawArticle=${lawArticle}'>${p2}</a>`
+				return `<a href='${url.origin}/pjl/${pjl}?lawArticle=${lawArticle}'>${p2}</a>`
 			},
 		)
 		return new Response(htmlWithLinks, {
