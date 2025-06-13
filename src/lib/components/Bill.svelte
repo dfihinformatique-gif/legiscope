@@ -1,11 +1,11 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	interface Props {
-		billHTML: string | undefined
+		pjlHTML: string | undefined
 	}
 
 	let container: HTMLDivElement | undefined = $state()
-	let { billHTML }: Props = $props()
+	let { pjlHTML }: Props = $props()
 	let resizeObserver: ResizeObserver
 
 	const baseWidth = 800
@@ -50,12 +50,12 @@
 	}
 
 	$effect(() => {
-		if (!container || !billHTML) return
+		if (!container || !pjlHTML) return
 
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			const processedHTML = billHTML.replace(
+			const processedHTML = pjlHTML.replace(
 				/<img([^>]*)width="([^"]+)"([^>]*)>/g,
 				(match, before, width, after) => {
 					return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
@@ -112,13 +112,13 @@
 			})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
-			if (wrapper) wrapper.innerHTML = billHTML
+			if (wrapper) wrapper.innerHTML = pjlHTML
 		}
 		return () => resizeObserver?.disconnect()
 	})
 </script>
 
 <div class="flex h-full w-full flex-col">
-	<BillSummary {billHTML} {container} />
+	<BillSummary {pjlHTML} {container} />
 	<div bind:this={container} class="flex-1 overflow-auto"></div>
 </div>

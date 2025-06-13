@@ -3,7 +3,7 @@ import type { PageLoad } from "./$types"
 export const load: PageLoad = async ({
 	fetch,
 	params,
-}): Promise<{ billHTML: string | undefined }> => {
+}): Promise<{ pjlHTML: string | undefined }> => {
 	const pjl = params.pjl
 
 	if (pjl !== undefined) {
@@ -16,11 +16,11 @@ export const load: PageLoad = async ({
 		})
 		if (!res.ok) {
 			console.error(`Error ${res.status} while retrieving bill content.}`)
-			return { billHTML: undefined }
+			return { pjlHTML: undefined }
 		} else {
-			const billHTML = await res.text()
-			return { billHTML }
+			const pjlHTML = await res.text()
+			return { pjlHTML: pjlHTML }
 		}
 	}
-	return { billHTML: undefined }
+	return { pjlHTML: undefined }
 }

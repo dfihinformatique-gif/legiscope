@@ -14,7 +14,7 @@
 
 	let articleJson: LegiArticle | undefined = $state(undefined)
 	let lawArticle = $derived(page.url.searchParams.get("lawArticle") || "")
-	let billHTML = $state(data.billHTML)
+	let pjlHTML = $state(data.pjlHTML)
 
 	$effect(() => {
 		if (lawArticle) {
@@ -34,7 +34,9 @@
 
 <svelte:window bind:innerWidth={screenWidth} />
 <div class="fixed flex min-h-full w-full flex-row overflow-hidden">
-	<div class="h-screen w-1/2 overflow-y-auto"><Bill {billHTML}></Bill></div>
+	<div class="h-screen w-1/2 overflow-y-auto">
+		<Bill {pjlHTML}></Bill>
+	</div>
 	<div class="h-screen w-1/2 overflow-y-auto bg-blue-100">
 		{#if isFetchingArticle}
 			Article en cours de récupération...

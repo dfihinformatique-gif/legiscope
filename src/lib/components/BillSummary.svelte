@@ -1,10 +1,10 @@
 <script lang="ts">
 	interface Props {
-		billHTML: string | undefined
+		pjlHTML: string | undefined
 		container: HTMLDivElement | undefined
 	}
 
-	let { billHTML, container }: Props = $props()
+	let { pjlHTML, container }: Props = $props()
 
 	let summaryItems = $state<{ id: string; text: string; level: number }[]>([])
 	let summaryIsOpen = $state(false)
@@ -72,8 +72,8 @@
 	}
 
 	$effect(() => {
-		if (!billHTML) return
-		summaryItems = extractAnchors(billHTML)
+		if (!pjlHTML) return
+		summaryItems = extractAnchors(pjlHTML)
 	})
 	$effect(() => {
 		if (!container) return
