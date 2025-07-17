@@ -113,16 +113,16 @@
 		</button>
 	</div>
 	<ul
-		class="shadow-bottom overflow-y-auto transition-all duration-300 ease-in-out"
+		class="shadow-bottom overflow-y-auto px-2 transition-all duration-300 ease-in-out lg:px-4 xl:px-10"
 		class:border-b-2={summaryIsOpen}
 		class:max-h-0={!summaryIsOpen}
-		class:max-h-[60vh]={summaryIsOpen}
+		class:max-h-[80vh]={summaryIsOpen}
 	>
 		{#each summaryItems as item}
-			<li style="padding-left:{item.level * 5}px;">
+			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
 					href={`#${item.id}`}
-					class="block py-1 text-blue-600 hover:underline"
+					class="lx-link-simple block py-1 text-sm text-neutral-700"
 					onclick={() => {
 						if (container !== undefined) {
 							const target = container.shadowRoot?.getElementById(item.id)
