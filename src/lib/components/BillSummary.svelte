@@ -93,7 +93,7 @@
 	<div class="shadow-bottom flex items-center justify-between border-b pb-2">
 		<span>{currentTitle}</span>
 		<button
-			class="flex items-center font-medium text-gray-500 uppercase"
+			class="flex h-8 items-center font-medium text-gray-500 uppercase xl:h-12"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
