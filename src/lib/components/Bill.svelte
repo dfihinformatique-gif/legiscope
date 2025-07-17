@@ -74,22 +74,63 @@
 	}
 
 	// Pour augmenter la taille de toutes les typos
-	const increaseFontSizes = (root: ShadowRoot | HTMLElement, factor = 1.4) => {
-		const selectors =
-			"h1, h2, h3, h4, h5, h6, ol, ul, li, p, span, table, th, tr, td"
-		const elements = root.querySelectorAll(selectors)
-		const exceptions = ["table", "th", "tr", "td", "span", "ol", "ul", "li"]
 
-		elements.forEach((el) => {
-			const element = el as HTMLElement
-			const style = window.getComputedStyle(element)
-			const fontSize = parseFloat(style.fontSize)
-			if (!isNaN(fontSize) && fontSize > 0) {
-				const isException = exceptions.includes(element.tagName.toLowerCase())
-				const appliedFactor = isException ? 1.2 : factor
-				const newSize = fontSize * appliedFactor
-				element.style.fontSize = newSize + "px"
-			}
+	const scaleFontSizesWithRemConversion = (
+		root: ShadowRoot | HTMLElement,
+		factor = 1.4,
+		basePx = 16, // 1rem = 16px
+	) => {
+		/* Fonction de conversion px -> rem */
+		const convertPxToRem = (pxValue: number) => {
+			const scaled = pxValue * factor
+			const remValue = scaled / basePx
+			return `${remValue.toFixed(4)}rem`
+		}
+
+		/* 1. Agit sur les Inline styles */
+		const inlineElements = root.querySelectorAll<HTMLElement>(
+			"[style*='font-size']",
+		)
+		inlineElements.forEach((el) => {
+			const style = el.getAttribute("style")
+			if (!style) return
+
+			const updatedStyle = style.replace(
+				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
+				(_, value, unit) => {
+					const num = parseFloat(value)
+					if (unit.toLowerCase() === "px") {
+						return `font-size: ${convertPxToRem(num)};`
+					} else {
+						const scaled = num * factor
+						return `font-size: ${scaled}${unit};`
+					}
+				},
+			)
+
+			el.setAttribute("style", updatedStyle)
+		})
+
+		/* 2. Agit sur la CSS in <style> tags */
+		const styleTags = root.querySelectorAll("style")
+		styleTags.forEach((styleTag) => {
+			const cssText = styleTag.textContent
+			if (!cssText) return
+
+			const updatedCss = cssText.replace(
+				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
+				(_, value, unit) => {
+					const num = parseFloat(value)
+					if (unit.toLowerCase() === "px") {
+						return `font-size: ${convertPxToRem(num)};`
+					} else {
+						const scaled = num * factor
+						return `font-size: ${scaled}${unit};`
+					}
+				},
+			)
+
+			styleTag.textContent = updatedCss
 		})
 	}
 
@@ -210,7 +251,11 @@
 			})
 
 			removeEmptyElements(shadow)
-			increaseFontSizes(shadow, 1.4) // +40% sauf span qui aura +10%
+			scaleFontSizesWithRemConversion(
+				shadow,
+				1.4,
+				16,
+			) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
 			disableJustify(shadow)
 
 			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
