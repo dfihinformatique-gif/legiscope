@@ -229,14 +229,20 @@
 							min-height: 100%;
 							overflow-x: hidden !important;
 						}
-						html, p, div, section, ol, ul {
-							margin: 5px !important;
-							padding: 5px !important;
-						} /* Remplace toutes les marges par 5px pour éviter les grands écarts dans le html */
-						span {
+						div[class^="assnatSection"] { /*Retire les marges des sections en ciblant le début de la class */
+							margin: 2rem !important;
+						}
+
+						html, p, div, ol, ul { /* Remplace toutes les marges top et bottom par 1rem pour éviter les grands écarts dans le html */
+							margin-top: 0.5rem !important;
+							margin-bottom: 0.5rem !important;
+						}
+
+						span { /* Ajoute un padding pour éviter que les textes ne soient collés */
 							padding-right: 0.1rem !important;
 							padding-left: 0.1rem !important;
-						} /* Ajoute un padding pour éviter que les textes ne soient collés */
+						}
+
 						.expose-motif {
 							border-left: 2px solid #ccc;
 							padding-left: 1rem;
