@@ -82,14 +82,28 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			const cleanedHTML = pjlHTML
-				.replace(/\sstyle="[^"]*"/g, "") // supprime tous les style="..."
-				.replace(
-					/<img([^>]*)width="([^"]+)"([^>]*)>/g,
-					(match, before, width, after) => {
-						return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
-					},
-				)
+		const cleanedHTML = pjlHTML
+			.replace(/style="([^"]*)"/g, (match, styleContent) => {
+				// Supprimer toutes les propriétés margin et padding
+				const cleanedStyle = styleContent
+					.split(';')
+					.map(rule => rule.trim())
+					.filter(rule =>
+						rule &&
+						!/^margin(\-|$)/i.test(rule) &&
+						!/^padding(\-|$)/i.test(rule)
+					)
+					.join('; ');
+
+				return cleanedStyle ? `style="${cleanedStyle}"` : '';
+			})
+			.replace(
+				/<img([^>]*)width="([^"]+)"([^>]*)>/g,
+				(match, before, width, after) => {
+					return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`;
+				}
+			);
+
 			shadow.innerHTML = `
 				<style>
 					 	:host {
