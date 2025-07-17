@@ -150,9 +150,10 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
+			// Pour nettoyer le fichier HTML du PLF :
 			const cleanedHTML = pjlHTML
 				.replace(/style="([^"]*)"/g, (match, styleContent) => {
-					// Supprimer toutes les propriétés margin et padding
+					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
 						.split(";")
 						.map((rule) => rule.trim())
@@ -166,6 +167,7 @@
 
 					return cleanedStyle ? `style="${cleanedStyle}"` : ""
 				})
+				// Ajouter un attribut data-original-width aux images en conservant la valeur de width existante
 				.replace(
 					/<img([^>]*)width="([^"]+)"([^>]*)>/g,
 					(match, before, width, after) => {
@@ -175,11 +177,13 @@
 
 			shadow.innerHTML = `
 				<style>
+						/* STYLES POUR RENDRE LISIBLE LE HTML */
+
 					 	:host {
 							display: block;
 							width: 96%;
 							height: 100%;
-							overflow-y: auto; /* scroll vertical si besoin */
+							overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
 							overflow-x: hidden; /* pas de scroll horizontal */
 						}
 						:host, :host * {
@@ -214,9 +218,9 @@
 							padding: 5px !important;
 						} /* Remplace toutes les marges par 5px pour éviter les grands écarts dans le html */
 						span {
-							margin-right: 0.1rem !important;
-							margin-left: 0.1rem !important;
-						} /* Remplace toutes les marges par 5px pour éviter les grands écarts dans le html */
+							padding-right: 0.1rem !important;
+							padding-left: 0.1rem !important;
+						} /* Ajoute un padding pour éviter que les textes ne soient collés */
 						.expose-motif {
 							width: 100% !important;
 							margin: 0 0 1rem 0 !important;
