@@ -174,6 +174,13 @@
 						return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
 					},
 				)
+				// Remplacer les <a> qui n'ont pas de href par des <span>
+				.replace(/<a([^>]*?)>(.*?)<\/a>/g, (match, attributes, innerHTML) => {
+					if (!/href\s*=\s*["'][^"']*["']/i.test(attributes)) {
+						return `<span${attributes}>${innerHTML}</span>`
+					}
+					return match
+				})
 
 			shadow.innerHTML = `
 				<style>
@@ -227,6 +234,22 @@
 							padding: 0 !important;
 							display: block;
 							box-sizing: border-box;
+						}
+
+						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
+						a {
+							text-decoration: underline !important;
+							text-decoration-style: dotted !important;
+							text-decoration-color: #bbbbbb !important;
+							text-underline-offset: 4px !important;
+							text-decoration-thickness: 1px !important;
+						}
+						a:hover,
+						a:focus {
+							text-decoration-style: solid !important;
+							text-decoration-color: black !important;
+							text-underline-offset: 4px !important;
+							text-decoration-thickness: 2px !important;
 						}
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
