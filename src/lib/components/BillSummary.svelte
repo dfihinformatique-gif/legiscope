@@ -90,10 +90,18 @@
 </script>
 
 <div class="sticky top-0 z-10 px-4 pt-2">
-	<div class="shadow-bottom flex items-center justify-between border-b pb-2">
-		<span>{currentTitle}</span>
+	<div
+		class="flex h-8 items-center justify-between pb-2 xl:h-12"
+		class:border-b-2={!summaryIsOpen}
+		class:border-b={summaryIsOpen}
+		class:shadow-bottom={!summaryIsOpen}
+		class:shadow-bottom-extralight={summaryIsOpen}
+		class:border-black={!summaryIsOpen}
+		class:border-gray-200={summaryIsOpen}
+	>
+		<span class="truncate">{currentTitle}</span>
 		<button
-			class="flex h-8 items-center font-medium text-gray-500 uppercase xl:h-12"
+			class="ml-3 flex items-center font-medium text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
@@ -105,7 +113,8 @@
 		</button>
 	</div>
 	<ul
-		class="overflow-y-auto transition-all duration-300 ease-in-out"
+		class="shadow-bottom overflow-y-auto transition-all duration-300 ease-in-out"
+		class:border-b-2={summaryIsOpen}
 		class:max-h-0={!summaryIsOpen}
 		class:max-h-[60vh]={summaryIsOpen}
 	>

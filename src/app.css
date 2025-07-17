@@ -3,5 +3,6 @@
 @theme {
   --default-font-family: "Lato";
   --font-serif: "Lora";
-  --shadow-bottom: 0 10px 10px -10px rgba(0, 0, 0, 0.25);
+  --shadow-bottom: 0 10px 10px -10px rgba(0, 0, 0, 0.35);
+  --shadow-bottom-extralight: 0 10px 10px -10px rgba(0, 0, 0, 0.05);
 }
