@@ -319,8 +319,11 @@
 				}
 			})
 
+			// Applique les formules qui retirent certains éléments
 			removeEmptyElements(shadow)
 			removeProjetDeLoiDivs(shadow)
+
+			// Applique la formule qui augmente la taille des typos
 			scaleFontSizesWithRemConversion(
 				shadow,
 				1.4,
