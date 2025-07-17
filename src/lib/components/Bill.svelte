@@ -73,6 +73,15 @@
 		})
 	}
 
+	// Pour supprimer la div de pied de page ou en-tête indiquant Projet de loi de finances 1
+	const removeProjetDeLoiDivs = (root: ShadowRoot | HTMLElement) => {
+		root.querySelectorAll('div[style*="clear:both"]').forEach((div) => {
+			const p = div.querySelector("p.assnatFARTT08Bleu span")
+			if (p && p.textContent?.includes("Projet de loi de finances")) {
+				div.remove()
+			}
+		})
+	}
 	// Pour augmenter la taille de toutes les typos
 
 	const scaleFontSizesWithRemConversion = (
@@ -278,6 +287,7 @@
 			})
 
 			removeEmptyElements(shadow)
+			removeProjetDeLoiDivs(shadow)
 			scaleFontSizesWithRemConversion(
 				shadow,
 				1.4,
