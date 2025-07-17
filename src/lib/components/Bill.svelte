@@ -418,5 +418,5 @@
 
 <div class="flex h-full w-full flex-col">
 	<BillSummary {pjlHTML} {container} />
-	<div bind:this={container} class="flex-1 overflow-auto"></div>
+	<div bind:this={container} class="w-full flex-1 overflow-auto"></div>
 </div>
