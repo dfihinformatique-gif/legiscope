@@ -34,7 +34,7 @@
 
 <svelte:window bind:innerWidth={screenWidth} />
 <div class="fixed flex min-h-full w-full flex-row overflow-hidden">
-	<div class="h-screen w-1/2 overflow-y-auto">
+	<div class="z-10 h-screen w-1/2 overflow-y-auto shadow-md">
 		<Bill {pjlHTML}></Bill>
 	</div>
 	<div class="h-screen w-1/2 overflow-y-auto bg-blue-100">

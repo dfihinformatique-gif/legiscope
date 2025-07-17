@@ -89,8 +89,8 @@
 	})
 </script>
 
-<div class="sticky top-0 z-10 px-4 py-2 shadow-md">
-	<div class="flex items-center justify-between">
+<div class="sticky top-0 z-10 px-4 pt-2">
+	<div class="shadow-bottom flex items-center justify-between border-b pb-2">
 		<span>{currentTitle}</span>
 		<button
 			class="flex items-center font-medium text-gray-500 uppercase"
