@@ -238,15 +238,22 @@
 							padding-left: 0.1rem !important;
 						} /* Ajoute un padding pour éviter que les textes ne soient collés */
 						.expose-motif {
-							width: 100% !important;
-							margin: 0 0 1rem 0 !important;
-							padding: 0 !important;
-							display: block;
-							box-sizing: border-box;
+							border-left: 2px solid #ccc;
+							padding-left: 1rem;
 						}
 
 						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
-						a {
+
+
+						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
+							margin-top: 3rem !important;
+						}
+
+						[class^="assnatFPFprojetloiartexte"] { /*Cible les textes des articles TODO a mettre en lora */
+							margin-top: 1rem !important;
+						}
+
+						a { /*Crée un style pour mettre en avant les liens au sein du document */
 							text-decoration: underline !important;
 							text-decoration-style: dotted !important;
 							text-decoration-color: #bbbbbb !important;
@@ -260,6 +267,8 @@
 							text-underline-offset: 4px !important;
 							text-decoration-thickness: 2px !important;
 						}
+
+
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
       `
