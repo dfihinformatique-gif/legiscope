@@ -49,7 +49,6 @@
 			"canvas",
 			"input",
 			"button",
-			"br",
 			"hr",
 		],
 	) => {
@@ -216,10 +215,29 @@
 							margin: 0 auto !important;
 						}
 						table {
+							table-layout: auto;
 							width: 100% !important;
-							display: block;
-							overflow-x: auto;
+
 						}
+						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
+							overflow-x: auto;
+							width: 100%;
+							margin-top: 2rem !important;
+							margin-bottom: 2rem !important;
+						}
+
+						.table-container table {
+							width: max-content;
+							table-layout: auto;
+						}
+
+						td, th {
+							width: auto !important;
+							word-wrap: break-word !important;
+							overflow-wrap: break-word !important;
+							padding: 0.5rem !important;
+						}
+
 						pre, code {
 							white-space: pre-wrap !important;
 							word-break: break-word !important;
@@ -324,6 +342,25 @@
 						window.history.pushState(null, "", hash)
 						scrollToAnchor(hash, shadow)
 					}
+				}
+			})
+
+			// Supervise le style des tableaux en les mettant dans une div avec une bordure, seulement si il y a plus de 2 cellules, afin d'éviter de toucher aux tables qui contiennent les titres
+			shadow.querySelectorAll("table").forEach((table) => {
+				const cellCount = table.querySelectorAll("td, th").length
+
+				/* Créer le conteneur scrollable */
+				const wrapper = document.createElement("div")
+				wrapper.classList.add("table-container")
+
+				/* Insérer le conteneur autour de la table */
+				table.parentNode?.insertBefore(wrapper, table)
+				wrapper.appendChild(table)
+
+				// Appliquer la bordure si plus de 2 cellules
+				if (cellCount > 2) {
+					table.style.border = "1px solid black"
+					table.style.borderCollapse = "collapse"
 				}
 			})
 		} else {
