@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  --default-font-family: "Marianne";
+  --default-font-family: "Lato";
+  --font-serif: "Lora";
 }

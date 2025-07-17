@@ -142,6 +142,44 @@
 		})
 	}
 
+	// Pour supprimer les font mises en place (ce qui rend impossible de leur appliquer une autre font) | Toutes les font ne sont pas supprimées au risque de casser la mise en page
+	const removeSpecificFontFamilies = (root: ShadowRoot | HTMLElement) => {
+		/* 1. Supprimer les font-family inline contenant Marianne */
+		root
+			.querySelectorAll<HTMLElement>('[style*="font-family"]')
+			.forEach((el) => {
+				const style = el.getAttribute("style")
+				if (!style) return
+
+				const cleanedStyle = style
+					.split(";")
+					.map((rule) => rule.trim())
+					.filter((rule) => {
+						const match = /^font-family\s*:\s*(.+)$/i.exec(rule)
+						if (!match) return true
+						const value = match[1].toLowerCase()
+						return !(value.includes("marianne") || value.includes("arial"))
+					})
+					.join("; ")
+
+				if (cleanedStyle) {
+					el.setAttribute("style", cleanedStyle)
+				} else {
+					el.removeAttribute("style")
+				}
+			})
+
+		/* 2. Supprimer dans les <style> internes les font-family ciblées */
+		root.querySelectorAll("style").forEach((styleTag) => {
+			if (!styleTag.textContent) return
+
+			styleTag.textContent = styleTag.textContent.replace(
+				/font-family\s*:\s*[^;]*(marianne)[^;]*;/gi,
+				"",
+			)
+		})
+	}
+
 	// Pour éviter que le texte soit justifié (text-align:justify)
 	const disableJustify = (root: ShadowRoot | HTMLElement) => {
 		root.querySelectorAll("*").forEach((el) => {
@@ -275,6 +313,7 @@
 
 						[class^="assnatFPFprojetloiartexte"] { /*Cible les textes des articles TODO a mettre en lora */
 							margin-top: 1rem !important;
+							font-family: "Lora", serif !important;
 						}
 
 						a { /*Crée un style pour mettre en avant les liens au sein du document */
@@ -300,21 +339,21 @@
 			const tables = shadow.querySelectorAll("table")
 
 			tables.forEach((table) => {
-				// Cherche un <p class="assnatFPFexpogentexte"> dans cette table
+				/* Cherche un <p class="assnatFPFexpogentexte"> dans cette table */
 				if (table.querySelector("p.assnatFPFexpogentexte")) {
-					// Crée un div pour remplacer la table
+					/* Crée un div pour remplacer la table */
 					const div = document.createElement("div")
 					div.className = "expose-motif"
 
-					// Récupère tout le texte des paragraphes dans la table
+					/* Récupère tout le texte des paragraphes dans la table */
 					const paragraphs = Array.from(
 						table.querySelectorAll("p.assnatFPFexpogentexte"),
 					)
 					paragraphs.forEach((p) => {
-						// Clone le paragraphe pour conserver la structure
+						/* Clone le paragraphe pour conserver la structure */
 						div.appendChild(p.cloneNode(true))
 					})
-					// Remplace la table par ce div
+					/* Remplace la table par ce div */
 					table.replaceWith(div)
 				}
 			})
@@ -322,6 +361,9 @@
 			// Applique les formules qui retirent certains éléments
 			removeEmptyElements(shadow)
 			removeProjetDeLoiDivs(shadow)
+
+			// Supprime la police Marianne
+			removeSpecificFontFamilies(shadow)
 
 			// Applique la formule qui augmente la taille des typos
 			scaleFontSizesWithRemConversion(
