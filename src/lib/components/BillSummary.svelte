@@ -127,7 +127,7 @@
 			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
 					href={`#${item.id}`}
-					class="lx-link-simple block py-1 text-sm text-neutral-700"
+					class="lx-link-simple block py-1 text-lg text-neutral-700"
 					onclick={() => {
 						if (container !== undefined) {
 							const target = container.shadowRoot?.getElementById(item.id)

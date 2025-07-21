@@ -35,7 +35,7 @@
 </script>
 
 <button
-	class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer font-sans xl:mt-5 xl:text-lg"
+	class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
 	onclick={() => {
 		tocIsOpen = !tocIsOpen
 		initToc = tocIsOpen ? true : false
@@ -47,7 +47,16 @@
 	>
 	</iconify-icon>
 	{lastTMText}
-</button><br />
+</button>
+
 {#if tocIsOpen}
-	<Toc {articleJson} lienSectionTA={undefined} init={initToc} open={true}></Toc>
+	<div class="mb-10 ml-6">
+		<Toc
+			{articleJson}
+			{lastTMText}
+			lienSectionTA={undefined}
+			init={initToc}
+			open={true}
+		></Toc>
+	</div>
 {/if}
