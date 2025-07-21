@@ -10,25 +10,6 @@
 	let tocIsOpen = $state(false)
 	let initToc = $state(false)
 
-	let articleNum: String | undefined = $derived(
-		articleJson ? articleJson.META?.META_SPEC?.META_ARTICLE?.NUM : undefined,
-	)
-	let contextTextTitle = $derived.by(() => {
-		if (articleJson === undefined) {
-			return undefined
-		}
-		if (articleJson.CONTEXTE.TEXTE.TITRE_TXT.length === 1) {
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		} else {
-			console.log(
-				"Warning : context text has different titles, the first one is selected, but it should be refined :",
-				{ TITRE_TXT: articleJson.CONTEXTE.TEXTE.TITRE_TXT },
-			)
-			//TODO refine choice of title if many
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		}
-	})
-
 	let lastTMText = $derived(getLastTMText(articleJson))
 
 	function getLastTMText(article: LegiArticle): string | undefined {
@@ -54,18 +35,19 @@
 </script>
 
 <button
-	class="cursor-pointer underline"
+	class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer font-sans xl:mt-5 xl:text-lg"
 	onclick={() => {
 		tocIsOpen = !tocIsOpen
 		initToc = tocIsOpen ? true : false
 	}}
 >
-	&#62; {lastTMText}
+	<iconify-icon
+		class="align-[-0.3rem] text-xl"
+		icon={tocIsOpen ? "ri:arrow-down-s-line" : "ri:arrow-right-s-line"}
+	>
+	</iconify-icon>
+	{lastTMText}
 </button><br />
 {#if tocIsOpen}
 	<Toc {articleJson} lienSectionTA={undefined} init={initToc} open={true}></Toc>
 {/if}
-{#if articleNum !== undefined}
-	<span class="font-bold">Article {articleNum}</span>
-{/if}
-| <span class="font-bold">{contextTextTitle}</span>
