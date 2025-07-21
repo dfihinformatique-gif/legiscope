@@ -101,15 +101,15 @@
 	>
 		<span class="truncate">{currentTitle}</span>
 		<button
-			class="ml-3 flex items-center font-medium text-gray-500 uppercase"
+			class="lx-link-uppercase font-sans text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
-				class="mr-1 align-[-0.25rem] text-xl"
-				icon="ri:menu-fold-2-line"
+				class="align-[-0.3rem] text-xl"
+				icon={summaryIsOpen ? "ri:menu-fold-line" : "ri:menu-fold-2-line"}
 			>
 			</iconify-icon>
-			Sommaire
+			{#if summaryIsOpen}Fermer Sommaire{:else}Sommaire{/if}
 		</button>
 	</div>
 	<ul
@@ -118,6 +118,11 @@
 		class:max-h-0={!summaryIsOpen}
 		class:max-h-[80vh]={summaryIsOpen}
 	>
+		<h2 class="mt-5 font-serif text-2xl">
+			Projet de loi de finances <span
+				class="font-sans font-light tracking-wider">| Sommaire</span
+			>
+		</h2>
 		{#each summaryItems as item}
 			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
