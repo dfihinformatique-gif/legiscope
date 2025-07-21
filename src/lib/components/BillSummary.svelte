@@ -91,7 +91,7 @@
 
 <div class="sticky top-0 z-10 px-4 pt-2">
 	<div
-		class="flex h-8 items-center justify-between pb-2 xl:h-12"
+		class="flex h-8 items-center justify-between gap-5 pb-2 xl:h-12"
 		class:border-b-2={!summaryIsOpen}
 		class:border-b={summaryIsOpen}
 		class:shadow-bottom={!summaryIsOpen}
@@ -99,9 +99,9 @@
 		class:border-black={!summaryIsOpen}
 		class:border-gray-200={summaryIsOpen}
 	>
-		<span class="truncate">{currentTitle}</span>
+		<span class="truncate text-lg tracking-wide">{currentTitle}</span>
 		<button
-			class="lx-link-uppercase font-sans text-gray-500 uppercase"
+			class="lx-link-uppercase font-sans text-nowrap text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
