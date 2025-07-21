@@ -15,20 +15,17 @@
 	>
 		<div class="basis-1/2">
 			<button
-				class="cursor-pointer rounded-full border-2 px-4 py-1 text-sm uppercase transition-colors duration-150"
+				class="cursor-pointer rounded-full border-2 px-4 py-1 text-xl uppercase transition-colors duration-150"
 				class:bg-blue-200={$showBillDesktop}
+				class:font-bold={$showBillDesktop}
 				on:click={toggleBill}
 			>
 				Projet de loi
 			</button>
 		</div>
-		<pre class="text-xs">
-	Bill: {$showBillDesktop}
-	Law: {$showLawDesktop}
-</pre>
 		<div class="basis-1/2">
 			<button
-				class="cursor-pointer rounded-full border-2 px-4 py-1 text-sm uppercase transition-colors duration-150"
+				class="cursor-pointer rounded-full border-2 px-4 py-1 text-xl uppercase transition-colors duration-150"
 				class:bg-blue-200={$showLawDesktop}
 				on:click={toggleLaw}
 			>
@@ -42,8 +39,9 @@
 	>
 		<div class="basis-1/2">
 			<button
-				class="cursor-pointer rounded-full border-2 px-4 py-1 text-sm uppercase transition-colors duration-150"
+				class="cursor-pointer rounded-full border-2 px-4 py-1 text-xl uppercase transition-colors duration-150"
 				class:bg-blue-200={$activePanelMobile === "bill"}
+				class:font-bold={$activePanelMobile === "bill"}
 				on:click={() => activePanelMobile.set("bill")}
 			>
 				Projet de loi
@@ -51,7 +49,7 @@
 		</div>
 		<div class="basis-1/2">
 			<button
-				class="cursor-pointer rounded-full border-2 px-4 py-1 text-sm uppercase transition-colors duration-150"
+				class="cursor-pointer rounded-full border-2 px-4 py-1 text-xl uppercase transition-colors duration-150"
 				class:bg-blue-200={$activePanelMobile === "law"}
 				on:click={() => activePanelMobile.set("law")}
 			>
