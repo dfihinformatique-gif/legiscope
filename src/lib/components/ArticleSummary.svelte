@@ -34,29 +34,36 @@
 	}
 </script>
 
-<button
-	class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
-	onclick={() => {
-		tocIsOpen = !tocIsOpen
-		initToc = tocIsOpen ? true : false
-	}}
+<div
+	class:mb-10={tocIsOpen}
+	class:border-b={tocIsOpen}
+	class:shadow-bottom-extralight={tocIsOpen}
+	class:border-gray-200={tocIsOpen}
 >
-	<iconify-icon
-		class="align-[-0.3rem] text-xl"
-		icon={tocIsOpen ? "ri:arrow-down-s-line" : "ri:arrow-right-s-line"}
+	<button
+		class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+		onclick={() => {
+			tocIsOpen = !tocIsOpen
+			initToc = tocIsOpen ? true : false
+		}}
 	>
-	</iconify-icon>
-	{lastTMText}
-</button>
+		<iconify-icon
+			class="align-[-0.3rem] text-xl"
+			icon={tocIsOpen ? "ri:arrow-down-s-line" : "ri:arrow-right-s-line"}
+		>
+		</iconify-icon>
+		{lastTMText}
+	</button>
 
-{#if tocIsOpen}
-	<div class="mb-10 ml-6">
-		<Toc
-			{articleJson}
-			{lastTMText}
-			lienSectionTA={undefined}
-			init={initToc}
-			open={true}
-		></Toc>
-	</div>
-{/if}
+	{#if tocIsOpen}
+		<div class="mb-10 ml-6">
+			<Toc
+				{articleJson}
+				{lastTMText}
+				lienSectionTA={undefined}
+				init={initToc}
+				open={true}
+			></Toc>
+		</div>
+	{/if}
+</div>
