@@ -29,7 +29,7 @@
 	})
 </script>
 
-<div class="mx-3 bg-blue-50 p-6 pt-2 text-justify shadow md:mx-6">
+<div class="mx-3 bg-blue-50 p-6 pt-2 mb-20 text-justify shadow md:mx-6">
 	{#if articleJson}
 		<!--Sommaire-->
 		<ArticleSummary {articleJson}></ArticleSummary>
