@@ -28,6 +28,9 @@
 				.then((data) => {
 					isFetchingArticle = false
 					articleJson = data
+					if ($isMobilePhone) {
+						activePanelMobile.set("law")
+					}
 				})
 				.catch(() => (lawArticle = ""))
 		} else {
