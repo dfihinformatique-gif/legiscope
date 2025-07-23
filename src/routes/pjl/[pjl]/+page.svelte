@@ -10,6 +10,7 @@
 		showLawDesktop,
 	} from "$lib/navStore"
 	import type { LegiArticle } from "@tricoteuses/legifrance"
+	import { writable } from "svelte/store"
 	import type { PageProps } from "./$types"
 
 	let isFetchingArticle = $state(false)
@@ -20,6 +21,23 @@
 	let lawArticle = $derived(page.url.searchParams.get("lawArticle") || "")
 	let pjlHTML = $state(data.pjlHTML)
 
+	// Permet que de réintialiser le scroll de la vue lax lorsqu'on a basculé d'onglet, et qu'on reclique sur un lien
+	let lawContainer: HTMLDivElement
+
+	const shouldResetLawScroll = writable(false)
+
+	$effect(() => {
+		if ($activePanelMobile === "law" && lawContainer) {
+			requestAnimationFrame(() => {
+				if ($shouldResetLawScroll) {
+					lawContainer.scrollTo({ top: 0, behavior: "auto" })
+					shouldResetLawScroll.set(false)
+				}
+			})
+		}
+	})
+
+	// Permet d'afficher l'article dans la vue law quand on clique sur un lien depuis la bill
 	$effect(() => {
 		if (lawArticle) {
 			isFetchingArticle = true
@@ -29,6 +47,8 @@
 					isFetchingArticle = false
 					articleJson = data
 					if ($isMobilePhone) {
+						// Pour mobile : change de vue vers law et reset le scroll
+						shouldResetLawScroll.set(true)
 						activePanelMobile.set("law")
 					}
 				})
@@ -91,44 +111,47 @@
 	</div>
 {:else}
 	<div class="fixed flex min-h-full w-full flex-row overflow-x-hidden">
-		{#if $activePanelMobile === "bill"}
-			<div class="z-10 h-screen w-full overflow-y-auto shadow-md">
-				<Bill {pjlHTML}></Bill>
-			</div>
-		{:else if $activePanelMobile === "law"}
-			<div class="h-screen w-full overflow-y-auto bg-blue-100">
-				{#if isFetchingArticle}
-					<div
-						class="flex h-screen flex-col items-center justify-center text-center"
-					>
-						<SkeletonArticleLoader />
-					</div>
-				{:else if articleJson !== undefined}
-					<Article {articleJson}></Article>
-				{:else}
-					<div
-						class="flex h-screen flex-col items-center justify-center p-4 text-center"
-					>
-						<iconify-icon
-							class="text-8xl text-gray-500"
-							icon="ri:book-marked-fill"
-						></iconify-icon>
-						<p class="flex items-center font-medium text-gray-500 uppercase">
-							Cliquez sur une loi
-						</p>
-						<p class="flex items-center font-medium text-gray-500 uppercase">
-							dans le PLF
-						</p>
-						<p class="flex items-center font-medium text-gray-500 uppercase">
-							pour l'afficher
-						</p>
-						<iconify-icon
-							class="text-8xl text-gray-500"
-							icon="ri:arrow-left-line"
-						></iconify-icon>
-					</div>
-				{/if}
-			</div>
-		{/if}
+		<div
+			class="z-10 h-screen w-full overflow-y-auto shadow-md"
+			class:hidden={$activePanelMobile !== "bill"}
+		>
+			<Bill {pjlHTML}></Bill>
+		</div>
+
+		<div
+			bind:this={lawContainer}
+			class="h-screen w-full overflow-y-auto bg-blue-100"
+			class:hidden={$activePanelMobile !== "law"}
+		>
+			{#if isFetchingArticle}
+				<div
+					class="flex h-screen flex-col items-center justify-center text-center"
+				>
+					<SkeletonArticleLoader />
+				</div>
+			{:else if articleJson !== undefined}
+				<Article {articleJson}></Article>
+			{:else}
+				<div
+					class="flex h-screen flex-col items-center justify-center p-4 text-center"
+				>
+					<iconify-icon
+						class="text-8xl text-gray-500"
+						icon="ri:book-marked-fill"
+					></iconify-icon>
+					<p class="flex items-center font-medium text-gray-500 uppercase">
+						Cliquez sur une loi
+					</p>
+					<p class="flex items-center font-medium text-gray-500 uppercase">
+						dans le PLF
+					</p>
+					<p class="flex items-center font-medium text-gray-500 uppercase">
+						pour l'afficher
+					</p>
+					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
+					></iconify-icon>
+				</div>
+			{/if}
+		</div>
 	</div>
 {/if}
