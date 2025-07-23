@@ -38,7 +38,7 @@
 {#if !$isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 		<div
-			class={`z-10 origin-right overflow-y-auto shadow-xl transition-all duration-300 ${
+			class={`z-10 h-screen origin-right overflow-y-auto shadow-xl transition-all duration-300 ${
 				$showBillDesktop && $showLawDesktop
 					? "w-1/2"
 					: $showBillDesktop
@@ -50,7 +50,7 @@
 		</div>
 
 		<div
-			class={`overflow-y-auto bg-blue-100 transition-all duration-300 ${
+			class={`h-screen overflow-y-auto bg-blue-100 transition-all duration-300 ${
 				$showLawDesktop && $showBillDesktop
 					? "w-1/2"
 					: $showLawDesktop
@@ -87,7 +87,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
+	<div class="fixed flex min-h-full w-full flex-row overflow-x-hidden">
 		{#if $activePanelMobile === "bill"}
 			<div class="z-10 h-screen w-full overflow-y-auto shadow-md">
 				<Bill {pjlHTML}></Bill>
