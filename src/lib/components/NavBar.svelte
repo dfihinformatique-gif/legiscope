@@ -4,9 +4,29 @@
 		isMobilePhone,
 		showBillDesktop,
 		showLawDesktop,
-		toggleBill,
-		toggleLaw,
 	} from "$lib/navStore"
+
+	import { get } from "svelte/store"
+
+	function toggleBill() {
+		showBillDesktop.update((val) => {
+			if (val && !get(showLawDesktop)) {
+				showLawDesktop.set(true)
+				return false
+			}
+			return !val
+		})
+	}
+
+	function toggleLaw() {
+		showLawDesktop.update((val) => {
+			if (val && !get(showBillDesktop)) {
+				showBillDesktop.set(true)
+				return false
+			}
+			return !val
+		})
+	}
 </script>
 
 {#if !$isMobilePhone}

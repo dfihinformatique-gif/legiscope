@@ -1,5 +1,5 @@
 import { browser } from "$app/environment"
-import { derived, get, writable } from "svelte/store"
+import { derived, writable } from "svelte/store"
 
 export const screenWidth = writable(browser ? window.innerWidth : 1024)
 
@@ -17,27 +17,3 @@ export const activePanelMobile = writable<"bill" | "law">("bill")
 
 export const showBillDesktop = writable(true)
 export const showLawDesktop = writable(true)
-
-/* Fonctionnement des boutons : */
-
-export function toggleBill() {
-	showBillDesktop.update((val) => {
-		if (val && !get(showLawDesktop)) {
-			/* Si on veut cacher Bill mais Law est fermé aussi, on ouvre Law */
-			showLawDesktop.set(true)
-			return false /* cacher Bill */
-		}
-		return !val /* sinon toggle normal */
-	})
-}
-
-export function toggleLaw() {
-	showLawDesktop.update((val) => {
-		if (val && !get(showBillDesktop)) {
-			/* Si on veut cacher Law mais Bill est fermé aussi, on ouvre Bill */
-			showBillDesktop.set(true)
-			return false /* cacher Law */
-		}
-		return !val /* sinon toggle normal */
-	})
-}
