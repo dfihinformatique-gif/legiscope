@@ -47,9 +47,15 @@
 					isFetchingArticle = false
 					articleJson = data
 					if ($isMobilePhone) {
-						// Pour mobile : change de vue vers law et reset le scroll
+						// Mobile : Change de vue vers law et reset le scroll
 						shouldResetLawScroll.set(true)
 						activePanelMobile.set("law")
+					} else {
+						// Desktop - vue unique sur bill : Ouvre la vue law
+						if (!$showLawDesktop) {
+							showLawDesktop.set(true)
+						}
+						shouldResetLawScroll.set(true)
 					}
 				})
 				.catch(() => (lawArticle = ""))
