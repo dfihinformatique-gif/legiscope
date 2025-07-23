@@ -2,6 +2,7 @@
 	import { page } from "$app/state"
 	import Article from "$lib/components/Article.svelte"
 	import Bill from "$lib/components/Bill.svelte"
+	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
 	import {
 		activePanelMobile,
 		isMobilePhone,
@@ -59,9 +60,8 @@
 			}`}
 		>
 			{#if isFetchingArticle}
-				Article en cours de récupération...
-			{/if}
-			{#if articleJson !== undefined}
+				<SkeletonArticleLoader />
+			{:else if articleJson !== undefined}
 				<Article {articleJson}></Article>
 			{:else}
 				<div
@@ -95,9 +95,12 @@
 		{:else if $activePanelMobile === "law"}
 			<div class="h-screen w-full overflow-y-auto bg-blue-100">
 				{#if isFetchingArticle}
-					Article en cours de récupération...
-				{/if}
-				{#if articleJson !== undefined}
+					<div
+						class="flex h-screen flex-col items-center justify-center text-center"
+					>
+						<SkeletonArticleLoader />
+					</div>
+				{:else if articleJson !== undefined}
 					<Article {articleJson}></Article>
 				{:else}
 					<div
