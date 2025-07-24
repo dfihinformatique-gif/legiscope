@@ -74,14 +74,36 @@
 	}
 
 	// Pour supprimer la div de pied de page ou en-tête indiquant Projet de loi de finances 1
-	const removeProjetDeLoiDivs = (root: ShadowRoot | HTMLElement) => {
-		root.querySelectorAll('div[style*="clear:both"]').forEach((div) => {
-			const p = div.querySelector("p.assnatFARTT08Bleu span")
-			if (p && p.textContent?.includes("Projet de loi de finances")) {
-				div.remove()
+	const removeProjetDeLoiFooters = (root: ShadowRoot | HTMLElement) => {
+		const isLikelyFooter = (text: string | null | undefined) => {
+			if (!text) return false
+			const cleaned = text.toLowerCase().replace(/\s+/g, " ").trim()
+
+			/* Contient "projet de loi de finances" */
+			if (!cleaned.includes("projet de loi de finances")) return false
+
+			/* Contient un numéro isolé ou en fin */
+			const hasPageNumber = /\b\d{1,3}\b/.test(cleaned)
+			if (!hasPageNumber) return false
+
+			/* Doit être court (ex : max 15 mots) */
+			const wordCount = cleaned.split(/\s+/).length
+			if (wordCount > 15) return false
+
+			return true
+		}
+
+		root.querySelectorAll("div, p, table, section, footer").forEach((el) => {
+			/* Ne touche pas aux éléments internes aux tableaux */
+			if (el.closest("table") && el.tagName !== "TABLE") return
+
+			const text = el.textContent
+			if (isLikelyFooter(text)) {
+				el.remove()
 			}
 		})
 	}
+
 	// Pour augmenter la taille de toutes les typos
 
 	const scaleFontSizesWithRemConversion = (
@@ -361,7 +383,7 @@
 
 			// Applique les formules qui retirent certains éléments
 			removeEmptyElements(shadow)
-			removeProjetDeLoiDivs(shadow)
+			removeProjetDeLoiFooters(shadow)
 
 			// Supprime la police Marianne
 			removeSpecificFontFamilies(shadow)
