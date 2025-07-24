@@ -82,12 +82,25 @@
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
 			{#if articleVersion()?.LIEN_ART?.["@debut"]}
-				<div
-					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
-				>
-					Version en vigueur depuis le
-					{formatDateFr(articleVersion().LIEN_ART["@debut"])}
-				</div>
+				{#if articleVersion().LIEN_ART["@etat"] === "VIGUEUR"}
+					<div
+						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
+					>
+						Version en vigueur depuis le {formatDateFr(
+							articleVersion().LIEN_ART["@debut"],
+						)}
+					</div>
+				{:else}
+					<div
+						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
+					>
+						Version valable du {formatDateFr(
+							articleVersion().LIEN_ART["@debut"],
+						)}
+						{#if articleVersion().LIEN_ART["@fin"]}
+							au {formatDateFr(articleVersion().LIEN_ART["@fin"])}{/if}
+					</div>
+				{/if}
 			{/if}
 			<div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
