@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { showBillDesktop } from "$lib/navStore"
 	import type { LegiArticle } from "@tricoteuses/legifrance"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
@@ -29,7 +30,10 @@
 	})
 </script>
 
-<div class="mx-3 bg-blue-50 p-6 pt-2 mb-20 text-justify shadow md:mx-6">
+<div
+	class="mx-3 mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 text-justify shadow-md md:mx-6"
+	class:md:p-16={!$showBillDesktop}
+>
 	{#if articleJson}
 		<!--Sommaire-->
 		<ArticleSummary {articleJson}></ArticleSummary>
@@ -82,5 +86,17 @@
 				>{@html articleTextcontent}</span
 			>
 		{/if}
+	{:else}
+		<div class="flex h-full w-full flex-col justify-center">
+			<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
+			></iconify-icon>
+			<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
+			<p class="text-center font-medium text-gray-500 uppercase">
+				est introuvable
+			</p>
+
+			<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
+			></iconify-icon>
+		</div>
 	{/if}
 </div>

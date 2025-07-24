@@ -68,11 +68,11 @@
 {#if !$isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 		<div
-			class={`z-10 h-screen origin-right overflow-y-auto shadow-xl transition-all duration-300 ${
+			class={`z-10 flex h-screen origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 ${
 				$showBillDesktop && $showLawDesktop
 					? "w-1/2"
 					: $showBillDesktop
-						? "w-full"
+						? "w-full bg-neutral-50"
 						: "pointer-events-none w-0 opacity-0"
 			}`}
 		>
@@ -80,7 +80,7 @@
 		</div>
 
 		<div
-			class={`h-screen overflow-y-auto bg-blue-100 transition-all duration-300 ${
+			class={`flex h-screen justify-center overflow-y-auto bg-blue-100 transition-all duration-300 ${
 				$showLawDesktop && $showBillDesktop
 					? "w-1/2"
 					: $showLawDesktop
@@ -100,13 +100,13 @@
 						class="text-8xl text-gray-500"
 						icon="ri:book-marked-fill"
 					></iconify-icon>
-					<p class="flex items-center font-medium text-gray-500 uppercase">
+					<p class="text-center font-medium text-gray-500 uppercase">
 						Cliquez sur une loi
 					</p>
-					<p class="flex items-center font-medium text-gray-500 uppercase">
+					<p class="text-center font-medium text-gray-500 uppercase">
 						dans le PLF
 					</p>
-					<p class="flex items-center font-medium text-gray-500 uppercase">
+					<p class="text-center font-medium text-gray-500 uppercase">
 						pour l'afficher
 					</p>
 					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
