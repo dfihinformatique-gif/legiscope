@@ -51,6 +51,7 @@
 			"input",
 			"button",
 			"hr",
+			"path",
 		],
 	) => {
 		const elements = root.querySelectorAll("*")
@@ -251,6 +252,14 @@
 					return match
 				})
 
+			// Style les liens qui ouvrent la vue article à droite
+			const styleLawArticleLinks = (root: ShadowRoot | HTMLElement) => {
+				root.querySelectorAll('a[href*="?lawArticle="]').forEach((link) => {
+					if (!link.href.includes("#")) {
+						link.classList.add("law-article-link")
+					}
+				})
+			}
 			shadow.innerHTML = `
 				<style>
 						/* STYLES POUR RENDRE LISIBLE LE HTML */
@@ -353,11 +362,46 @@
 							text-underline-offset: 4px !important;
 							text-decoration-thickness: 2px !important;
 						}
+						.law-article-icon {
+							margin-right: 0.1em !important;
+							margin-left: 0.15em !important;
+							position: relative; top: 0.15em;
+						}
+						.law-article-icon path {
+							fill: #5e709e !important;
+						}
+						.law-article-link:hover .law-article-icon path {
+							fill: #2f406a !important;
+						}
+						.law-article-link {
+							color: #000000;
+							text-decoration: underline;
+							text-decoration-color: #ccd3e7 !important;
+							text-decoration-thickness: 0.2rem !important;
+							text-decoration-style: solid !important;
+						}
+						.law-article-link:hover {
+							color: #2f406a;
+							text-decoration-color: #2f406a !important;
+							text-decoration-thickness: 0.1rem !important;
+						}
 
 
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
       `
+
+			// Style les liens qui ouvrent la vue Article
+			styleLawArticleLinks(shadow)
+
+			/* Ajoute l'icône svg en amont du lien et à l'intérieur */
+			shadow.querySelectorAll("a.law-article-link").forEach((link) => {
+				link.insertAdjacentHTML(
+					"afterbegin",
+					`<svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg>`,
+				)
+			})
+
 			// Pour transformer les tables des exposés des motifs en div
 			const tables = shadow.querySelectorAll("table")
 

@@ -122,7 +122,7 @@
 			>
 		{/if}
 	{:else}
-		<div class="flex h-full w-full flex-col justify-center">
+		<div class="flex h-screen w-full flex-col justify-center">
 			<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
 			></iconify-icon>
 			<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
