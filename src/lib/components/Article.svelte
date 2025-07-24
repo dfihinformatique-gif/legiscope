@@ -28,6 +28,25 @@
 			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
 		}
 	})
+
+	let articleVersion = $derived(() => {
+		if (!articleJson?.VERSIONS?.VERSION) return undefined
+
+		const version = articleJson.VERSIONS.VERSION.find(
+			(v) => v.LIEN_ART?.["@etat"] === "VIGUEUR",
+		)
+
+		return version ?? articleJson.VERSIONS.VERSION[0]
+	})
+
+	function formatDateFr(dateStr: string): string {
+		const date = new Date(dateStr)
+		return date.toLocaleDateString("fr-FR", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		})
+	}
 </script>
 
 <div
@@ -62,11 +81,14 @@
 			</div>
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
-			<div
-				class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-lg italic"
-			>
-				Version en vigueur depuis le XXX XXXX
-			</div>
+			{#if articleVersion()?.LIEN_ART?.["@debut"]}
+				<div
+					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
+				>
+					Version en vigueur depuis le
+					{formatDateFr(articleVersion().LIEN_ART["@debut"])}
+				</div>
+			{/if}
 			<div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
 					>Discussions parlementaires</a
