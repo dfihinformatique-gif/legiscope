@@ -20,15 +20,15 @@
 
 	// let shouldResetLawScroll = $state(false)
 
-	// $effect(() => {
-	// 	if (shared.activePanelMobile === "law" && lawContainer !== undefined) {
-	// 		requestAnimationFrame(() => {
-	// 			if (shouldResetLawScroll) {
-	// 				lawContainer.scrollTo({ top: 0, behavior: "auto" })
-	// 				shouldResetLawScroll = false
-	// 			}
-	// 		})
-	// 	}
+	$effect(() => {
+		if (shared.activePanelMobile === "law" && lawContainer !== undefined) {
+			// requestAnimationFrame(() => {
+			// 	if (shouldResetLawScroll) {
+			lawContainer.scrollTo({ top: 0, behavior: "auto" })
+			// shouldResetLawScroll = false
+		}
+	})
+	// }
 	// })
 
 	// Permet d'afficher l'article dans la vue law quand on clique sur un lien depuis la bill
