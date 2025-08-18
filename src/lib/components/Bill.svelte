@@ -262,9 +262,9 @@
 					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
 						.split(";")
-						.map((rule) => rule.trim())
+						.map((rule: string) => rule.trim())
 						.filter(
-							(rule) =>
+							(rule: string) =>
 								rule &&
 								!/^margin(\-|$)/i.test(rule) &&
 								!/^padding(\-|$)/i.test(rule),
@@ -289,12 +289,14 @@
 				})
 
 			// Style les liens qui ouvrent la vue article à droite
-			const styleLawArticleLinks = (root: ShadowRoot | HTMLElement) => {
-				root.querySelectorAll('a[href*="?lawArticle="]').forEach((link) => {
-					if (!link.href.includes("#")) {
-						link.classList.add("law-article-link")
-					}
-				})
+			const styleLawArticleLinks = (root: ShadowRoot) => {
+				root
+					.querySelectorAll<HTMLAnchorElement>('a[href*="?lawArticle="]')
+					.forEach((link) => {
+						if (!link.href.includes("#")) {
+							link.classList.add("law-article-link")
+						}
+					})
 			}
 			shadow.innerHTML = `
 				<style>
