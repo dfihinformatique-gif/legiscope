@@ -24,7 +24,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 
 		const htmlWithLinks = html.replace(
 			/<a href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
-			(match, p1, p2) => {
+			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
 				return `<a href='${url.origin}/pjl/${pjl}?lawArticle=${lawArticle}'>${p2}</a>`
 			},
