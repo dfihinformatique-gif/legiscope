@@ -33,6 +33,7 @@
 
 	// Permet d'afficher l'article dans la vue law quand on clique sur un lien depuis la bill
 	$effect(() => {
+		page.url
 		if (lawArticle) {
 			isFetchingArticle = true
 			fetch(`/api/article/${lawArticle}`)
