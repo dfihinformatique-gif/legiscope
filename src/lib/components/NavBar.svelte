@@ -39,7 +39,7 @@
 				class:bg-blue-200={$showBillDesktop}
 				class:bg-white={!$showBillDesktop}
 				class:font-bold={$showBillDesktop}
-				on:click={toggleBill}
+				onclick={toggleBill}
 			>
 				<iconify-icon
 					class="mr-1 align-[-0.3rem] text-2xl"
@@ -54,7 +54,7 @@
 				class="cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150"
 				class:bg-blue-200={$showLawDesktop}
 				class:bg-white={!$showLawDesktop}
-				on:click={toggleLaw}
+				onclick={toggleLaw}
 			>
 				<iconify-icon
 					class="mr-1 align-[-0.3rem] text-2xl"
@@ -79,7 +79,7 @@
 				class:!bg-neutral-200={$activePanelMobile === "law"}
 				class:hover:font-bold={$activePanelMobile === "law"}
 				class:hover:!border-black={$activePanelMobile === "law"}
-				on:click={() => activePanelMobile.set("bill")}
+				onclick={() => activePanelMobile.set("bill")}
 			>
 				Projet de loi
 			</button>
@@ -94,7 +94,7 @@
 				class:hover:bg-white={$activePanelMobile === "bill"}
 				class:hover:font-bold={$activePanelMobile === "bill"}
 				class:hover:!border-black={$activePanelMobile === "bill"}
-				on:click={() => activePanelMobile.set("law")}
+				onclick={() => activePanelMobile.set("law")}
 			>
 				Loi
 			</button>
