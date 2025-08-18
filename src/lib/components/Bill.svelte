@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
-	import { showLawDesktop } from "$lib/navStore"
+	import { shared } from "$lib/shared.svelte"
 	interface Props {
 		pjlHTML: string | undefined
 	}
@@ -528,6 +528,6 @@
 	<div
 		bind:this={container}
 		class="w-full flex-1 overflow-auto"
-		class:md:p-10={!$showLawDesktop}
+		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>

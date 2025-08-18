@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { showBillDesktop } from "$lib/navStore"
+	import { shared } from "$lib/shared.svelte"
 	import type { LegiArticle } from "@tricoteuses/legifrance"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
@@ -51,7 +51,7 @@
 
 <div
 	class="mx-3 mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 text-justify shadow-md md:mx-6"
-	class:md:p-16={!$showBillDesktop}
+	class:md:p-16={!shared.showBillDesktop}
 >
 	{#if articleJson}
 		<!--Sommaire-->

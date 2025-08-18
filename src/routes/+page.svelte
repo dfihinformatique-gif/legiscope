@@ -1,19 +1,14 @@
 <script lang="ts">
-	import {
-		activePanelMobile,
-		isMobilePhone,
-		showBillDesktop,
-		showLawDesktop,
-	} from "$lib/navStore"
+	import { shared } from "$lib/shared.svelte"
 </script>
 
-{#if !$isMobilePhone}
+{#if !shared.isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 		<div
 			class={`z-10 origin-right overflow-y-auto shadow-xl transition-all duration-300 ${
-				$showBillDesktop && $showLawDesktop
+				shared.showBillDesktop && shared.showLawDesktop
 					? "w-1/2"
-					: $showBillDesktop
+					: shared.showBillDesktop
 						? "w-full"
 						: "pointer-events-none w-0 opacity-0"
 			}`}
@@ -23,9 +18,9 @@
 
 		<div
 			class={`overflow-y-auto bg-blue-100 transition-all duration-300 ${
-				$showLawDesktop && $showBillDesktop
+				shared.showLawDesktop && shared.showBillDesktop
 					? "w-1/2"
-					: $showLawDesktop
+					: shared.showLawDesktop
 						? "w-full"
 						: "pointer-events-none w-0 opacity-0"
 			}`}
@@ -35,11 +30,11 @@
 	</div>
 {:else}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
-		{#if $activePanelMobile === "bill"}
+		{#if shared.activePanelMobile === "bill"}
 			<div class="z-10 h-screen w-full overflow-y-auto shadow-md">
 				Choisir un projet de loi
 			</div>
-		{:else if $activePanelMobile === "law"}
+		{:else if shared.activePanelMobile === "law"}
 			<div class="h-screen w-full overflow-y-auto bg-blue-100">&#x3C;-----</div>
 		{/if}
 	</div>
