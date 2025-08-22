@@ -39,5 +39,12 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"tailwindCSS.experimental.configFile": "src/app.css"
+	"tailwindCSS.experimental.configFile": "src/app.css",
+	"tailwindCSS.files.exclude": [
+		"**/.git/**",
+		"**/node_modules/**",
+		"**/.hg/**",
+		"**/.svn/**",
+		"**/static/**"
+	]
 }

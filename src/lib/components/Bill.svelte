@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
+	import { shared } from "$lib/shared.svelte"
 	interface Props {
 		pjlHTML: string | undefined
 	}
@@ -8,34 +9,21 @@
 	let { pjlHTML }: Props = $props()
 	let resizeObserver: ResizeObserver
 
-	const baseWidth = 800
-
 	const adjustSizes = (shadowRoot: ShadowRoot) => {
 		if (!shadowRoot) return
 
-		const currentWidth = shadowRoot.host.clientWidth
-		const scaleFactor = Math.min(1.5, currentWidth / baseWidth) // Limite l'agrandissement
-
-		// Applique le facteur d'échelle
-		const body = shadowRoot.querySelector("body")
-		if (body) {
-			body.style.fontSize = `${scaleFactor * 100}%`
-			body.style.width = `${baseWidth}px` // Maintient la largeur de référence
-		}
-
-		// Ajuste les images
+		// Ajuste les images au max 100% de leur conteneur
 		shadowRoot.querySelectorAll("img").forEach((img) => {
-			const originalWidth = parseInt(
-				img.dataset.originalWidth || img.getAttribute("width") || "0",
-			)
-			if (originalWidth) {
-				const newWidth = originalWidth * scaleFactor
-				img.style.width = `${newWidth}px`
-				img.style.height = "auto"
-				img.style.maxWidth = "none"
-				img.style.display = "block"
-				img.style.margin = "0 auto"
-			}
+			// Supprime les dimensions HTML (évite conflits avec CSS)
+			img.removeAttribute("width")
+			img.removeAttribute("height")
+
+			// Style CSS pour un comportement fluide et centré
+			img.style.display = "block"
+			img.style.margin = "0 auto"
+			img.style.height = "auto"
+			img.style.maxWidth = "100%" // Ne dépasse jamais le conteneur
+			// Pas de width forcée : l’image gardera sa taille naturelle si plus petite
 		})
 	}
 
@@ -49,50 +37,448 @@
 		}
 	}
 
+	// Pour supprimer les éléments vides (pas de texte ni d'enfants), sauf s'ils sont explicitement exclus (comme <img>, <iframe>, etc.) ou si il s'agit d'éléments à l'intérieur des tableaux
+
+	const removeEmptyElements = (
+		root: ShadowRoot | HTMLElement,
+		excludedTags: string[] = [
+			"img",
+			"iframe",
+			"video",
+			"audio",
+			"svg",
+			"canvas",
+			"input",
+			"button",
+			"hr",
+			"path",
+		],
+	) => {
+		const elements = root.querySelectorAll("*")
+
+		elements.forEach((el) => {
+			const tag = el.tagName.toLowerCase()
+
+			// Ne jamais supprimer les balises exclues
+			if (excludedTags.includes(tag)) return
+
+			// Ne pas supprimer les éléments contenus dans un tableau
+			if (el.closest("table")) return
+
+			const hasChildren = el.children.length > 0
+			const hasText = el.textContent?.trim().length > 0
+
+			if (!hasChildren && !hasText) {
+				el.remove()
+			}
+		})
+	}
+
+	// Pour supprimer la div de pied de page ou en-tête indiquant Projet de loi de finances 1
+	const removeProjetDeLoiFooters = (root: ShadowRoot | HTMLElement) => {
+		const isLikelyFooter = (text: string | null | undefined) => {
+			if (!text) return false
+			const cleaned = text.toLowerCase().replace(/\s+/g, " ").trim()
+
+			/* Contient "projet de loi de finances" */
+			if (!cleaned.includes("projet de loi de finances")) return false
+
+			/* Contient un numéro isolé ou en fin */
+			const hasPageNumber = /\b\d{1,3}\b/.test(cleaned)
+			if (!hasPageNumber) return false
+
+			/* Doit être court (ex : max 15 mots) */
+			const wordCount = cleaned.split(/\s+/).length
+			if (wordCount > 15) return false
+
+			return true
+		}
+
+		root.querySelectorAll("div, p, table, section, footer").forEach((el) => {
+			/* Ne touche pas aux éléments internes aux tableaux */
+			if (el.closest("table") && el.tagName !== "TABLE") return
+
+			const text = el.textContent
+			if (isLikelyFooter(text)) {
+				el.remove()
+			}
+		})
+	}
+
+	// Pour augmenter la taille de toutes les typos
+
+	const scaleFontSizesWithRemConversion = (
+		root: ShadowRoot | HTMLElement,
+		factor = 1.4,
+		basePx = 16, // 1rem = 16px
+	) => {
+		/* Fonction de conversion px -> rem */
+		const convertPxToRem = (pxValue: number) => {
+			const scaled = pxValue * factor
+			const remValue = scaled / basePx
+			return `${remValue.toFixed(4)}rem`
+		}
+
+		/* 1. Agit sur les Inline styles */
+		const inlineElements = root.querySelectorAll<HTMLElement>(
+			"[style*='font-size']",
+		)
+		inlineElements.forEach((el) => {
+			const style = el.getAttribute("style")
+			if (!style) return
+
+			const updatedStyle = style.replace(
+				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
+				(_, value, unit) => {
+					const num = parseFloat(value)
+					if (unit.toLowerCase() === "px") {
+						return `font-size: ${convertPxToRem(num)};`
+					} else {
+						const scaled = num * factor
+						return `font-size: ${scaled}${unit};`
+					}
+				},
+			)
+
+			el.setAttribute("style", updatedStyle)
+		})
+
+		/* 2. Agit sur la CSS in <style> tags */
+		const styleTags = root.querySelectorAll("style")
+		styleTags.forEach((styleTag) => {
+			const cssText = styleTag.textContent
+			if (!cssText) return
+
+			const updatedCss = cssText.replace(
+				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
+				(_, value, unit) => {
+					const num = parseFloat(value)
+					if (unit.toLowerCase() === "px") {
+						return `font-size: ${convertPxToRem(num)};`
+					} else {
+						const scaled = num * factor
+						return `font-size: ${scaled}${unit};`
+					}
+				},
+			)
+
+			styleTag.textContent = updatedCss
+		})
+	}
+
+	// Pour supprimer les font mises en place (ce qui rend impossible de leur appliquer une autre font) | Toutes les font ne sont pas supprimées au risque de casser la mise en page
+	const removeSpecificFontFamilies = (root: ShadowRoot | HTMLElement) => {
+		/* 1. Supprimer les font-family inline contenant Marianne */
+		root
+			.querySelectorAll<HTMLElement>('[style*="font-family"]')
+			.forEach((el) => {
+				const style = el.getAttribute("style")
+				if (!style) return
+
+				const cleanedStyle = style
+					.split(";")
+					.map((rule) => rule.trim())
+					.filter((rule) => {
+						const match = /^font-family\s*:\s*(.+)$/i.exec(rule)
+						if (!match) return true
+						const value = match[1].toLowerCase()
+						return !(value.includes("marianne") || value.includes("arial"))
+					})
+					.join("; ")
+
+				if (cleanedStyle) {
+					el.setAttribute("style", cleanedStyle)
+				} else {
+					el.removeAttribute("style")
+				}
+			})
+
+		/* 2. Supprimer dans les <style> internes les font-family ciblées */
+		root.querySelectorAll("style").forEach((styleTag) => {
+			if (!styleTag.textContent) return
+
+			styleTag.textContent = styleTag.textContent.replace(
+				/font-family\s*:\s*[^;]*(marianne)[^;]*;/gi,
+				"",
+			)
+		})
+	}
+
+	// Pour éviter que le texte soit justifié (text-align:justify)
+	const disableJustify = (root: ShadowRoot | HTMLElement) => {
+		root.querySelectorAll("*").forEach((el) => {
+			const style = getComputedStyle(el)
+			if (style.textAlign === "justify") {
+				;(el as HTMLElement).style.textAlign = "left" // ou "start"
+			}
+		})
+	}
+
+	// Pour retirer le bleu natif du document et le remplacer par le bleu-gris
+
+	function replaceNonGrayCSSColors(root: HTMLElement | ShadowRoot) {
+		const colorMap: Record<string, string> = {
+			color: "#2f406a",
+			"border-color": "#ced3e0",
+			"border-top-color": "#ced3e0",
+			"border-right-color": "#ced3e0",
+			"border-bottom-color": "#ced3e0",
+			"border-left-color": "#ced3e0",
+			"background-color": "#f9fafb",
+			"outline-color": "#ced3e0",
+		}
+
+		const elements = root.querySelectorAll<HTMLElement>("*")
+
+		elements.forEach((el) => {
+			const computed = getComputedStyle(el)
+
+			for (const [prop, targetColor] of Object.entries(colorMap)) {
+				const value = computed.getPropertyValue(prop)
+				const match = value.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+				if (!match) continue
+
+				const [r, g, b] = match.slice(1).map(Number)
+
+				const isGrayOrBlack = r === g && g === b && r < 255
+				const isWhite = r === 255 && g === 255 && b === 255
+
+				if (isGrayOrBlack) continue // ignore gris/noir
+
+				el.style.setProperty(prop, targetColor, "important")
+			}
+		})
+	}
+
 	$effect(() => {
 		if (!container || !pjlHTML) return
 
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			const processedHTML = pjlHTML.replace(
-				/<img([^>]*)width="([^"]+)"([^>]*)>/g,
-				(match, before, width, after) => {
-					return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
-				},
-			)
+			// Pour nettoyer le fichier HTML du PLF :
+			const cleanedHTML = pjlHTML
+				.replace(/style="([^"]*)"/g, (match, styleContent) => {
+					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
+					const cleanedStyle = styleContent
+						.split(";")
+						.map((rule: string) => rule.trim())
+						.filter(
+							(rule: string) =>
+								rule &&
+								!/^margin(\-|$)/i.test(rule) &&
+								!/^padding(\-|$)/i.test(rule),
+						)
+						.join("; ")
 
-			shadow.innerHTML = `
-        <style>
-          :host {
-            display: block;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            padding: 0 16px;
-          }
-          body {
-            width: ${baseWidth}px;
-            max-width: 100%;
-            margin: 0 auto !important;
-						transform-origin: top center;
-          }
-          img {
-						display: block !important;
-						height: auto !important;
-						margin: 0 auto !important;
+					return cleanedStyle ? `style="${cleanedStyle}"` : ""
+				})
+				// Ajouter un attribut data-original-width aux images en conservant la valeur de width existante
+				.replace(
+					/<img([^>]*)width="([^"]+)"([^>]*)>/g,
+					(match, before, width, after) => {
+						return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
+					},
+				)
+				// Remplacer les <a> qui n'ont pas de href par des <span>
+				.replace(/<a([^>]*?)>(.*?)<\/a>/g, (match, attributes, innerHTML) => {
+					if (!/href\s*=\s*["'][^"']*["']/i.test(attributes)) {
+						return `<span${attributes}>${innerHTML}</span>`
 					}
-					p[style*="text-align:center"] img,
-          p[style*="text-align: center"] img {
-            display: inline-block !important;
-          }
-          .content-wrapper {
-            position: relative;
-            min-height: 100%;
-          }
-        </style>
-        <div class="content-wrapper">${processedHTML}</div>
+					return match
+				})
+
+			// Style les liens qui ouvrent la vue article à droite
+			const styleLawArticleLinks = (root: ShadowRoot) => {
+				root
+					.querySelectorAll<HTMLAnchorElement>('a[href*="?lawArticle="]')
+					.forEach((link) => {
+						if (!link.href.includes("#")) {
+							link.classList.add("law-article-link")
+						}
+					})
+			}
+			shadow.innerHTML = `
+				<style>
+						/* STYLES POUR RENDRE LISIBLE LE HTML */
+
+					 	:host {
+							display: block;
+							width: 96%;
+							height: 100%;
+							overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
+							overflow-x: hidden; /* pas de scroll horizontal */
+						}
+						:host, :host * {
+							line-height: 1.5 !important;  /* Augmente aussi l'interligne */
+						}
+						body {
+							width: 100%; /* prendre toute la largeur */
+							box-sizing: border-box;
+						}
+						img {
+							max-width: 100%; /* images adaptatives */
+							height: auto !important;
+							display: block !important;
+							margin: 0 auto !important;
+						}
+						table {
+							table-layout: auto;
+							width: 100% !important;
+
+						}
+						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
+							overflow-x: auto;
+							width: 100%;
+							margin-top: 2rem !important;
+							margin-bottom: 2rem !important;
+						}
+
+						.table-container table {
+							width: max-content;
+							table-layout: auto;
+						}
+
+						td, th {
+							width: auto !important;
+							word-wrap: break-word !important;
+							overflow-wrap: break-word !important;
+							padding: 0.5rem !important;
+						}
+
+						pre, code {
+							white-space: pre-wrap !important;
+							word-break: break-word !important;
+						}
+						.content-wrapper {
+							position: relative;
+							min-height: 100%;
+							overflow-x: hidden !important;
+						}
+						div[class^="assnatSection"] { /*Retire les marges des sections en ciblant le début de la class */
+							margin: 2rem !important;
+						}
+
+						html, p, div, ol, ul { /* Remplace toutes les marges top et bottom par 1rem pour éviter les grands écarts dans le html */
+							margin-top: 0.5rem !important;
+							margin-bottom: 0.5rem !important;
+						}
+
+						span { /* Ajoute un padding pour éviter que les textes ne soient collés */
+							padding-right: 0.1rem !important;
+							padding-left: 0.1rem !important;
+						}
+
+						.expose-motif {
+							border-left: 2px solid #ccc;
+							padding-left: 1rem;
+						}
+
+						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
+
+
+						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
+							margin-top: 3rem !important;
+						}
+
+						[class^="assnatFPFprojetloiartexte"] { /*Cible les textes des articles TODO a mettre en lora */
+							margin-top: 1rem !important;
+							font-family: "Lora", serif !important;
+						}
+
+						a { /*Crée un style pour mettre en avant les liens au sein du document */
+							text-decoration: underline !important;
+							text-decoration-style: dotted !important;
+							text-decoration-color: #bbbbbb !important;
+							text-underline-offset: 4px !important;
+							text-decoration-thickness: 1px !important;
+						}
+						a:hover,
+						a:focus {
+							text-decoration-style: solid !important;
+							text-decoration-color: black !important;
+							text-underline-offset: 4px !important;
+							text-decoration-thickness: 2px !important;
+						}
+						.law-article-icon {
+							margin-right: 0.1em !important;
+							margin-left: 0.15em !important;
+							position: relative; top: 0.15em;
+						}
+						.law-article-icon path {
+							fill: #5e709e !important;
+						}
+						.law-article-link:hover .law-article-icon path {
+							fill: #2f406a !important;
+						}
+						.law-article-link {
+							color: #000000;
+							text-decoration: underline;
+							text-decoration-color: #ccd3e7 !important;
+							text-decoration-thickness: 0.2rem !important;
+							text-decoration-style: solid !important;
+						}
+						.law-article-link:hover {
+							color: #2f406a;
+							text-decoration-color: #2f406a !important;
+							text-decoration-thickness: 0.1rem !important;
+						}
+
+
+				</style>
+				<div class="content-wrapper">${cleanedHTML}</div>
       `
+
+			// Style les liens qui ouvrent la vue Article
+			styleLawArticleLinks(shadow)
+
+			/* Ajoute l'icône svg en amont du lien et à l'intérieur */
+			shadow.querySelectorAll("a.law-article-link").forEach((link) => {
+				link.insertAdjacentHTML(
+					"afterbegin",
+					`<svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg>`,
+				)
+			})
+
+			replaceNonGrayCSSColors(shadow)
+
+			// Pour transformer les tables des exposés des motifs en div
+			const tables = shadow.querySelectorAll("table")
+
+			tables.forEach((table) => {
+				/* Cherche un <p class="assnatFPFexpogentexte"> dans cette table */
+				if (table.querySelector("p.assnatFPFexpogentexte")) {
+					/* Crée un div pour remplacer la table */
+					const div = document.createElement("div")
+					div.className = "expose-motif"
+
+					/* Récupère tout le texte des paragraphes dans la table */
+					const paragraphs = Array.from(
+						table.querySelectorAll("p.assnatFPFexpogentexte"),
+					)
+					paragraphs.forEach((p) => {
+						/* Clone le paragraphe pour conserver la structure */
+						div.appendChild(p.cloneNode(true))
+					})
+					/* Remplace la table par ce div */
+					table.replaceWith(div)
+				}
+			})
+
+			// Applique les formules qui retirent certains éléments
+			removeEmptyElements(shadow)
+			removeProjetDeLoiFooters(shadow)
+
+			// Supprime la police Marianne
+			removeSpecificFontFamilies(shadow)
+
+			// Applique la formule qui augmente la taille des typos
+			scaleFontSizesWithRemConversion(
+				shadow,
+				1.4,
+				16,
+			) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			disableJustify(shadow)
 
 			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
 			resizeObserver.observe(container)
@@ -110,6 +496,25 @@
 					}
 				}
 			})
+
+			// Supervise le style des tableaux en les mettant dans une div avec une bordure, seulement si il y a plus de 2 cellules, afin d'éviter de toucher aux tables qui contiennent les titres
+			shadow.querySelectorAll("table").forEach((table) => {
+				const cellCount = table.querySelectorAll("td, th").length
+
+				/* Créer le conteneur scrollable */
+				const wrapper = document.createElement("div")
+				wrapper.classList.add("table-container")
+
+				/* Insérer le conteneur autour de la table */
+				table.parentNode?.insertBefore(wrapper, table)
+				wrapper.appendChild(table)
+
+				// Appliquer la bordure si plus de 2 cellules
+				if (cellCount > 2) {
+					table.style.border = "1px solid black"
+					table.style.borderCollapse = "collapse"
+				}
+			})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
@@ -118,7 +523,11 @@
 	})
 </script>
 
-<div class="flex h-full w-full flex-col">
+<div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
 	<BillSummary {pjlHTML} {container} />
-	<div bind:this={container} class="flex-1 overflow-auto"></div>
+	<div
+		bind:this={container}
+		class="w-full flex-1 overflow-auto"
+		class:md:p-10={!shared.showLawDesktop}
+	></div>
 </div>

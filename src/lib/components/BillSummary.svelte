@@ -89,31 +89,45 @@
 	})
 </script>
 
-<div class="sticky top-0 z-10 px-4 py-2 shadow-md">
-	<div class="flex items-center justify-between">
-		<span>{currentTitle}</span>
+<div class="sticky top-0 z-10 px-4 pt-2">
+	<div
+		class="flex h-8 items-center justify-between gap-5 pb-2 xl:h-12"
+		class:border-b-2={!summaryIsOpen}
+		class:border-b={summaryIsOpen}
+		class:shadow-bottom={!summaryIsOpen}
+		class:shadow-bottom-extralight={summaryIsOpen}
+		class:border-black={!summaryIsOpen}
+		class:border-gray-200={summaryIsOpen}
+	>
+		<span class="truncate text-lg tracking-wide">{currentTitle}</span>
 		<button
-			class="flex items-center font-medium text-gray-500 uppercase"
+			class="lx-link-uppercase font-sans text-nowrap text-gray-500 uppercase"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
-				class="mr-1 align-[-0.25rem] text-xl"
-				icon="ri:menu-fold-2-line"
+				class="align-[-0.3rem] text-xl"
+				icon={summaryIsOpen ? "ri:menu-fold-line" : "ri:menu-fold-2-line"}
 			>
 			</iconify-icon>
-			Sommaire
+			{#if summaryIsOpen}Fermer Sommaire{:else}Sommaire{/if}
 		</button>
 	</div>
 	<ul
-		class="overflow-y-auto transition-all duration-300 ease-in-out"
+		class="shadow-bottom overflow-y-auto px-2 transition-all duration-300 ease-in-out lg:px-4 xl:px-10"
+		class:border-b-2={summaryIsOpen}
 		class:max-h-0={!summaryIsOpen}
-		class:max-h-[60vh]={summaryIsOpen}
+		class:max-h-[80vh]={summaryIsOpen}
 	>
+		<h2 class="mt-5 font-serif text-2xl">
+			Projet de loi de finances <span
+				class="font-sans font-light tracking-wider">| Sommaire</span
+			>
+		</h2>
 		{#each summaryItems as item}
-			<li style="padding-left:{item.level * 5}px;">
+			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
 					href={`#${item.id}`}
-					class="block py-1 text-blue-600 hover:underline"
+					class="lx-link-simple block py-1 text-lg text-neutral-700"
 					onclick={() => {
 						if (container !== undefined) {
 							const target = container.shadowRoot?.getElementById(item.id)

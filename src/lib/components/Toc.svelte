@@ -11,8 +11,9 @@
 		lienSectionTA: LegiSectionTaLienSectionTa | undefined
 		init: boolean
 		open: boolean
+		lastTMText?: string
 	}
-	let { articleJson, lienSectionTA, init, open }: Props = $props()
+	let { articleJson, lienSectionTA, init, open, lastTMText }: Props = $props()
 	let titreTM = $state("")
 	let structTA: LegiSectionTaLienSectionTa[] | undefined = $state(undefined)
 
@@ -75,24 +76,61 @@
 	}
 
 	console.log(init)
+
+	console.log("Comparaison TM:", {
+		lastTMText,
+		titreTM,
+		égal: lastTMText === titreTM,
+	})
 </script>
 
-<details style="list-style: none;" bind:open>
-	<summary>
-		{titreTM}
-	</summary>
-	{#if structTA && open}
-		<ul class="translate-1">
-			{#each structTA as nextLienSectionTA}
-				<li>
+<button
+	class="text-le-gris-dispositif-dark lx-link-text my-0.5 -ml-1 cursor-pointer text-left xl:text-lg"
+	class:text-le-gris-dispositif-dark={lastTMText !== titreTM}
+	class:text-black={lastTMText === titreTM}
+	class:bg-white={lastTMText === titreTM}
+	class:rounded-sm={lastTMText === titreTM}
+	class:p-2={lastTMText === titreTM}
+	class:mr-4={lastTMText === titreTM}
+	class:font-serif={lastTMText === titreTM}
+	class:font-bold={lastTMText === titreTM}
+	onclick={() => {
+		open = !open
+	}}
+	>{#if structTA}
+		<iconify-icon
+			class="align-[-0.2rem] text-lg no-underline"
+			icon={open ? "ri:checkbox-indeterminate-fill" : "ri:add-box-fill"}
+		></iconify-icon>
+	{/if}
+	<span>{titreTM}</span>
+</button>
+{#if structTA && open}
+	<ul class="translate-1">
+		{#each structTA as nextLienSectionTA}
+			{#if lastTMText === titreTM}
+				<li
+					class="border-le-gris-dispositif-light border-l py-1 pl-3"
+				>
 					<Toc
 						{articleJson}
 						lienSectionTA={nextLienSectionTA}
 						{init}
+						{lastTMText}
 						open={allContextTM.includes(nextLienSectionTA?.["@id"]) && init}
 					/>
 				</li>
-			{/each}
-		</ul>
-	{/if}
-</details>
+			{:else}
+				<li class="border-le-gris-dispositif-light border-l py-1 pl-3">
+					<Toc
+						{articleJson}
+						lienSectionTA={nextLienSectionTA}
+						{init}
+						{lastTMText}
+						open={allContextTM.includes(nextLienSectionTA?.["@id"]) && init}
+					/>
+				</li>
+			{/if}
+		{/each}
+	</ul>
+{/if}
