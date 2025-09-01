@@ -36,7 +36,8 @@
 		page.url
 		if (lawArticle) {
 			isFetchingArticle = true
-			fetch(`/api/article/${lawArticle}`)
+			const todayIso = new Date().toISOString().split("T")[0]
+			fetch(`/api/article/${lawArticle}/${todayIso}`)
 				.then((res) => (res.ok ? res.json() : null))
 				.then((data) => {
 					isFetchingArticle = false
@@ -84,7 +85,7 @@
 			{#if isFetchingArticle}
 				<SkeletonArticleLoader />
 			{:else if articleJson !== undefined}
-				<Article {articleJson}></Article>
+				<Article articleFromDb={articleJson}></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
@@ -129,7 +130,7 @@
 					<SkeletonArticleLoader />
 				</div>
 			{:else if articleJson !== undefined}
-				<Article {articleJson}></Article>
+				<Article articleFromDb={articleJson}></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"

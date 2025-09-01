@@ -1,42 +1,29 @@
 <script lang="ts">
 	import { shared } from "$lib/shared.svelte"
-	import type { LegiArticle } from "@tricoteuses/legifrance"
+	// import type { LegiArticle } from "@tricoteuses/legifrance"
+	import type { Legiarti } from "$lib/db_data_types"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
-		articleJson: LegiArticle
+		articleFromDb: Legiarti
 	}
-	let { articleJson }: Props = $props()
+	let { articleFromDb }: Props = $props()
 	let articleTextcontent: String | undefined = $derived(
-		articleJson ? articleJson.BLOC_TEXTUEL?.CONTENU : undefined,
+		articleFromDb ? (articleFromDb.bloc_textuel ?? undefined) : undefined,
 	)
 	let articleNum: String | undefined = $derived(
-		articleJson ? articleJson.META?.META_SPEC?.META_ARTICLE?.NUM : undefined,
+		articleFromDb ? (articleFromDb.num ?? undefined) : undefined,
 	)
 	let contextTextTitle = $derived.by(() => {
-		if (articleJson === undefined) {
+		if (articleFromDb === undefined) {
 			return undefined
 		}
-		if (articleJson.CONTEXTE.TEXTE.TITRE_TXT.length === 1) {
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		} else {
-			console.log(
-				"Warning : context text has different titles, the first one is selected, but it should be refined :",
-				{ TITRE_TXT: articleJson.CONTEXTE.TEXTE.TITRE_TXT },
-			)
-			//TODO refine choice of title if many
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		}
+		//TODO refine choice of title if many
+		return "Le titre du text - TDB"
 	})
 
 	let articleVersion = $derived(() => {
-		if (!articleJson?.VERSIONS?.VERSION) return undefined
-
-		const version = articleJson.VERSIONS.VERSION.find(
-			(v) => v.LIEN_ART?.["@etat"] === "VIGUEUR",
-		)
-
-		return version ?? articleJson.VERSIONS.VERSION[0]
+		return "Version - TDB"
 	})
 
 	function formatDateFr(dateStr: string): string {
@@ -53,9 +40,9 @@
 	class="mx-3 mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
-	{#if articleJson}
+	{#if articleFromDb}
 		<!--Sommaire-->
-		<ArticleSummary {articleJson}></ArticleSummary>
+		<ArticleSummary articleJson={articleFromDb}></ArticleSummary>
 
 		<!--En-tête-->
 		<div
