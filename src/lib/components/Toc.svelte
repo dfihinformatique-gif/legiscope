@@ -35,8 +35,6 @@
 		.then((data) => (tocData = data))
 		.catch(() => (tocData = undefined))
 
-	$inspect({ tocData })
-
 	const TocItemRecursive = ({
 		item,
 		allTocItems,
