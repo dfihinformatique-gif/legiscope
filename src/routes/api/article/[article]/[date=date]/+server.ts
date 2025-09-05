@@ -25,6 +25,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	const dbConnection = await sql.reserve()
 	let articleFromDb: Legiarti[] = []
 	if (requestedArticle.startsWith("LEGITEXT")) {
+		output.text = requestedArticle
 		const [firstArticle]: [queryFirstArticle?] =
 			await dbConnection<queryFirstArticle>`
 			with valid_sections as
@@ -69,10 +70,9 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			firstArticle !== undefined &&
 			firstArticle.premier_article_id.startsWith("LEGIARTI")
 		) {
-			const query = `select *
+			articleFromDb = await dbConnection`select *
 				from legiarti
-				where legi_id='${firstArticle.premier_article_id}'`
-			articleFromDb = await dbConnection<Legiarti>(query)
+				where legi_id=${firstArticle.premier_article_id}::text`
 		} else {
 			error(
 				404,
