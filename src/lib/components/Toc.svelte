@@ -9,28 +9,25 @@
 	let { articleFromDb, associatedText }: Props = $props()
 	let tocData: TocData | undefined = $state(undefined)
 
-	function getTopLevelItems(
-		data: TocData | undefined,
-	): TocDataRow[] | undefined {
-		if (!data) {
-			return undefined
-		}
-		return data.filter((item) => item.tri_hierarchique?.length === 4)
-	}
-
-	function getActiveArticleChemin(data: TocData): TocDataRow[] | undefined {
-		if (!data) {
-			return undefined
-		}
-		return data.filter((item) => item.dernier_segment === articleFromDb.legi_id)
-	}
-
 	let topLevelItems = $derived(getTopLevelItems(tocData))
 	let activeArticleChemin = $derived(
 		tocData !== undefined
 			? (getActiveArticleChemin(tocData)?.[0]?.chemin ?? "")
 			: "",
 	)
+
+	// Référence vers l’élément DOM actif
+	let activeEl: HTMLElement | null = $state(null)
+
+	// Effet déclenché dès que le chemin actif change
+	$effect(() => {
+		if (activeEl !== null) {
+			;(activeEl as HTMLElement).scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			})
+		}
+	})
 
 	fetch(`/api/toc/${associatedText}/${shared.pjlDate}`)
 		.then((res) => (res.ok ? res.json() : null))
@@ -82,6 +79,22 @@
 			},
 		}
 	}
+
+	function getTopLevelItems(
+		data: TocData | undefined,
+	): TocDataRow[] | undefined {
+		if (!data) {
+			return undefined
+		}
+		return data.filter((item) => item.tri_hierarchique?.length === 4)
+	}
+
+	function getActiveArticleChemin(data: TocData): TocDataRow[] | undefined {
+		if (!data) {
+			return undefined
+		}
+		return data.filter((item) => item.dernier_segment === articleFromDb.legi_id)
+	}
 </script>
 
 <ul class="translate-1">
@@ -113,7 +126,11 @@
 						: "ri:add-box-fill"}
 				></iconify-icon>
 			{/if}
-			<span>{tocItem.title}</span>
+			{#if item.chemin === activeArticleChemin}
+				<span bind:this={activeEl}>{tocItem.title}</span>
+			{:else}
+				<span>{tocItem.title}</span>
+			{/if}
 		</button>
 
 		{#if tocItem.open && tocItem.children.length > 0}
