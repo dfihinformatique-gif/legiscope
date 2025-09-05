@@ -18,9 +18,7 @@
 		return data.filter((item) => item.tri_hierarchique?.length === 4)
 	}
 
-	function getActiveArticleChemin(
-		data: TocData | undefined,
-	): TocDataRow[] | undefined {
+	function getActiveArticleChemin(data: TocData): TocDataRow[] | undefined {
 		if (!data) {
 			return undefined
 		}
@@ -28,7 +26,11 @@
 	}
 
 	let topLevelItems = $derived(getTopLevelItems(tocData))
-	let activeArticleChemin = $derived(getActiveArticleChemin(tocData)[0].chemin)
+	let activeArticleChemin = $derived(
+		tocData !== undefined
+			? (getActiveArticleChemin(tocData)?.[0]?.chemin ?? "")
+			: "",
+	)
 
 	fetch(`/api/toc/${associatedText}/${shared.pjlDate}`)
 		.then((res) => (res.ok ? res.json() : null))
@@ -47,12 +49,16 @@
 		const isBranchActive = currentActiveChemin.startsWith(item.chemin)
 		let open = $state(isBranchActive)
 
+		const itemPathLevel = item.chemin.split(".").length
 		const children = $derived(
-			allTocItems.filter(
-				(child) =>
-					child.tri_hierarchique.length === item.tri_hierarchique.length + 4 &&
-					child.tri_hierarchique.startsWith(item.tri_hierarchique),
-			),
+			allTocItems.filter((child) => {
+				const isDescendant = child.chemin.startsWith(item.chemin + ".")
+				if (!isDescendant) return false
+
+				const isDirectChild =
+					child.chemin.split(".").length === itemPathLevel + 1
+				return isDirectChild
+			}),
 		)
 
 		const title =
@@ -89,7 +95,7 @@
 {#snippet itemComponent(item: TocDataRow)}
 	{@const tocItem = TocItemRecursive({
 		item: item,
-		allTocItems: tocData,
+		allTocItems: tocData!,
 		currentActiveChemin: activeArticleChemin,
 	})}
 	<li class="border-le-gris-dispositif-light border-l py-1 pl-3">
