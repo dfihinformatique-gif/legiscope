@@ -84,11 +84,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		select distinct subltree(s.chemin, 0,1) as associated_text
 		from scta s
 		where dernier_segment = ${requestedArticle}
-		and '2024-10-10'::date <@ s.parents_valid_period`
+		and ${requestedDate}::date <@ s.parents_valid_period`
 
 		if (associatedText.length === 1) {
 			output.text = associatedText[0].associated_text
-			output.textTitle = associatedText[0].titre ?? associatedText[0].titre_full
 		} else if (associatedText.length === 0) {
 			error(
 				422,
@@ -104,6 +103,80 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		articleFromDb = await dbConnection<JSON>`select *
 				from legiarti
 				where legi_id=${requestedArticle}`
+	} else if (requestedArticle.startsWith("LEGISCTA")) {
+		const associatedText = await dbConnection<JSON>`
+		select distinct subltree(s.chemin, 0,1) as associated_text
+		from scta s
+		where dernier_segment = ${requestedArticle}
+		and ${requestedDate}::date <@ s.parents_valid_period`
+
+		if (associatedText.length === 1) {
+			output.text = associatedText[0].associated_text
+		} else if (associatedText.length === 0) {
+			error(
+				422,
+				`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
+			)
+		} else {
+			error(
+				422,
+				`Many texts are associated to ${requestedArticle} for date ${requestedDate}`,
+			)
+		}
+
+		const [firstArticle]: [queryFirstArticle?] =
+			await dbConnection<queryFirstArticle>`
+			with target_date as (
+					select ${requestedDate}::date as ref_date
+			),
+			valid_articles as (
+					select
+							dernier_segment,
+							tri_hierarchique,
+							1 as priority
+					from scta, target_date
+					where chemin ~ ${"*." + requestedArticle + ".*"}
+					and type_objet = 'art'
+					and ref_date <@ parents_valid_period
+			),
+			invalid_articles as (
+					select distinct on (dernier_segment)
+							dernier_segment,
+							tri_hierarchique,
+							2 as priority
+					from scta, target_date
+					where chemin ~ ${"*." + requestedArticle + ".*"}
+					and type_objet = 'art'
+					and ref_date between date_debut and date_fin
+					and not exists (
+							select 1 from valid_articles va
+							where va.dernier_segment = scta.dernier_segment
+					)
+					order by dernier_segment, date_debut
+			),
+			all_articles as (
+					select * from valid_articles
+					union all
+					select * from invalid_articles
+			)
+			select dernier_segment as premier_article_id
+			from all_articles
+			order by priority, tri_hierarchique
+			limit 1`
+
+		if (
+			firstArticle !== undefined &&
+			firstArticle.premier_article_id.startsWith("LEGIARTI")
+		) {
+			articleFromDb = await dbConnection`select *
+				from legiarti
+				where legi_id=${firstArticle.premier_article_id}::text`
+		} else {
+			error(
+				404,
+				`First article found is not LEGIARTI or first article not found.`,
+			)
+		}
 	}
 
 	const textTitle = await dbConnection<string>`
