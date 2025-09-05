@@ -1,9 +1,53 @@
+import type {
+	DateRange,
+	SctaRow,
+	TocData,
+	TocDataRow,
+} from "$lib/db_data_types"
 import { error, json } from "@sveltejs/kit"
 import type { RequestHandler } from "../$types"
 
-// interface queryDataStructData {
-// 	struct_data: LegiTextelrStructure
-// }
+function parseDateRange(dateRangeStr: string | null): DateRange | null {
+	if (!dateRangeStr) return null
+
+	const rangeRegex = /^([[(])([^,]*),([^\])]*)([\])])$/
+	const match = dateRangeStr.match(rangeRegex)
+
+	if (!match) {
+		console.warn(`Format de daterange invalide: ${dateRangeStr}`)
+		return null
+	}
+
+	const [, startBracket, startDate, endDate, endBracket] = match
+
+	return {
+		start: startDate && startDate.trim() !== "" ? new Date(startDate) : null,
+		end: endDate && endDate.trim() !== "" ? new Date(endDate) : null,
+		startInclusive: startBracket === "[",
+		endInclusive: endBracket === "]",
+	}
+}
+
+function parseTocDataRow(raw: SctaRow): TocDataRow {
+	return {
+		id: raw.id,
+		chemin: raw.chemin,
+		num: raw.num,
+		date_debut: raw.date_debut ? new Date(raw.date_debut) : null,
+		date_fin: raw.date_fin ? new Date(raw.date_fin) : null,
+		titre: raw.titre,
+		etat: raw.etat,
+		url: raw.url,
+		cid: raw.cid,
+		niveau: raw.niveau,
+		origine: raw.origine,
+		type_objet: raw.type_objet,
+		ordinalite: raw.ordinalite,
+		tri_hierarchique: raw.tri_hierarchique,
+		parents_valid_period: parseDateRange(raw.parents_valid_period),
+		dernier_segment: raw.dernier_segment,
+	}
+}
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const { id, date } = params as { id: string; date: string }
@@ -15,20 +59,20 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		case id.startsWith("LEGITEXT"): {
 			const dbConnection = await sql.reserve()
 
-			const tocData = await dbConnection`
+			const tocDataFromDb = await dbConnection`
 			with valid_sections as
 			(
 			select scta1.*
 			from scta scta1
 			where subltree(chemin, 0, 1) = ${id}
-			and date ${date} <@ scta1.parents_valid_period
+			and ${date}::date <@ scta1.parents_valid_period
 			),
 			invalid_sections as
 			(
 			select scta1.*
 			from scta scta1
 			where subltree(chemin, 0, 1) = ${id}
-			and date ${date} between date_debut and date_fin
+			and ${date}::date between date_debut and date_fin
 			and scta1.type_objet ='art'
 			)
 			select *, 0 as invalid_sections
@@ -47,35 +91,38 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			order by tri_hierarchique;`
 			await dbConnection.release()
 
-			if (tocData.length !== 1) {
+			if (tocDataFromDb.length === 0) {
 				return json(undefined)
 			} else {
+				const tocData: TocData = tocDataFromDb.map((row: SctaRow) =>
+					parseTocDataRow(row),
+				)
 				return json(tocData)
 			}
 		}
-		case id.startsWith("LEGISCTA"): {
-			const dbConnection = await sql.reserve()
+		// case id.startsWith("LEGISCTA"): {
+		// 	const dbConnection = await sql.reserve()
 
-			const structDataFromDb: queryDataStructData[] = await dbConnection<JSON>`
-			select jsonb_path_query(data, '$.STRUCTURE_TA') AS struct_data
-			from section_ta
-			where id = ${id}`
-			await dbConnection.release()
+		// 	const structDataFromDb: queryDataStructData[] = await dbConnection<JSON>`
+		// 	select jsonb_path_query(data, '$.STRUCTURE_TA') AS struct_data
+		// 	from section_ta
+		// 	where id = ${id}`
+		// 	await dbConnection.release()
 
-			if (structDataFromDb.length !== 1) {
-				return json(undefined)
-			}
-			const structData = structDataFromDb[0].struct_data.LIEN_SECTION_TA
-			if (structData) {
-				return json(
-					structData.filter(
-						(lienSectionTA) => lienSectionTA["@etat"] === "VIGUEUR",
-					),
-				)
-			} else {
-				return json(undefined)
-			}
-		}
+		// 	if (structDataFromDb.length !== 1) {
+		// 		return json(undefined)
+		// 	}
+		// 	const structData = structDataFromDb[0].struct_data.LIEN_SECTION_TA
+		// 	if (structData) {
+		// 		return json(
+		// 			structData.filter(
+		// 				(lienSectionTA) => lienSectionTA["@etat"] === "VIGUEUR",
+		// 			),
+		// 		)
+		// 	} else {
+		// 		return json(undefined)
+		// 	}
+		// }
 		default:
 			error(
 				422,

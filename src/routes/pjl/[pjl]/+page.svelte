@@ -3,15 +3,17 @@
 	import Article from "$lib/components/Article.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
+	import type { Legiarti } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
-	import type { LegiArticle } from "@tricoteuses/legifrance"
 	import type { PageProps } from "./$types"
 
 	let isFetchingArticle = $state(false)
 
 	let { data }: PageProps = $props()
 
-	let articleJson: LegiArticle | undefined = $state(undefined)
+	let articleFromDb: Legiarti | undefined = $state(undefined)
+	let associatedText: string = $state("")
+	let associatedTextTitle: string = $state("")
 	let lawArticle = $derived(page.url.searchParams.get("lawArticle") || "")
 	let pjlHTML = $state(data.pjlHTML)
 
@@ -36,12 +38,15 @@
 		page.url
 		if (lawArticle) {
 			isFetchingArticle = true
-			const todayIso = new Date().toISOString().split("T")[0]
-			fetch(`/api/article/${lawArticle}/${todayIso}`)
+			// const todayIso = new Date().toISOString().split("T")[0]
+			fetch(`/api/article/${lawArticle}/${shared.pjlDate}`)
 				.then((res) => (res.ok ? res.json() : null))
 				.then((data) => {
+					console.log({ data })
 					isFetchingArticle = false
-					articleJson = data
+					articleFromDb = data.article
+					associatedText = data.text
+					associatedTextTitle = data.textTitle ?? ""
 					if (shared.isMobilePhone) {
 						// Mobile : Change de vue vers law et reset le scroll
 						// shouldResetLawScroll = true
@@ -54,7 +59,7 @@
 				})
 				.catch(() => (lawArticle = ""))
 		} else {
-			articleJson = undefined
+			articleFromDb = undefined
 		}
 	})
 </script>
@@ -84,8 +89,13 @@
 		>
 			{#if isFetchingArticle}
 				<SkeletonArticleLoader />
-			{:else if articleJson !== undefined}
-				<Article articleFromDb={articleJson}></Article>
+			{:else if articleFromDb !== undefined}
+				<Article
+					{articleFromDb}
+					pjlDate={shared.pjlDate}
+					{associatedText}
+					{associatedTextTitle}
+				></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
@@ -129,8 +139,13 @@
 				>
 					<SkeletonArticleLoader />
 				</div>
-			{:else if articleJson !== undefined}
-				<Article articleFromDb={articleJson}></Article>
+			{:else if articleFromDb !== undefined}
+				<Article
+					{articleFromDb}
+					pjlDate={shared.pjlDate}
+					{associatedText}
+					{associatedTextTitle}
+				></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"

@@ -13,8 +13,17 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		date: string
 	}
 	const { sql } = locals
+	const output: {
+		article: Legiarti | undefined
+		text: string | undefined
+		textTitle: string | undefined
+	} = {
+		article: undefined,
+		text: undefined,
+		textTitle: undefined,
+	}
 	const dbConnection = await sql.reserve()
-	let articleTxtFromDb: Legiarti[] = []
+	let articleFromDb: Legiarti[] = []
 	if (requestedArticle.startsWith("LEGITEXT")) {
 		const [firstArticle]: [queryFirstArticle?] =
 			await dbConnection<queryFirstArticle>`
@@ -60,10 +69,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			firstArticle !== undefined &&
 			firstArticle.premier_article_id.startsWith("LEGIARTI")
 		) {
-			articleTxtFromDb = await dbConnection<Legiarti>`
-				select *
+			const query = `select *
 				from legiarti
-				where legi_id=${firstArticle?.premier_article_id}`
+				where legi_id='${firstArticle.premier_article_id}'`
+			articleFromDb = await dbConnection<Legiarti>(query)
 		} else {
 			error(
 				404,
@@ -71,19 +80,44 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			)
 		}
 	} else if (requestedArticle.startsWith("LEGIARTI")) {
-		// articleTxtFromDb = await dbConnection<JSON>`
-		// select data
-		// from article
-		// where id=${requestedArticle}`
-		console.log("TOreDO")
+		const associatedText = await dbConnection<JSON>`
+		select distinct subltree(s.chemin, 0,1) as associated_text
+		from scta s
+		where dernier_segment = ${requestedArticle}
+		and '2024-10-10'::date <@ s.parents_valid_period`
+
+		if (associatedText.length === 1) {
+			output.text = associatedText[0].associated_text
+			output.textTitle = associatedText[0].titre ?? associatedText[0].titre_full
+		} else if (associatedText.length === 0) {
+			error(
+				422,
+				`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
+			)
+		} else {
+			error(
+				422,
+				`Many texts are associated to ${requestedArticle} for date ${requestedDate}`,
+			)
+		}
+
+		articleFromDb = await dbConnection<JSON>`select *
+				from legiarti
+				where legi_id=${requestedArticle}`
 	}
+
+	const textTitle = await dbConnection<string>`
+	select coalesce(titre, titre_full) as titre from legitext
+	where legi_id = ${output.text}
+	`
+	output.textTitle = textTitle[0].titre
 
 	dbConnection.release()
 
-	if (articleTxtFromDb.length === 1) {
-		const data = articleTxtFromDb[0]
-		return json(data)
-	} else if (articleTxtFromDb.length === 0) {
+	if (articleFromDb.length === 1) {
+		output.article = articleFromDb[0]
+		return json(output)
+	} else if (articleFromDb.length === 0) {
 		error(404, `Article not found`)
 	} else {
 		error(422, `Error : article ID refers to multiple articles`)

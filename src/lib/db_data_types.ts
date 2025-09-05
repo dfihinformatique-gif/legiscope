@@ -10,3 +10,49 @@ export type Legiarti = {
 	nota: string | null
 	etat: number | null
 }
+
+export interface DateRange {
+	start: Date | null
+	end: Date | null
+	startInclusive: boolean // true si [ (inclus), false si ( (exclus)
+	endInclusive: boolean // true si ] (inclus), false si ) (exclus)
+}
+
+export interface SctaRow {
+	id: bigint
+	chemin: string
+	num: string | null
+	date_debut: Date | null
+	date_fin: Date | null
+	titre: string | null
+	etat: number | null
+	url: string | null
+	cid: string | null
+	niveau: number | null
+	origine: string | null
+	type_objet: "scta" | "art"
+	ordinalite: number | null
+	tri_hierarchique: string | null
+	parents_valid_period: string | null
+	dernier_segment: string | null
+}
+
+export interface TocDataRow {
+	id: bigint
+	chemin: string
+	num: string | null
+	date_debut: Date | null
+	date_fin: Date | null
+	titre: string | null
+	etat: number | null
+	url: string | null
+	cid: string | null
+	niveau: number | null
+	origine: string | null
+	type_objet: "art" | "scta"
+	ordinalite: number | null
+	tri_hierarchique: string | null
+	parents_valid_period: DateRange | null
+	dernier_segment: string | null
+}
+export type TocData = TocDataRow[]

@@ -1,30 +1,24 @@
 <script lang="ts">
-	import { shared } from "$lib/shared.svelte"
-	// import type { LegiArticle } from "@tricoteuses/legifrance"
 	import type { Legiarti } from "$lib/db_data_types"
+	import { shared } from "$lib/shared.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
 		articleFromDb: Legiarti
+		pjlDate: string
+		associatedText: string
+		associatedTextTitle: string
 	}
-	let { articleFromDb }: Props = $props()
-	let articleTextcontent: String | undefined = $derived(
-		articleFromDb ? (articleFromDb.bloc_textuel ?? undefined) : undefined,
-	)
-	let articleNum: String | undefined = $derived(
-		articleFromDb ? (articleFromDb.num ?? undefined) : undefined,
-	)
-	let contextTextTitle = $derived.by(() => {
-		if (articleFromDb === undefined) {
-			return undefined
-		}
-		//TODO refine choice of title if many
-		return "Le titre du text - TDB"
-	})
+	const { articleFromDb, pjlDate, associatedText, associatedTextTitle }: Props =
+		$props()
 
-	let articleVersion = $derived(() => {
-		return "Version - TDB"
-	})
+	// let contextTextTitle = $derived.by(() => {
+	// 	if (articleFromDb === undefined) {
+	// 		return undefined
+	// 	}
+	// 	//TODO refine choice of title if many
+	// 	return "Le titre du text - TDB"
+	// })
 
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
@@ -42,7 +36,12 @@
 >
 	{#if articleFromDb}
 		<!--Sommaire-->
-		<ArticleSummary articleJson={articleFromDb}></ArticleSummary>
+		<ArticleSummary
+			{articleFromDb}
+			{pjlDate}
+			{associatedText}
+			{associatedTextTitle}
+		></ArticleSummary>
 
 		<!--En-tête-->
 		<div
@@ -57,9 +56,9 @@
 					icon="ri:book-marked-fill"
 				>
 				</iconify-icon>
-				{#if articleNum !== undefined}
-					<span class="text-nowrap">Article {articleNum}</span>
-				{/if} · <span class="">{contextTextTitle}</span>
+				{#if articleFromDb.num !== undefined}
+					<span class="text-nowrap">Article {articleFromDb.num}</span>
+				{/if} · <span class="">{associatedTextTitle}</span>
 			</div>
 			<div class="md:mt-1">
 				<a class="lx-link-simple text-nowrap text-gray-500" href="TODO"
@@ -68,24 +67,21 @@
 			</div>
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
-			{#if articleVersion()?.LIEN_ART?.["@debut"]}
-				{#if articleVersion().LIEN_ART["@etat"] === "VIGUEUR"}
+			{#if articleFromDb.date_debut}
+				{#if articleFromDb.date_fin !== "2999-01-01"}
 					<div
 						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
 					>
 						Version en vigueur depuis le {formatDateFr(
-							articleVersion().LIEN_ART["@debut"],
+							articleFromDb.date_debut,
 						)}
 					</div>
 				{:else}
 					<div
 						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
 					>
-						Version valable du {formatDateFr(
-							articleVersion().LIEN_ART["@debut"],
-						)}
-						{#if articleVersion().LIEN_ART["@fin"]}
-							au {formatDateFr(articleVersion().LIEN_ART["@fin"])}{/if}
+						Version valable du {formatDateFr(articleFromDb.date_debut)}
+						au {formatDateFr(articleFromDb.date_fin)}
 					</div>
 				{/if}
 			{/if}
@@ -103,9 +99,9 @@
 		</div>
 
 		<!--Article-->
-		{#if articleTextcontent !== undefined}
+		{#if articleFromDb.bloc_textuel !== undefined && articleFromDb.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html articleTextcontent}</span
+				>{@html articleFromDb.bloc_textuel}</span
 			>
 		{/if}
 	{:else}
