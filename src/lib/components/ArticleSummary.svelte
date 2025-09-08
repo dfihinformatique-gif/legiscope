@@ -8,10 +8,8 @@
 		associatedTextTitle: string
 		pjlDate: string
 	}
-	let { articleFromDb, pjlDate, associatedText, associatedTextTitle }: Props =
-		$props()
+	let { articleFromDb, associatedText, associatedTextTitle }: Props = $props()
 	let tocIsOpen = $state(false)
-	let initToc = $state(false)
 </script>
 
 <div
@@ -24,7 +22,6 @@
 		class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
 		onclick={() => {
 			tocIsOpen = !tocIsOpen
-			initToc = tocIsOpen ? true : false
 		}}
 	>
 		<iconify-icon
