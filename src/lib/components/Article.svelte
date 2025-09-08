@@ -12,14 +12,6 @@
 	const { articleFromDb, pjlDate, associatedText, associatedTextTitle }: Props =
 		$props()
 
-	// let contextTextTitle = $derived.by(() => {
-	// 	if (articleFromDb === undefined) {
-	// 		return undefined
-	// 	}
-	// 	//TODO refine choice of title if many
-	// 	return "Le titre du text - TDB"
-	// })
-
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
 		return date.toLocaleDateString("fr-FR", {
