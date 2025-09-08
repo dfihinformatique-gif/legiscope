@@ -289,16 +289,36 @@
 					return match
 				})
 
-			// Style les liens qui ouvrent la vue article à droite
-			const styleLawArticleLinks = (root: ShadowRoot) => {
+			// Nettoie et applique les styles aux liens vers les textes de loi
+			const cleanAndStyleLienTexteExterne = (
+				root: ShadowRoot | HTMLElement,
+			) => {
 				root
 					.querySelectorAll<HTMLAnchorElement>('a[href*="?lawArticle="]')
 					.forEach((link) => {
 						if (!link.href.includes("#")) {
+							link.querySelectorAll("span, p").forEach((el) => {
+								const computed = getComputedStyle(el)
+
+								// Si vertical-align est défini sur le span, on ne récupère pas la font-size car la taille de la typo est celle d'un exposant
+								if (
+									!computed.verticalAlign ||
+									computed.verticalAlign === "baseline"
+								) {
+									const fontSize = computed.fontSize
+									// Dans les autres cas, on récupère la taille pour l'appliquer au lien parent (utile car certains liens héritent d'une taille inadéquate du parent réctifiée dans tous les spans du texte...)
+									link.style.fontSize = fontSize
+								}
+
+								// Remplace le span/p par du texte brut
+								el.replaceWith(document.createTextNode(el.textContent || ""))
+							})
+							// Ajoute la class pour styler le lien
 							link.classList.add("law-article-link")
 						}
 					})
 			}
+
 			shadow.innerHTML = `
 				<style>
 						/* STYLES POUR RENDRE LISIBLE LE HTML */
@@ -431,7 +451,7 @@
       `
 
 			// Style les liens qui ouvrent la vue Article
-			styleLawArticleLinks(shadow)
+			cleanAndStyleLienTexteExterne(shadow)
 
 			/* Ajoute l'icône svg en amont du lien et à l'intérieur */
 			shadow.querySelectorAll("a.law-article-link").forEach((link) => {
