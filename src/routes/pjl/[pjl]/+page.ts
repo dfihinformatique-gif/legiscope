@@ -1,3 +1,4 @@
+import { shared } from "$lib/shared.svelte"
 import type { PageLoad } from "./$types"
 
 export const load: PageLoad = async ({
@@ -19,8 +20,13 @@ export const load: PageLoad = async ({
 			return { pjlHTML: undefined }
 		} else {
 			const pjlHTML = await res.text()
-			return { pjlHTML: pjlHTML }
+			shared.pjlDate = new Date("2024-10-10").toISOString().split("T")[0]
+			return {
+				pjlHTML: pjlHTML,
+			}
 		}
 	}
-	return { pjlHTML: undefined }
+	return {
+		pjlHTML: undefined,
+	}
 }

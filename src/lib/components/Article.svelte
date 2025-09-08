@@ -1,43 +1,24 @@
 <script lang="ts">
+	import type { Legiarti } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
-	import type { LegiArticle } from "@tricoteuses/legifrance"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
-		articleJson: LegiArticle
+		articleFromDb: Legiarti
+		pjlDate: string
+		associatedText: string
+		associatedTextTitle: string
 	}
-	let { articleJson }: Props = $props()
-	let articleTextcontent: String | undefined = $derived(
-		articleJson ? articleJson.BLOC_TEXTUEL?.CONTENU : undefined,
-	)
-	let articleNum: String | undefined = $derived(
-		articleJson ? articleJson.META?.META_SPEC?.META_ARTICLE?.NUM : undefined,
-	)
-	let contextTextTitle = $derived.by(() => {
-		if (articleJson === undefined) {
-			return undefined
-		}
-		if (articleJson.CONTEXTE.TEXTE.TITRE_TXT.length === 1) {
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		} else {
-			console.log(
-				"Warning : context text has different titles, the first one is selected, but it should be refined :",
-				{ TITRE_TXT: articleJson.CONTEXTE.TEXTE.TITRE_TXT },
-			)
-			//TODO refine choice of title if many
-			return articleJson.CONTEXTE.TEXTE.TITRE_TXT[0]["@c_titre_court"]
-		}
-	})
+	const { articleFromDb, pjlDate, associatedText, associatedTextTitle }: Props =
+		$props()
 
-	let articleVersion = $derived(() => {
-		if (!articleJson?.VERSIONS?.VERSION) return undefined
-
-		const version = articleJson.VERSIONS.VERSION.find(
-			(v) => v.LIEN_ART?.["@etat"] === "VIGUEUR",
-		)
-
-		return version ?? articleJson.VERSIONS.VERSION[0]
-	})
+	// let contextTextTitle = $derived.by(() => {
+	// 	if (articleFromDb === undefined) {
+	// 		return undefined
+	// 	}
+	// 	//TODO refine choice of title if many
+	// 	return "Le titre du text - TDB"
+	// })
 
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
@@ -53,9 +34,14 @@
 	class="mx-3 mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
-	{#if articleJson}
+	{#if articleFromDb}
 		<!--Sommaire-->
-		<ArticleSummary {articleJson}></ArticleSummary>
+		<ArticleSummary
+			{articleFromDb}
+			{pjlDate}
+			{associatedText}
+			{associatedTextTitle}
+		></ArticleSummary>
 
 		<!--En-tête-->
 		<div
@@ -70,35 +56,34 @@
 					icon="ri:book-marked-fill"
 				>
 				</iconify-icon>
-				{#if articleNum !== undefined}
-					<span class="text-nowrap">Article {articleNum}</span>
-				{/if} · <span class="">{contextTextTitle}</span>
+				{#if articleFromDb.num !== undefined}
+					<span class="text-nowrap">Article {articleFromDb.num}</span>
+				{/if} · <span class="">{associatedTextTitle}</span>
 			</div>
 			<div class="md:mt-1">
-				<a class="lx-link-simple text-nowrap text-gray-500" href="TODO"
-					>Légifrance XXX</a
+				<a
+					class="lx-link-simple text-nowrap text-gray-500"
+					href="https://www.legifrance.gouv.fr/loda/id/{articleFromDb.legi_id}"
+					>Légifrance {articleFromDb.legi_id}</a
 				>
 			</div>
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
-			{#if articleVersion()?.LIEN_ART?.["@debut"]}
-				{#if articleVersion().LIEN_ART["@etat"] === "VIGUEUR"}
+			{#if articleFromDb.date_debut}
+				{#if articleFromDb.date_fin === "2999-01-01"}
 					<div
 						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
 					>
 						Version en vigueur depuis le {formatDateFr(
-							articleVersion().LIEN_ART["@debut"],
+							articleFromDb.date_debut,
 						)}
 					</div>
 				{:else}
 					<div
 						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
 					>
-						Version valable du {formatDateFr(
-							articleVersion().LIEN_ART["@debut"],
-						)}
-						{#if articleVersion().LIEN_ART["@fin"]}
-							au {formatDateFr(articleVersion().LIEN_ART["@fin"])}{/if}
+						Version valable du {formatDateFr(articleFromDb.date_debut)}
+						au {formatDateFr(articleFromDb.date_fin)}
 					</div>
 				{/if}
 			{/if}
@@ -116,9 +101,9 @@
 		</div>
 
 		<!--Article-->
-		{#if articleTextcontent !== undefined}
+		{#if articleFromDb.bloc_textuel !== undefined && articleFromDb.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html articleTextcontent}</span
+				>{@html articleFromDb.bloc_textuel}</span
 			>
 		{/if}
 	{:else}

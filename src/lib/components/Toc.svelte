@@ -1,136 +1,147 @@
 <script lang="ts">
-	import type {
-		LegiArticle,
-		LegiSectionTaLienSectionTa,
-	} from "@tricoteuses/legifrance"
-
-	import Toc from "./Toc.svelte"
+	import { page } from "$app/state"
+	import type { Legiarti, TocData, TocDataRow } from "$lib/db_data_types"
+	import { shared } from "$lib/shared.svelte"
 
 	interface Props {
-		articleJson: LegiArticle
-		lienSectionTA: LegiSectionTaLienSectionTa | undefined
-		init: boolean
-		open: boolean
-		lastTMText?: string
+		articleFromDb: Legiarti
+		associatedText: string
 	}
-	let { articleJson, lienSectionTA, init, open, lastTMText }: Props = $props()
-	let titreTM = $state("")
-	let structTA: LegiSectionTaLienSectionTa[] | undefined = $state(undefined)
+	let { articleFromDb, associatedText }: Props = $props()
+	let tocData: TocData | undefined = $state(undefined)
 
-	const allContextTM = getAllTmIds(articleJson)
+	let topLevelItems = $derived(getTopLevelItems(tocData))
+	let activeArticleChemin = $derived(
+		tocData !== undefined
+			? (getActiveArticleChemin(tocData)?.[0]?.chemin ?? "")
+			: "",
+	)
 
-	if (init === true && lienSectionTA === undefined) {
-		//Initialization - need to get SCTA struct from Textelr instead of section_ta
-		const legiTextId = articleJson.CONTEXTE.TEXTE["@cid"]
-		if (!legiTextId) {
-			console.error("Cannot get ID of context text from article JSON")
+	let activeEl: HTMLElement | null = $state(null)
+
+	$effect(() => {
+		if (activeEl !== null) {
+			;(activeEl as HTMLElement).scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			})
 		}
-
-		fetch(`/api/toc/${legiTextId}`)
-			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => (structTA = data))
-			.catch(() => (structTA = undefined))
-
-		titreTM = getCurrentContextTitreTxt(articleJson)
-	} else {
-		const legiSCTAid = lienSectionTA?.["@cid"]
-		fetch(`/api/toc/${legiSCTAid}`)
-			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => (structTA = data))
-			.catch(() => (structTA = undefined))
-
-		titreTM = lienSectionTA!["#text"] || "Titre inconnu"
-	}
-
-	function getCurrentContextTitreTxt(article: LegiArticle): string {
-		let titresTxtArray = article.CONTEXTE?.TEXTE?.TITRE_TXT
-
-		const validEntries = titresTxtArray.filter(
-			(entry) =>
-				entry["@debut"] && entry["@fin"] && entry["@debut"] < entry["@fin"],
-		)
-
-		if (validEntries.length === 0) return "Titre inconnu"
-
-		const sortedEntries = [...validEntries].sort((a, b) =>
-			b["@debut"].localeCompare(a["@debut"]),
-		)
-
-		return sortedEntries[0]?.["#text"]
-	}
-
-	function getAllTmIds(article: LegiArticle): string[] {
-		const ids: string[] = []
-		let currentTm = article.CONTEXTE?.TEXTE?.TM
-
-		while (currentTm) {
-			if (currentTm.TITRE_TM) {
-				for (const titre of currentTm.TITRE_TM) {
-					if (titre["@id"]) ids.push(titre["@id"])
-				}
-			}
-			currentTm = currentTm.TM
-		}
-
-		return ids
-	}
-
-	console.log(init)
-
-	console.log("Comparaison TM:", {
-		lastTMText,
-		titreTM,
-		égal: lastTMText === titreTM,
 	})
+
+	fetch(`/api/toc/${associatedText}/${shared.pjlDate}`)
+		.then((res) => (res.ok ? res.json() : null))
+		.then((data) => (tocData = data))
+		.catch(() => (tocData = undefined))
+
+	const TocItemRecursive = ({
+		item,
+		allTocItems,
+		currentActiveChemin,
+	}: {
+		item: TocDataRow
+		allTocItems: TocData
+		currentActiveChemin: string
+	}) => {
+		const isBranchActive = currentActiveChemin.startsWith(item.chemin)
+		let open = $state(isBranchActive)
+
+		const itemPathLevel = item.chemin.split(".").length
+		const children = $derived(
+			allTocItems.filter((child) => {
+				const isDescendant = child.chemin.startsWith(item.chemin + ".")
+				if (!isDescendant) return false
+
+				const isDirectChild =
+					child.chemin.split(".").length === itemPathLevel + 1
+				return isDirectChild
+			}),
+		)
+
+		const title =
+			item.type_objet === "scta" ? item.titre : `Article ${item.num}`
+
+		return {
+			get item() {
+				return item
+			},
+			get open() {
+				return open
+			},
+			set open(value) {
+				open = value
+			},
+			get children() {
+				return children
+			},
+			get title() {
+				return title
+			},
+		}
+	}
+
+	function getTopLevelItems(
+		data: TocData | undefined,
+	): TocDataRow[] | undefined {
+		if (!data) {
+			return undefined
+		}
+		return data.filter((item) => item.tri_hierarchique?.length === 4)
+	}
+
+	function getActiveArticleChemin(data: TocData): TocDataRow[] | undefined {
+		if (!data) {
+			return undefined
+		}
+		return data.filter((item) => item.dernier_segment === articleFromDb.legi_id)
+	}
 </script>
 
-<button
-	class="text-le-gris-dispositif-dark lx-link-text my-0.5 -ml-1 cursor-pointer text-left xl:text-lg"
-	class:text-le-gris-dispositif-dark={lastTMText !== titreTM}
-	class:text-black={lastTMText === titreTM}
-	class:bg-white={lastTMText === titreTM}
-	class:rounded-sm={lastTMText === titreTM}
-	class:p-2={lastTMText === titreTM}
-	class:mr-4={lastTMText === titreTM}
-	class:font-serif={lastTMText === titreTM}
-	class:font-bold={lastTMText === titreTM}
-	onclick={() => {
-		open = !open
-	}}
-	>{#if structTA}
-		<iconify-icon
-			class="align-[-0.2rem] text-lg no-underline"
-			icon={open ? "ri:checkbox-indeterminate-fill" : "ri:add-box-fill"}
-		></iconify-icon>
-	{/if}
-	<span>{titreTM}</span>
-</button>
-{#if structTA && open}
-	<ul class="translate-1">
-		{#each structTA as nextLienSectionTA}
-			{#if lastTMText === titreTM}
-				<li
-					class="border-le-gris-dispositif-light border-l py-1 pl-3"
-				>
-					<Toc
-						{articleJson}
-						lienSectionTA={nextLienSectionTA}
-						{init}
-						{lastTMText}
-						open={allContextTM.includes(nextLienSectionTA?.["@id"]) && init}
-					/>
-				</li>
-			{:else}
-				<li class="border-le-gris-dispositif-light border-l py-1 pl-3">
-					<Toc
-						{articleJson}
-						lienSectionTA={nextLienSectionTA}
-						{init}
-						{lastTMText}
-						open={allContextTM.includes(nextLienSectionTA?.["@id"]) && init}
-					/>
-				</li>
-			{/if}
+<ul class="translate-1">
+	{#if topLevelItems !== undefined}
+		{#each topLevelItems as item}
+			{@render itemComponent(item)}
 		{/each}
-	</ul>
-{/if}
+	{/if}
+</ul>
+
+{#snippet itemComponent(item: TocDataRow)}
+	{@const tocItem = TocItemRecursive({
+		item: item,
+		allTocItems: tocData!,
+		currentActiveChemin: activeArticleChemin,
+	})}
+	<li class="border-le-gris-dispositif-light border-l py-1 pl-3">
+		<button
+			class="text-le-gris-dispositif-dark lx-link-text my-0.5 -ml-1 cursor-pointer text-left xl:text-lg"
+			onclick={() => {
+				tocItem.open = !tocItem.open
+			}}
+		>
+			{#if tocItem.children.length > 0}
+				<iconify-icon
+					class="align-[-0.2rem] text-lg no-underline"
+					icon={tocItem.open
+						? "ri:checkbox-indeterminate-fill"
+						: "ri:add-box-fill"}
+				></iconify-icon>
+			{/if}
+			{#if item.chemin === activeArticleChemin}
+				<span bind:this={activeEl}>{tocItem.title}</span>
+			{:else if item.chemin.includes("LEGIARTI")}
+				<a href="{page.url.pathname}?lawArticle={item.dernier_segment}"
+					>{tocItem.title}</a
+				>
+			{:else}
+				<span>{tocItem.title}</span>
+			{/if}
+		</button>
+
+		{#if tocItem.open && tocItem.children.length > 0}
+			<ul class="translate-1">
+				{#each tocItem.children as child}
+					{@render itemComponent(child)}
+				{/each}
+			</ul>
+		{/if}
+	</li>
+{/snippet}
