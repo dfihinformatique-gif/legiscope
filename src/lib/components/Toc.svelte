@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state"
 	import type { Legiarti, TocData, TocDataRow } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 
@@ -126,6 +127,10 @@
 			{/if}
 			{#if item.chemin === activeArticleChemin}
 				<span bind:this={activeEl}>{tocItem.title}</span>
+			{:else if item.chemin.includes("LEGIARTI")}
+				<a href="{page.url.pathname}?lawArticle={item.dernier_segment}"
+					>{tocItem.title}</a
+				>
 			{:else}
 				<span>{tocItem.title}</span>
 			{/if}
