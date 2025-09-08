@@ -299,21 +299,30 @@
 						if (!link.href.includes("#")) {
 							link.querySelectorAll("span, p").forEach((el) => {
 								const computed = getComputedStyle(el)
+								const vAlign = computed.verticalAlign
 
-								// Si vertical-align est défini sur le span, on ne récupère pas la font-size car la taille de la typo est celle d'un exposant
-								if (
-									!computed.verticalAlign ||
-									computed.verticalAlign === "baseline"
-								) {
+								// Si le span a un style vertical-align baseline ou vide,cela signifie que c’est un texte normal. On applique sa font-size au lien parent pour les cas où le style du texte entier est corrigé par des font-size dans des spans.
+								if (!vAlign || vAlign === "baseline") {
 									const fontSize = computed.fontSize
-									// Dans les autres cas, on récupère la taille pour l'appliquer au lien parent (utile car certains liens héritent d'une taille inadéquate du parent réctifiée dans tous les spans du texte...)
 									link.style.fontSize = fontSize
-								}
 
-								// Remplace le span/p par du texte brut
-								el.replaceWith(document.createTextNode(el.textContent || ""))
+									// Remplacer le span/p par un texte brut
+									el.replaceWith(document.createTextNode(el.textContent || ""))
+								}
+								// Si vertical-align est numérique (ex: 3pt, 2px), le span sert probablement à créer un exposant. On remplace le span par un <sup>.
+								else if (/\d+(px|pt)/.test(vAlign)) {
+									const sup = document.createElement("sup")
+									sup.textContent = el.textContent || ""
+									el.replaceWith(sup)
+									return
+								}
+								// Cas de sécurité : autres spans avec vertical-align non standard, on les remplace par texte brut pour éviter des styles inattendus
+								else {
+									el.replaceWith(document.createTextNode(el.textContent || ""))
+								}
 							})
-							// Ajoute la class pour styler le lien
+
+							// Ajouter la classe pour styler le lien
 							link.classList.add("law-article-link")
 						}
 					})
