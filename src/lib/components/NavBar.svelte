@@ -14,6 +14,9 @@
 				class:font-bold={shared.showBillDesktop}
 				onclick={() => {
 					shared.showBillDesktop = !shared.showBillDesktop
+					if (!shared.showBillDesktop && !shared.showLawDesktop) {
+						shared.showLawDesktop = true
+					}
 				}}
 			>
 				<iconify-icon
@@ -31,6 +34,9 @@
 				class:bg-white={!shared.showLawDesktop}
 				onclick={() => {
 					shared.showLawDesktop = !shared.showLawDesktop
+					if (!shared.showBillDesktop && !shared.showLawDesktop) {
+						shared.showBillDesktop = true
+					}
 				}}
 			>
 				<iconify-icon
