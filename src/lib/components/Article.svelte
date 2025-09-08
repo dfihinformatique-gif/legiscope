@@ -39,7 +39,7 @@
 
 		<!--En-tête-->
 		<div
-			class="mt-2 mb-5 flex flex-col items-start justify-between gap-5 md:flex-row"
+			class="mt-2 mb-5 flex flex-col items-start justify-between gap-x-5 md:flex-row"
 		>
 			<!--Titre-->
 			<div
@@ -54,11 +54,14 @@
 					<span class="text-nowrap">Article {articleFromDb.num}</span>
 				{/if} · <span class="">{associatedTextTitle}</span>
 			</div>
-			<div class="md:mt-1">
+			<div class="flex w-full justify-end md:mt-1 md:w-min">
 				<a
-					class="lx-link-simple text-nowrap text-gray-500"
+					class="lx-link-simple text-right text-nowrap text-gray-500"
 					href="https://www.legifrance.gouv.fr/loda/id/{articleFromDb.legi_id}"
-					>Légifrance {articleFromDb.legi_id}</a
+					>Légifrance<iconify-icon
+						class="ml-0.5 align-[-0.15rem] text-sm"
+						icon="ri:external-link-line"
+					></iconify-icon></a
 				>
 			</div>
 		</div>
@@ -66,7 +69,7 @@
 			{#if articleFromDb.date_debut}
 				{#if articleFromDb.date_fin === "2999-01-01"}
 					<div
-						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
+						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
 					>
 						Version en vigueur depuis le {formatDateFr(
 							articleFromDb.date_debut,
@@ -74,7 +77,7 @@
 					</div>
 				{:else}
 					<div
-						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
+						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
 					>
 						Version valable du {formatDateFr(articleFromDb.date_debut)}
 						au {formatDateFr(articleFromDb.date_fin)}
