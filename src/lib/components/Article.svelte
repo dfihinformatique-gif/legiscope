@@ -61,8 +61,10 @@
 				{/if} · <span class="">{associatedTextTitle}</span>
 			</div>
 			<div class="md:mt-1">
-				<a class="lx-link-simple text-nowrap text-gray-500" href="TODO"
-					>Légifrance XXX</a
+				<a
+					class="lx-link-simple text-nowrap text-gray-500"
+					href="https://www.legifrance.gouv.fr/loda/id/{articleFromDb.legi_id}"
+					>Légifrance {articleFromDb.legi_id}</a
 				>
 			</div>
 		</div>
