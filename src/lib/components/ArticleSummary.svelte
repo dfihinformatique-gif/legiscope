@@ -12,30 +12,6 @@
 		$props()
 	let tocIsOpen = $state(false)
 	let initToc = $state(false)
-
-	// let lastTMText = $derived(getLastTMText(articleJson))
-	// let lastTMText = "lastTmtext - TDB"
-
-	// function getLastTMText(article: LegiArticle): string | undefined {
-	// 	let currentTm = article.CONTEXTE?.TEXTE?.TM
-	// 	while (currentTm?.TM) {
-	// 		currentTm = currentTm.TM
-	// 	}
-	// 	if (!currentTm?.TITRE_TM) return undefined
-
-	// 	const validEntries = currentTm.TITRE_TM.filter(
-	// 		(entry) =>
-	// 			entry["@debut"] && entry["@fin"] && entry["@debut"] < entry["@fin"],
-	// 	)
-
-	// 	if (validEntries.length === 0) return undefined
-
-	// 	const sortedEntries = [...validEntries].sort((a, b) =>
-	// 		b["@debut"].localeCompare(a["@debut"]),
-	// 	)
-
-	// 	return sortedEntries[0]?.["#text"]
-	// }
 </script>
 
 <div
