@@ -70,7 +70,7 @@
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
 			{#if articleFromDb.date_debut}
-				{#if articleFromDb.date_fin !== "2999-01-01"}
+				{#if articleFromDb.date_fin === "2999-01-01"}
 					<div
 						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 font-serif text-base italic"
 					>

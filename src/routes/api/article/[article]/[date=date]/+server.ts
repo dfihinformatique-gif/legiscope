@@ -243,6 +243,12 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	dbConnection.release()
 
 	if (articleFromDb.length === 1) {
+		articleFromDb[0].date_debut = new Date(articleFromDb[0].date_debut)
+			.toISOString()
+			.split("T")[0]
+		articleFromDb[0].date_fin = new Date(articleFromDb[0].date_fin)
+			.toISOString()
+			.split("T")[0]
 		output.article = articleFromDb[0]
 		return json(output)
 	} else if (articleFromDb.length === 0) {
