@@ -14,7 +14,8 @@ function parseDateRange(dateRangeStr: string | null): DateRange | null {
 	const match = dateRangeStr.match(rangeRegex)
 
 	if (!match) {
-		console.warn(`Format de daterange invalide: ${dateRangeStr}`)
+		if (dateRangeStr !== "empty")
+			console.warn(`Format de daterange invalide: ${dateRangeStr}`)
 		return null
 	}
 
@@ -100,33 +101,29 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				return json(tocData)
 			}
 		}
-		// case id.startsWith("LEGISCTA"): {
-		// 	const dbConnection = await sql.reserve()
+		case id.startsWith("JORFTEXT"): {
+			const dbConnection = await sql.reserve()
 
-		// 	const structDataFromDb: queryDataStructData[] = await dbConnection<JSON>`
-		// 	select jsonb_path_query(data, '$.STRUCTURE_TA') AS struct_data
-		// 	from section_ta
-		// 	where id = ${id}`
-		// 	await dbConnection.release()
+			const tocDataFromDb = await dbConnection`
+			select *
+			from scta
+			where subltree(chemin, 0, 1) = ${id}
+			order by tri_hierarchique;`
+			await dbConnection.release()
 
-		// 	if (structDataFromDb.length !== 1) {
-		// 		return json(undefined)
-		// 	}
-		// 	const structData = structDataFromDb[0].struct_data.LIEN_SECTION_TA
-		// 	if (structData) {
-		// 		return json(
-		// 			structData.filter(
-		// 				(lienSectionTA) => lienSectionTA["@etat"] === "VIGUEUR",
-		// 			),
-		// 		)
-		// 	} else {
-		// 		return json(undefined)
-		// 	}
-		// }
+			if (tocDataFromDb.length === 0) {
+				return json(undefined)
+			} else {
+				const tocData: TocData = tocDataFromDb.map((row: SctaRow) =>
+					parseTocDataRow(row),
+				)
+				return json(tocData)
+			}
+		}
 		default:
 			error(
 				422,
-				"Error : dealing with ids other than LEGITEXT or LEGISCTA are not implemented yet",
+				"Error : dealing with ids other than LEGITEXT or JORFTEXT are not implemented yet",
 			)
 	}
 }

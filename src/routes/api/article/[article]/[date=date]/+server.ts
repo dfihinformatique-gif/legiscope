@@ -79,6 +79,32 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				`First article found is not LEGIARTI or first article not found.`,
 			)
 		}
+	} else if (requestedArticle.startsWith("JORFTEXT")) {
+		output.text = requestedArticle
+		const [firstArticle]: [queryFirstArticle?] =
+			await dbConnection<queryFirstArticle>`
+			select dernier_segment as premier_article_id from
+			(
+			select *, row_number() over (partition by type_objet order by tri_hierarchique) rn
+			from scta
+			where subltree(chemin, 0, 1) = ${requestedArticle}
+			)
+			where rn=1 and type_objet='art'
+			limit 1`
+
+		if (
+			firstArticle !== undefined &&
+			firstArticle.premier_article_id.startsWith("JORFARTI")
+		) {
+			articleFromDb = await dbConnection`select *
+				from jorfarti
+				where legi_id=${firstArticle.premier_article_id}::text`
+		} else {
+			error(
+				404,
+				`First article found is not JORFARTI or first article not found.`,
+			)
+		}
 	} else if (requestedArticle.startsWith("LEGIARTI")) {
 		const associatedText = await dbConnection<JSON>`
 		select distinct subltree(s.chemin, 0,1) as associated_text
@@ -180,7 +206,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	}
 
 	const textTitle = await dbConnection<string>`
-	select coalesce(titre, titre_full) as titre from legitext
+	select coalesce(titre, titre_full) as titre
+	from
+		(
+		select legi_id, titre, titre_full from legitext
+		union
+		select legi_id, titre, titre_full from jorftext
+		)
 	where legi_id = ${output.text}
 	`
 	output.textTitle = textTitle[0].titre
