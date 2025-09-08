@@ -129,6 +129,29 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		articleFromDb = await dbConnection<JSON>`select *
 				from legiarti
 				where legi_id=${requestedArticle}`
+	} else if (requestedArticle.startsWith("JORFARTI")) {
+		const associatedText = await dbConnection<JSON>`
+		select distinct subltree(s.chemin, 0,1) as associated_text
+		from scta s
+		where dernier_segment = ${requestedArticle}`
+
+		if (associatedText.length === 1) {
+			output.text = associatedText[0].associated_text
+		} else if (associatedText.length === 0) {
+			error(
+				422,
+				`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
+			)
+		} else {
+			error(
+				422,
+				`Many texts are associated to ${requestedArticle} for date ${requestedDate}`,
+			)
+		}
+
+		articleFromDb = await dbConnection<JSON>`select *
+				from jorfarti
+				where legi_id=${requestedArticle}`
 	} else if (requestedArticle.startsWith("LEGISCTA")) {
 		const associatedText = await dbConnection<JSON>`
 		select distinct subltree(s.chemin, 0,1) as associated_text
