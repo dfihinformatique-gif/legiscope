@@ -16,10 +16,8 @@
 			: "",
 	)
 
-	// Référence vers l’élément DOM actif
 	let activeEl: HTMLElement | null = $state(null)
 
-	// Effet déclenché dès que le chemin actif change
 	$effect(() => {
 		if (activeEl !== null) {
 			;(activeEl as HTMLElement).scrollIntoView({
