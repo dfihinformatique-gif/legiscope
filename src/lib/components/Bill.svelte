@@ -454,6 +454,19 @@
 							text-decoration-thickness: 0.1rem !important;
 						}
 
+						/* STYLES des numéros d'alinéas dans les articles du projet de loi */
+
+						li.assnatFPFprojetloiartexte::before {
+							margin-right: 0.9em;
+							padding:0.1em;
+							counter-increment: li;
+							content: counter(li);
+							background-color: #f5f5f5;
+							color: #737373;
+							border-radius: 40%;
+							font-size: 0.7em;
+							font-family: sans-serif;
+						}
 
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
