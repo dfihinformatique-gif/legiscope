@@ -20,7 +20,7 @@
 						class="mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:border-black hover:bg-neutral-50 active:bg-neutral-200"
 						href="/pjl/PRJLANR5L17B0324
 "
-						title="Vers le simulateur budgétaire"
+						title="Vers le projet de loi interactif"
 					>
 						Projet de loi de finances pour 2026<iconify-icon
 							class="ml-2 align-[-0.4rem] text-2xl"
