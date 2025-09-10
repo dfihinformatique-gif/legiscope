@@ -7,11 +7,11 @@
 <!--class:relative={shared.navbarConfig.position === "relative"}-->
 <nav class="z-50 w-full md:top-0">
 	<div
-		class="bg-le-jaune-very-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
+		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
 		<!-- Répartition des blocs sur la barre de navigation -->
 		<div class="hidden h-full justify-between md:flex">
-			<!-- Bloc gauche pour le logo AN et le logo "Simulateur LEXIMPACT" -->
+			<!-- Bloc gauche pour le logo AN  -->
 			<div
 				class="flex h-full basis-1/3 items-center justify-between gap-2 xl:gap-5"
 			>
@@ -30,7 +30,12 @@
 					class="flex h-full flex-1 flex-col items-center rounded p-1 text-white uppercase"
 				>
 					<span class="leading-4 font-light">LexImpact</span>
-					<span class="text-lg leading-5">PJL interactif</span>
+					<span class="text-lg leading-5 tracking-wider"
+						>PJL interactif<iconify-icon
+							class="pl-0.5 align-[-0.18em]"
+							icon="ri:book-marked-fill"
+						></iconify-icon></span
+					>
 				</div>
 			</div>
 
@@ -39,7 +44,7 @@
 				<!-- Accueil LexImpact -->
 
 				<a
-					class="hover:bg-le-vert-600 active:hover:bg-le-vert-700 cursor-pointer overflow-hidden rounded-lg px-4 py-3 text-center text-sm text-white uppercase focus:outline-none"
+					class="cursor-pointer overflow-hidden rounded-lg px-4 py-3 text-center text-sm text-white uppercase hover:bg-blue-950 focus:outline-none"
 					href="https://leximpact.an.fr/"
 					target="_blank"
 				>
