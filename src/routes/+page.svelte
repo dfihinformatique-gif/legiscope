@@ -6,18 +6,18 @@
 	class="fond relative h-[70vh] py-10 before:absolute before:inset-x-0 before:top-0 before:h-[50vh] before:bg-gradient-to-b before:from-[#dbeafe] before:to-transparent"
 >
 	<div
-		class="relative z-10 flex h-full flex-col items-center justify-evenly text-base md:text-lg 2xl:text-2xl"
+		class="relative z-10 flex h-full flex-col items-center justify-evenly text-2xl"
 	>
 		<div class="mx-3 flex flex-col gap-4 md:mx-5">
 			<div>
 				<h1
-					class="mx-10 max-w-screen text-center font-serif text-xl leading-snug sm:text-2xl md:my-0 md:text-3xl 2xl:text-4xl"
+					class="mx-10 max-w-screen text-center font-serif text-4xl leading-snug md:my-0"
 				>
 					Consulter un projet de loi&nbsp;:
 				</h1>
 				<div class="flex justify-center">
 					<a
-						class="mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:border-black hover:bg-neutral-50 active:bg-neutral-200"
+						class="hover:border-le-gris-dispositif-dark hover:text-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:bg-neutral-50 active:bg-neutral-200"
 						href="/pjl/PRJLANR5L17B0324
 "
 						title="Vers le projet de loi interactif"
