@@ -56,7 +56,7 @@
 		<a
 			class="cursor-pointer overflow-hidden rounded-lg px-4 py-3 text-center text-sm text-gray-600 uppercase hover:bg-neutral-300 hover:text-gray-800 focus:outline-none active:text-gray-900"
 			href="/#caracteristiques-simulateur"
-			>Info
+			>Accueil
 			<iconify-icon
 				class="mr-1 align-[-0.4rem] text-2xl text-gray-500"
 				icon="ri-information-2-fill"
@@ -96,7 +96,7 @@
 		<a
 			class="flex w-1/12 cursor-pointer justify-center overflow-hidden rounded-lg px-4 py-3 text-gray-500 uppercase hover:text-gray-700 focus:outline-none active:text-gray-800"
 			href="/#caracteristiques-simulateur"
-			aria-label="Info"
+			aria-label="Accueil"
 		>
 			<iconify-icon
 				class="mr-1 align-[-0.2rem] text-2xl"
