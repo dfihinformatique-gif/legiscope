@@ -1,6 +1,11 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
+	import {
+		highlightValues,
+		parameterReferences,
+	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
+	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	interface Props {
 		pjlHTML: string | undefined
 	}
@@ -250,6 +255,142 @@
 		})
 	}
 
+	function extractPlainText(html: string): string {
+		// Utilisation d'une regex simple pour enlever les balises
+		// (pas parfait pour tous les cas HTML complexes, mais suffisant pour ton besoin)
+		return html
+			.replace(/<[^>]+>/g, "") // supprime toutes les balises
+			.replace(/&#(\d+);/g, (_, code) =>
+				String.fromCharCode(parseInt(code, 10)),
+			)
+			.replace(/&#x([0-9a-f]+);/gi, (_, code) =>
+				String.fromCharCode(parseInt(code, 16)),
+			)
+			.replace(/&nbsp;/g, " ")
+			.replace(/&quot;/g, '"')
+			.replace(/&apos;/g, "'")
+			.replace(/&amp;/g, "&")
+			.replace(/&lt;/g, "<")
+			.replace(/&gt;/g, ">")
+			.replace(/&euro;/g, "€")
+			.normalize("NFKD") // décompose accents
+			.replace(/[\u0300-\u036f]/g, "") // enlève les diacritiques
+			.replace(/\u00A0/g, " ") // espace insécable → espace normal
+			.replace(/[“”«»]/g, '"') // guillemets → "
+			.replace(/[’‘]/g, "'") // apostrophes → '
+			.replace(/\s+/g, " ") // normalise les espaces
+			.trim()
+	}
+	function injectHighlightsIntoHtml(
+		originalHtml: string,
+		highlightedPlainText: string,
+	): string {
+		// Texte brut de l'HTML original (pour alignement)
+		const plainOriginal = extractPlainText(originalHtml)
+
+		let result = ""
+		let i = 0 // index dans plainOriginal
+		let j = 0 // index dans highlightedPlainText
+
+		while (i < plainOriginal.length && j < highlightedPlainText.length) {
+			if (plainOriginal[i] === highlightedPlainText[j]) {
+				// Même caractère => on avance
+				result += plainOriginal[i]
+				i++
+				j++
+			} else if (highlightedPlainText.startsWith("<", j)) {
+				// C'est une balise de highlight => on l'injecte telle quelle
+				const end = highlightedPlainText.indexOf(">", j)
+				if (end !== -1) {
+					result += highlightedPlainText.slice(j, end + 1)
+					j = end + 1
+				} else {
+					// sécurité : balise mal fermée
+					break
+				}
+			} else {
+				// Caractères différents => on avance côté highlighted (cas rare)
+				result += highlightedPlainText[j]
+				j++
+			}
+		}
+
+		// Ajout du reste
+		if (j < highlightedPlainText.length) {
+			result += highlightedPlainText.slice(j)
+		}
+
+		// Réinjecter dans le HTML original (on remplace seulement le texte brut)
+		// Simple implémentation : remplacer le texte original par le texte réinjecté
+		// ⚠️ ici on suppose que originalHtml est juste un fragment sans attributs critiques
+		return originalHtml.replace(plainOriginal, result)
+	}
+
+	function highlightParameterValuesInHTML(
+		htmlContent: string,
+		parameterReferences: Map<string, Array<ValueParameter | ScaleParameter>>,
+	): string {
+		const linkRegex =
+			/<a\s+[^>]*href='[^']*lawArticle=(LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*'[^>]*>.*?<\/a>/gi
+
+		const parts: string[] = []
+		let lastIndex = 0
+		let match: RegExpExecArray | null
+		let linkCount = 0
+		let previousLawArticle: string | null = null
+
+		console.log({ ici: parameterReferences.get("LEGIARTI000048805464") })
+
+		while ((match = linkRegex.exec(htmlContent)) !== null) {
+			// Extraire la valeur du paramètre lawArticle du lien courant
+			const lawArticleMatch = match[0].match(
+				/((LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*)/,
+			)
+			const currentLawArticle = lawArticleMatch ? lawArticleMatch[1] : null
+
+			// Ajouter le texte avant le lien
+			const textBefore = htmlContent.substring(lastIndex, match.index)
+
+			if (linkCount > 0 && previousLawArticle !== null) {
+				// Extraire le texte brut du HTML
+				const plainText = extractPlainText(textBefore)
+				if (
+					previousLawArticle === "LEGIARTI000048805464" &&
+					currentLawArticle === "LEGIARTI000048805432"
+				) {
+					console.log({ plainText, previousLawArticle })
+				}
+
+				// Appliquer highlightValues sur le texte brut
+				let processedPlainText = plainText
+				parameterReferences.get(previousLawArticle)?.forEach((param) => {
+					processedPlainText = highlightValues(processedPlainText, param)
+				})
+
+				// Réinjecter les highlights dans le HTML original
+				const processedHtml = injectHighlightsIntoHtml(
+					textBefore,
+					processedPlainText,
+				)
+				parts.push(processedHtml)
+			} else {
+				parts.push(textBefore)
+			}
+
+			// Ajouter le lien lui-même
+			parts.push(match[0])
+
+			previousLawArticle = currentLawArticle
+			lastIndex = match.index + match[0].length
+			linkCount++
+		}
+
+		// Ajouter le reste du contenu après le dernier lien
+		parts.push(htmlContent.substring(lastIndex))
+
+		return parts.join("")
+	}
+
 	$effect(() => {
 		if (!container || !pjlHTML) return
 
@@ -257,7 +398,7 @@
 			const shadow = container.attachShadow({ mode: "open" })
 
 			// Pour nettoyer le fichier HTML du PLF :
-			const cleanedHTML = pjlHTML
+			let cleanedHTML = pjlHTML
 				.replace(/style="([^"]*)"/g, (match, styleContent) => {
 					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
@@ -287,6 +428,11 @@
 					}
 					return match
 				})
+
+			cleanedHTML = highlightParameterValuesInHTML(
+				cleanedHTML,
+				parameterReferences,
+			)
 
 			// Style les liens qui ouvrent la vue article à droite
 			const styleLawArticleLinks = (root: ShadowRoot) => {
