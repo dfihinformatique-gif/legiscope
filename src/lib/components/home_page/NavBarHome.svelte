@@ -4,12 +4,11 @@
 	let isMobileMenuDropdownOpen = $state(false)
 </script>
 
-<!--class:relative={shared.navbarConfig.position === "relative"}-->
 <nav class="z-50 w-full md:top-0">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
-		<!-- Répartition des blocs sur la barre de navigation -->
+		<!-- UI DESKTOP -->
 		<div class="hidden h-full justify-between md:flex">
 			<!-- Bloc gauche pour le logo AN  -->
 			<div
@@ -56,7 +55,7 @@
 			</div>
 		</div>
 
-		<!--Menu écran téléphone-->
+		<!--UI MOBILE-->
 		<div class="flex flex-col md:hidden">
 			<div class="flex h-12 items-center justify-between">
 				<!-- Première section pour le logo AN-->
