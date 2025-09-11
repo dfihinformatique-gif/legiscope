@@ -77,7 +77,12 @@
 						class="flex h-full flex-1 flex-col items-center rounded p-1 text-white uppercase"
 					>
 						<span class="leading-4 font-light">LexImpact</span>
-						<span class="text-lg leading-5">PJL interactif</span>
+						<span class="text-lg leading-5"
+							>PJL interactif<iconify-icon
+								class="pl-0.5 align-[-0.18em]"
+								icon="ri:book-marked-fill"
+							></iconify-icon></span
+						>
 					</div>
 				</div>
 
