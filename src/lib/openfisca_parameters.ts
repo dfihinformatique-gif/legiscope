@@ -178,10 +178,11 @@ function escapeRegex(s: string): string {
 	return s.replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&")
 }
 
-export function highlightValues(
+export function getSimplifiedCoordOfValuesToHighlight(
 	contenu: string,
 	parameter: ValueParameter | ScaleParameter,
-): string {
+): { start: number; stop: number }[] {
+	const result: { start: number; stop: number }[] = []
 	for (const { unit, value } of iterParameterPjlNumberValuesWithUnits(
 		parameter,
 	)) {
@@ -201,23 +202,55 @@ export function highlightValues(
 			if (stringValue === null) {
 				continue
 			}
-			const contenuHiglighted = contenu.replace(
-				new RegExp(
-					String.raw`(^|\s+|[>\(\[])${escapeRegex(
-						stringValue,
-					)}([\.<\)\]]|,\s+|\s+|$)`,
-					"g",
-				),
-				`$1<span class="bg-le-gris-dispositif-light">${stringValue}</span>$2`,
+			// const contenuHiglighted = contenu.replace(
+			// 	new RegExp(
+			// 		String.raw`(^|\s+|[>\(\[])${escapeRegex(
+			// 			stringValue,
+			// 		)}([\.<\)\]]|,\s+|\s+|$)`,
+			// 		"g",
+			// 	),
+			// 	`$1<span class="bg-le-gris-dispositif-light">${stringValue}</span>$2`,
+			// )
+
+			if (
+				parameter.name ===
+				"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie"
 			)
-			if (contenuHiglighted !== contenu) {
-				console.log("modified!", contenu)
-				contenu = contenuHiglighted
-				break
+				console.log({ stringValue, contenu })
+
+			const stringValueToSearch = new RegExp(
+				String.raw`${escapeRegex(stringValue)}`,
+				"g",
+			)
+			let match: RegExpExecArray | null
+
+			while ((match = stringValueToSearch.exec(contenu)) !== null) {
+				// if (
+				// 	parameter.name ===
+				// 	"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie"
+				// )
+				// 	console.log({ match })
+				result.push({
+					start: match.index,
+					stop: match.index + match[0].length,
+				})
 			}
+
+			// if (contenuHiglighted !== contenu) {
+			// 	console.log("modified!", contenu)
+			// 	contenu = contenuHiglighted
+			// 	break
+			// }
 		}
 	}
-	return contenu
+
+	return result
+		.filter(
+			(item, index, self) =>
+				index ===
+				self.findIndex((r) => r.start === item.start && r.stop === item.stop),
+		)
+		.sort((a, b) => a.start - b.start)
 }
 
 export function collectParameterReferences(

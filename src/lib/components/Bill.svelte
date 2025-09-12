@@ -1,11 +1,16 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import {
-		highlightValues,
+		getSimplifiedCoordOfValuesToHighlight,
 		parameterReferences,
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
+	import {
+		originalMergedPositionsFromTransformed,
+		simplifyHtml,
+	} from "@tricoteuses/tisseuse"
+
 	interface Props {
 		pjlHTML: string | undefined
 	}
@@ -255,77 +260,50 @@
 		})
 	}
 
-	function extractPlainText(html: string): string {
-		// Utilisation d'une regex simple pour enlever les balises
-		// (pas parfait pour tous les cas HTML complexes, mais suffisant pour ton besoin)
-		return html
-			.replace(/<[^>]+>/g, "") // supprime toutes les balises
-			.replace(/&#(\d+);/g, (_, code) =>
-				String.fromCharCode(parseInt(code, 10)),
-			)
-			.replace(/&#x([0-9a-f]+);/gi, (_, code) =>
-				String.fromCharCode(parseInt(code, 16)),
-			)
-			.replace(/&nbsp;/g, " ")
-			.replace(/&quot;/g, '"')
-			.replace(/&apos;/g, "'")
-			.replace(/&amp;/g, "&")
-			.replace(/&lt;/g, "<")
-			.replace(/&gt;/g, ">")
-			.replace(/&euro;/g, "€")
-			.normalize("NFKD") // décompose accents
-			.replace(/[\u0300-\u036f]/g, "") // enlève les diacritiques
-			.replace(/\u00A0/g, " ") // espace insécable → espace normal
-			.replace(/[“”«»]/g, '"') // guillemets → "
-			.replace(/[’‘]/g, "'") // apostrophes → '
-			.replace(/\s+/g, " ") // normalise les espaces
-			.trim()
-	}
 	function injectHighlightsIntoHtml(
-		originalHtml: string,
-		highlightedPlainText: string,
+		html: string,
+		coordsToHighlight: Map<
+			{ originalStart: number; originalStop: number },
+			{ parameters: string[] }
+		>,
 	): string {
-		// Texte brut de l'HTML original (pour alignement)
-		const plainOriginal = extractPlainText(originalHtml)
+		// Convertir la Map en tableau trié par `originalStart` décroissant
+		const highlights = Array.from(coordsToHighlight.entries()).sort(
+			([a], [b]) => b.originalStart - a.originalStart,
+		)
 
-		let result = ""
-		let i = 0 // index dans plainOriginal
-		let j = 0 // index dans highlightedPlainText
+		let result = html
 
-		while (i < plainOriginal.length && j < highlightedPlainText.length) {
-			if (plainOriginal[i] === highlightedPlainText[j]) {
-				// Même caractère => on avance
-				result += plainOriginal[i]
-				i++
-				j++
-			} else if (highlightedPlainText.startsWith("<", j)) {
-				// C'est une balise de highlight => on l'injecte telle quelle
-				const end = highlightedPlainText.indexOf(">", j)
-				if (end !== -1) {
-					result += highlightedPlainText.slice(j, end + 1)
-					j = end + 1
-				} else {
-					// sécurité : balise mal fermée
-					break
-				}
-			} else {
-				// Caractères différents => on avance côté highlighted (cas rare)
-				result += highlightedPlainText[j]
-				j++
-			}
+		for (const [coords, { parameters }] of highlights) {
+			const { originalStart, originalStop } = coords
+			// console.log({
+			// 	Coordonnées: { originalStart, originalStop },
+			// 	"Chaine ciblée": result.slice(originalStart, originalStop),
+			// 	"Contexte AVANT le début": result.slice(
+			// 		originalStart - 15,
+			// 		originalStart,
+			// 	),
+			// 	"Contexte APRÈS le début": result.slice(
+			// 		originalStart,
+			// 		originalStart + 15,
+			// 	),
+			// 	"Contexte AVANT la fin": result.slice(originalStop - 15, originalStop),
+			// 	"Contexte APRÈS la fin": result.slice(originalStop, originalStop + 15),
+			// })
+			const before = result.slice(0, originalStart)
+			const target = result.slice(originalStart, originalStop)
+			const after = result.slice(originalStop)
+
+			const title = parameters.join(", ")
+
+			result = `${before}<span class="bg-le-gris-dispositif-light" title="${title}">${target}</span>${after}`
+			// result = `${before}###START###${target}###STOP###${after}`
 		}
 
-		// Ajout du reste
-		if (j < highlightedPlainText.length) {
-			result += highlightedPlainText.slice(j)
-		}
+		// console.log({ result })
 
-		// Réinjecter dans le HTML original (on remplace seulement le texte brut)
-		// Simple implémentation : remplacer le texte original par le texte réinjecté
-		// ⚠️ ici on suppose que originalHtml est juste un fragment sans attributs critiques
-		return originalHtml.replace(plainOriginal, result)
+		return result
 	}
-
 	function highlightParameterValuesInHTML(
 		htmlContent: string,
 		parameterReferences: Map<string, Array<ValueParameter | ScaleParameter>>,
@@ -353,25 +331,77 @@
 
 			if (linkCount > 0 && previousLawArticle !== null) {
 				// Extraire le texte brut du HTML
-				const plainText = extractPlainText(textBefore)
+				const simplified = simplifyHtml({ removeAWithHref: true })(textBefore)
+				const textPlain = simplified.output
+				let processedHtml = textBefore
+
 				if (
 					previousLawArticle === "LEGIARTI000048805464" &&
 					currentLawArticle === "LEGIARTI000048805432"
 				) {
-					console.log({ plainText, previousLawArticle })
+					// console.log({ plainText, previousLawArticle })
+					console.log({ textBefore, transformation: simplified })
 				}
 
-				// Appliquer highlightValues sur le texte brut
-				let processedPlainText = plainText
-				parameterReferences.get(previousLawArticle)?.forEach((param) => {
-					processedPlainText = highlightValues(processedPlainText, param)
-				})
+				const simplifiedCoordWithParameters: Map<
+					{ start: number; stop: number },
+					Array<string>
+				> = new Map()
 
-				// Réinjecter les highlights dans le HTML original
-				const processedHtml = injectHighlightsIntoHtml(
-					textBefore,
-					processedPlainText,
+				const coordsToHighlight: Map<
+					{
+						simplifiedStart: number
+						simplifiedStop: number
+						originalStart: number
+						originalStop: number
+					},
+					{ parameters: Array<string> }
+				> = new Map()
+				parameterReferences.get(previousLawArticle)?.forEach((param) => {
+					const simplifiedCoordToHighlight =
+						getSimplifiedCoordOfValuesToHighlight(textPlain, param)
+					if (simplifiedCoordToHighlight.length > 0) {
+						simplifiedCoordToHighlight.forEach((coord) => {
+							if (!simplifiedCoordWithParameters.has(coord)) {
+								simplifiedCoordWithParameters.set(coord, [])
+							}
+							simplifiedCoordWithParameters.get(coord)!.push(param.name!)
+						})
+					}
+				})
+				const sortedSimplifiedCoord = simplifiedCoordWithParameters
+					.keys()
+					.toArray()
+					.sort((a, b) => a.start - b.start)
+				const coordsInOriginal = originalMergedPositionsFromTransformed(
+					simplified,
+					sortedSimplifiedCoord,
 				)
+				if (sortedSimplifiedCoord.length > 0) {
+					console.log({
+						sortedSimplifiedCoord,
+						coordInOriginal: coordsInOriginal,
+					})
+					sortedSimplifiedCoord.forEach((coord, index) => {
+						coordsToHighlight.set(
+							{
+								simplifiedStart: coord.start,
+								simplifiedStop: coord.stop,
+								originalStart: coordsInOriginal[index].position.start,
+								originalStop: coordsInOriginal[index].position.stop,
+							},
+							{ parameters: simplifiedCoordWithParameters.get(coord)! },
+						)
+					})
+				}
+				if (coordsToHighlight.size > 0) {
+					console.log({ coordsToHighlight })
+					// Réinjecter les highlights dans le HTML original
+					processedHtml = injectHighlightsIntoHtml(
+						textBefore,
+						coordsToHighlight,
+					)
+				}
 				parts.push(processedHtml)
 			} else {
 				parts.push(textBefore)
