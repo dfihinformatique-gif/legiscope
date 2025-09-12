@@ -263,7 +263,16 @@
 	function injectHighlightsIntoHtml(
 		html: string,
 		coordsToHighlight: Map<
-			{ originalStart: number; originalStop: number },
+			{
+				simplifiedStart: number
+				simplifiedStop: number
+				originalStart: number
+				originalStop: number
+				innerPrefix?: string
+				innerSuffix?: string
+				outerPrefix?: string
+				outerSuffix?: string
+			},
 			{ parameters: string[] }
 		>,
 	): string {
@@ -276,28 +285,15 @@
 
 		for (const [coords, { parameters }] of highlights) {
 			const { originalStart, originalStop } = coords
-			// console.log({
-			// 	Coordonnées: { originalStart, originalStop },
-			// 	"Chaine ciblée": result.slice(originalStart, originalStop),
-			// 	"Contexte AVANT le début": result.slice(
-			// 		originalStart - 15,
-			// 		originalStart,
-			// 	),
-			// 	"Contexte APRÈS le début": result.slice(
-			// 		originalStart,
-			// 		originalStart + 15,
-			// 	),
-			// 	"Contexte AVANT la fin": result.slice(originalStop - 15, originalStop),
-			// 	"Contexte APRÈS la fin": result.slice(originalStop, originalStop + 15),
-			// })
 			const before = result.slice(0, originalStart)
 			const target = result.slice(originalStart, originalStop)
 			const after = result.slice(originalStop)
 
+			// console.log({ target })
+
 			const title = parameters.join(", ")
 
-			result = `${before}<span class="bg-le-gris-dispositif-light" title="${title}">${target}</span>${after}`
-			// result = `${before}###START###${target}###STOP###${after}`
+			result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
 		}
 
 		// console.log({ result })
@@ -317,7 +313,7 @@
 		let linkCount = 0
 		let previousLawArticle: string | null = null
 
-		console.log({ ici: parameterReferences.get("LEGIARTI000048805464") })
+		// console.log({ ici: parameterReferences.get("LEGIARTI000048805464") })
 
 		while ((match = linkRegex.exec(htmlContent)) !== null) {
 			// Extraire la valeur du paramètre lawArticle du lien courant
@@ -354,12 +350,17 @@
 						simplifiedStop: number
 						originalStart: number
 						originalStop: number
+						innerPrefix?: string
+						innerSuffix?: string
+						outerPrefix?: string
+						outerSuffix?: string
 					},
 					{ parameters: Array<string> }
 				> = new Map()
+
 				parameterReferences.get(previousLawArticle)?.forEach((param) => {
 					const simplifiedCoordToHighlight =
-						getSimplifiedCoordOfValuesToHighlight(textPlain, param)
+						getSimplifiedCoordOfValuesToHighlight(textPlain, param, linkCount)
 					if (simplifiedCoordToHighlight.length > 0) {
 						simplifiedCoordToHighlight.forEach((coord) => {
 							if (!simplifiedCoordWithParameters.has(coord)) {
@@ -372,16 +373,25 @@
 				const sortedSimplifiedCoord = simplifiedCoordWithParameters
 					.keys()
 					.toArray()
+					.filter(
+						(item, index, self) =>
+							index ===
+							self.findIndex(
+								(r) => r.start === item.start && r.stop === item.stop,
+							),
+					)
 					.sort((a, b) => a.start - b.start)
 				const coordsInOriginal = originalMergedPositionsFromTransformed(
 					simplified,
 					sortedSimplifiedCoord,
 				)
 				if (sortedSimplifiedCoord.length > 0) {
-					console.log({
-						sortedSimplifiedCoord,
-						coordInOriginal: coordsInOriginal,
-					})
+					if (linkCount === 16) {
+						console.log({
+							sortedSimplifiedCoord,
+							coordsInOriginal,
+						})
+					}
 					sortedSimplifiedCoord.forEach((coord, index) => {
 						coordsToHighlight.set(
 							{
@@ -389,13 +399,17 @@
 								simplifiedStop: coord.stop,
 								originalStart: coordsInOriginal[index].position.start,
 								originalStop: coordsInOriginal[index].position.stop,
+								innerPrefix: coordsInOriginal[index].innerPrefix,
+								outerPrefix: coordsInOriginal[index].outerPrefix,
+								innerSuffix: coordsInOriginal[index].innerSuffix,
+								outerSuffix: coordsInOriginal[index].outerSuffix,
 							},
 							{ parameters: simplifiedCoordWithParameters.get(coord)! },
 						)
 					})
 				}
 				if (coordsToHighlight.size > 0) {
-					console.log({ coordsToHighlight })
+					// console.log({ coordsToHighlight })
 					// Réinjecter les highlights dans le HTML original
 					processedHtml = injectHighlightsIntoHtml(
 						textBefore,
@@ -691,6 +705,13 @@
 					table.style.borderCollapse = "collapse"
 				}
 			})
+
+			shadow
+				.querySelectorAll<HTMLSpanElement>("span.highlighted")
+				.forEach((span) => {
+					span.style.setProperty("color", "red", "important")
+					span.style.setProperty("background-color", "yellow", "important")
+				})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML

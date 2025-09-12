@@ -33,7 +33,7 @@
 			fetch(`/api/article/${lawArticle}/${shared.pjlDate}`)
 				.then((res) => (res.ok ? res.json() : null))
 				.then((data) => {
-					console.log({ data })
+					// console.log({ data })
 					isFetchingArticle = false
 					articleFromDb = data.article
 					associatedText = data.text

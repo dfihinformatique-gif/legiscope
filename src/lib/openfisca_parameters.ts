@@ -181,6 +181,7 @@ function escapeRegex(s: string): string {
 export function getSimplifiedCoordOfValuesToHighlight(
 	contenu: string,
 	parameter: ValueParameter | ScaleParameter,
+	linkCount: number,
 ): { start: number; stop: number }[] {
 	const result: { start: number; stop: number }[] = []
 	for (const { unit, value } of iterParameterPjlNumberValuesWithUnits(
@@ -214,22 +215,25 @@ export function getSimplifiedCoordOfValuesToHighlight(
 
 			if (
 				parameter.name ===
-				"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie"
+					"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
+				linkCount == 16
 			)
-				console.log({ stringValue, contenu })
+				console.log({ stringValue, contenu, linkCount })
 
 			const stringValueToSearch = new RegExp(
 				String.raw`${escapeRegex(stringValue)}`,
 				"g",
 			)
+
 			let match: RegExpExecArray | null
 
 			while ((match = stringValueToSearch.exec(contenu)) !== null) {
-				// if (
-				// 	parameter.name ===
-				// 	"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie"
-				// )
-				// 	console.log({ match })
+				if (
+					parameter.name ===
+						"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
+					linkCount === 16
+				)
+					console.log({ match })
 				result.push({
 					start: match.index,
 					stop: match.index + match[0].length,

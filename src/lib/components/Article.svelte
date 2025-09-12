@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Legiarti } from "$lib/db_data_types"
-	import { parameterReferences } from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
@@ -22,7 +21,7 @@
 		})
 	}
 
-	console.log({ parameterReferences })
+	// console.log({ parameterReferences })
 </script>
 
 <div
