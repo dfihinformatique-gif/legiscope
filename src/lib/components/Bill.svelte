@@ -1,15 +1,6 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
-	import {
-		getSimplifiedCoordOfValuesToHighlight,
-		parameterReferences,
-	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
-	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
-	import {
-		originalMergedPositionsFromTransformed,
-		simplifyHtml,
-	} from "@tricoteuses/tisseuse"
 
 	interface Props {
 		pjlHTML: string | undefined
@@ -260,181 +251,6 @@
 		})
 	}
 
-	function injectHighlightsIntoHtml(
-		html: string,
-		coordsToHighlight: Map<
-			{
-				simplifiedStart: number
-				simplifiedStop: number
-				originalStart: number
-				originalStop: number
-				innerPrefix?: string
-				innerSuffix?: string
-				outerPrefix?: string
-				outerSuffix?: string
-			},
-			{ parameters: string[] }
-		>,
-	): string {
-		// Convertir la Map en tableau trié par `originalStart` décroissant
-		const highlights = Array.from(coordsToHighlight.entries()).sort(
-			([a], [b]) => b.originalStart - a.originalStart,
-		)
-
-		let result = html
-
-		for (const [coords, { parameters }] of highlights) {
-			const { originalStart, originalStop } = coords
-			const before = result.slice(0, originalStart)
-			const target = result.slice(originalStart, originalStop)
-			const after = result.slice(originalStop)
-
-			// console.log({ target })
-
-			const title = parameters.join(", ")
-
-			result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
-		}
-
-		// console.log({ result })
-
-		return result
-	}
-	function highlightParameterValuesInHTML(
-		htmlContent: string,
-		parameterReferences: Map<string, Array<ValueParameter | ScaleParameter>>,
-	): string {
-		const linkRegex =
-			/<a\s+[^>]*href='[^']*lawArticle=(LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*'[^>]*>.*?<\/a>/gi
-
-		const parts: string[] = []
-		let lastIndex = 0
-		let match: RegExpExecArray | null
-		let linkCount = 0
-		let previousLawArticle: string | null = null
-
-		// console.log({ ici: parameterReferences.get("LEGIARTI000048805464") })
-
-		while ((match = linkRegex.exec(htmlContent)) !== null) {
-			// Extraire la valeur du paramètre lawArticle du lien courant
-			const lawArticleMatch = match[0].match(
-				/((LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*)/,
-			)
-			const currentLawArticle = lawArticleMatch ? lawArticleMatch[1] : null
-
-			// Ajouter le texte avant le lien
-			const textBefore = htmlContent.substring(lastIndex, match.index)
-
-			if (linkCount > 0 && previousLawArticle !== null) {
-				// Extraire le texte brut du HTML
-				const simplified = simplifyHtml({ removeAWithHref: true })(textBefore)
-				const textPlain = simplified.output
-				let processedHtml = textBefore
-
-				if (
-					previousLawArticle === "LEGIARTI000048805464" &&
-					currentLawArticle === "LEGIARTI000048805432"
-				) {
-					// console.log({ plainText, previousLawArticle })
-					console.log({ textBefore, transformation: simplified })
-				}
-
-				const simplifiedCoordWithParameters: Map<
-					{ start: number; stop: number },
-					Array<string>
-				> = new Map()
-
-				const coordsToHighlight: Map<
-					{
-						simplifiedStart: number
-						simplifiedStop: number
-						originalStart: number
-						originalStop: number
-						innerPrefix?: string
-						innerSuffix?: string
-						outerPrefix?: string
-						outerSuffix?: string
-					},
-					{ parameters: Array<string> }
-				> = new Map()
-
-				parameterReferences.get(previousLawArticle)?.forEach((param) => {
-					const simplifiedCoordToHighlight =
-						getSimplifiedCoordOfValuesToHighlight(textPlain, param, linkCount)
-					if (simplifiedCoordToHighlight.length > 0) {
-						simplifiedCoordToHighlight.forEach((coord) => {
-							if (!simplifiedCoordWithParameters.has(coord)) {
-								simplifiedCoordWithParameters.set(coord, [])
-							}
-							simplifiedCoordWithParameters.get(coord)!.push(param.name!)
-						})
-					}
-				})
-				const sortedSimplifiedCoord = simplifiedCoordWithParameters
-					.keys()
-					.toArray()
-					.filter(
-						(item, index, self) =>
-							index ===
-							self.findIndex(
-								(r) => r.start === item.start && r.stop === item.stop,
-							),
-					)
-					.sort((a, b) => a.start - b.start)
-				const coordsInOriginal = originalMergedPositionsFromTransformed(
-					simplified,
-					sortedSimplifiedCoord,
-				)
-				if (sortedSimplifiedCoord.length > 0) {
-					if (linkCount === 16) {
-						console.log({
-							sortedSimplifiedCoord,
-							coordsInOriginal,
-						})
-					}
-					sortedSimplifiedCoord.forEach((coord, index) => {
-						coordsToHighlight.set(
-							{
-								simplifiedStart: coord.start,
-								simplifiedStop: coord.stop,
-								originalStart: coordsInOriginal[index].position.start,
-								originalStop: coordsInOriginal[index].position.stop,
-								innerPrefix: coordsInOriginal[index].innerPrefix,
-								outerPrefix: coordsInOriginal[index].outerPrefix,
-								innerSuffix: coordsInOriginal[index].innerSuffix,
-								outerSuffix: coordsInOriginal[index].outerSuffix,
-							},
-							{ parameters: simplifiedCoordWithParameters.get(coord)! },
-						)
-					})
-				}
-				if (coordsToHighlight.size > 0) {
-					// console.log({ coordsToHighlight })
-					// Réinjecter les highlights dans le HTML original
-					processedHtml = injectHighlightsIntoHtml(
-						textBefore,
-						coordsToHighlight,
-					)
-				}
-				parts.push(processedHtml)
-			} else {
-				parts.push(textBefore)
-			}
-
-			// Ajouter le lien lui-même
-			parts.push(match[0])
-
-			previousLawArticle = currentLawArticle
-			lastIndex = match.index + match[0].length
-			linkCount++
-		}
-
-		// Ajouter le reste du contenu après le dernier lien
-		parts.push(htmlContent.substring(lastIndex))
-
-		return parts.join("")
-	}
-
 	$effect(() => {
 		if (!container || !pjlHTML) return
 
@@ -472,11 +288,6 @@
 					}
 					return match
 				})
-
-			cleanedHTML = highlightParameterValuesInHTML(
-				cleanedHTML,
-				parameterReferences,
-			)
 
 			// Style les liens qui ouvrent la vue article à droite
 			const styleLawArticleLinks = (root: ShadowRoot) => {

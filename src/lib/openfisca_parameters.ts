@@ -187,9 +187,6 @@ export function getSimplifiedCoordOfValuesToHighlight(
 	for (const { unit, value } of iterParameterPjlNumberValuesWithUnits(
 		parameter,
 	)) {
-		if (parameter.name === "impot_revenu.bareme_ir_depuis_1945.bareme") {
-			// console.log({ unit, value })
-		}
 		for (const stringValue of [
 			...(unit === undefined || unit.ratio
 				? [
@@ -271,8 +268,6 @@ export function collectParameterReferences(
 		if (urlField && typeof urlField === "string") {
 			const identifiers = extractLegalIdentifiers(urlField)
 			identifiers.forEach((identifier) => {
-				if (identifier === "LEGIARTI000046860788")
-					identifier = "LEGIARTI000048805464"
 				if (!referenceMap.has(identifier)) {
 					//TODO: search for other Identifier
 					referenceMap.set(identifier, [])
