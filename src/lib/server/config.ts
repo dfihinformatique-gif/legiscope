@@ -18,7 +18,7 @@ const DatabaseSchema = z.object({
 		error: (issue) =>
 			issue.input === undefined
 				? "PG_PORT is required in .env - Modify .env and reload server"
-				: "PPG_PORT must be a number in .env - Modify .env and reload server",
+				: "PG_PORT must be a number in .env - Modify .env and reload server",
 	}),
 	username: z.string({
 		error: (issue) =>
