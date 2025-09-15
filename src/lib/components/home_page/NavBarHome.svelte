@@ -4,7 +4,7 @@
 	let isMobileMenuDropdownOpen = $state(false)
 </script>
 
-<nav class="z-50 w-full md:top-0">
+<nav class="fixed z-50 w-full md:top-0">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
@@ -30,7 +30,7 @@
 				>
 					<span class="leading-4 font-light">LexImpact</span>
 					<span class="text-lg leading-5 tracking-wider"
-						>PJL interactif<iconify-icon
+						>Légiscope<iconify-icon
 							class="pl-0.5 align-[-0.18em]"
 							icon="ri:book-marked-fill"
 						></iconify-icon></span
@@ -77,7 +77,7 @@
 					>
 						<span class="leading-4 font-light">LexImpact</span>
 						<span class="text-lg leading-5"
-							>PJL interactif<iconify-icon
+							>Légiscope<iconify-icon
 								class="pl-0.5 align-[-0.18em]"
 								icon="ri:book-marked-fill"
 							></iconify-icon></span
