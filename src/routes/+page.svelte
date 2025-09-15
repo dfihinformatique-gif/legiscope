@@ -43,6 +43,211 @@
 	>
 		À propos de cet outil ⬇️
 	</AnchorTitle>
+
+	<div class="col-span-4 justify-self-center">
+		<p class="font-bold">Sommaire :</p>
+		<ul class="list-inside list-disc">
+			<li>
+				<a class="lx-link-simple" href="#presentation-generale"
+					>Présentation générale du Légiscope</a
+				>
+			</li>
+			<li>
+				<a class="lx-link-simple" href="#provenance-infos"
+					>D'où proviennent les informations ?</a
+				>
+			</li>
+			<li>
+				<a class="lx-link-simple" href="#contact"
+					>Déclarer une erreur / contacter l'équipe</a
+				>
+			</li>
+			<li>
+				<a class="lx-link-simple" href="#cgu"
+					>Consulter les conditions d'utilisation</a
+				>
+			</li>
+		</ul>
+	</div>
+	<AnchorTitle
+		id="presentation-generale"
+		class="col-span-4 max-w-prose justify-self-center text-center text-2xl font-bold"
+		tag="h3"
+	>
+		Présentation générale du Légiscope
+	</AnchorTitle>
+	<div class="col-span-4 max-w-prose justify-self-center text-lg">
+		<p>
+			Cette site internet est mis en œuvre par la <a
+				class="lx-link-text"
+				href="https://leximpact.an.fr">cellule LexImpact</a
+			> de l'Assemblée nationale. Il permet à la fois de :
+		</p>
+
+		<ul class="ml-6 list-inside list-disc">
+			<li>
+				lire un projet ou une proposition de loi, tout en consultant les textes
+				de lois auxquels il fait référence ;
+			</li>
+			<li>
+				accéder rapidement au <a
+					class="lx-link-text"
+					href="https://socio-fiscal.leximpact.an.fr/accueil"
+					>simulateur socio-fiscal</a
+				>
+				et au
+				<a class="lx-link-text" href="https://dotations.leximpact.an.fr/"
+					>simulateur des dotations aux communes</a
+				>. lorsqu'un article entre dans leur périmètre ;
+			</li>
+			<li>
+				obtenir des informations complémentaires sur les paramètres de la loi
+				couverts par les simulateurs.
+			</li>
+		</ul>
+		<p class="mt-5">
+			Son objectif est de fluidifier la lecture et la compréhension du texte de
+			loi ainsi que son évaluation.
+		</p>
+	</div>
+
+	<AnchorTitle
+		id="provenance-infos"
+		class="col-span-4 max-w-prose justify-self-center text-center text-2xl font-bold"
+		tag="h3"
+	>
+		D'où proviennent les informations publiées sur ce site ?
+	</AnchorTitle>
+	<div class="col-span-4 max-w-prose justify-self-center text-lg">
+		Tous les textes de lois et les informations lisibles sur ce site sont
+		récupérés à la source, auprès des institutions fournisseurs : Direction de
+		l'information légale et administrative (DILA) en charge de Légifrance et
+		Assemblée nationale.
+
+		<br />
+		<br />
+		<span class="text-le-gris-dispositif-dark font-sans text-xl font-bold"
+			>Source des projets de lois (sur fond blanc) :</span
+		>
+		<br />
+		Les projets de loi sont récupérés automatiquement dans l'<a
+			class="lx-link-text"
+			href="https://data.assemblee-nationale.fr/travaux-parlementaires/dossiers-legislatifs"
+			>opendata de l'Assemblée nationale</a
+		>
+		qui reflète les informations présentes sur le
+		<a
+			class="lx-link-text"
+			href="https://www2.assemblee-nationale.fr/documents/liste/(type)/projets-loi"
+			>site de l'Assemblée nationale</a
+		>. Les principaux traitements de forme appliqués sont :
+
+		<ul class="ml-6 list-inside list-disc">
+			<li>
+				ajout de liens (URL) vers la base législative ou vers des ancres dans le
+				document ;
+			</li>
+			<li>
+				modifications graphiques pour améliorer la lisibilité dans l'outil.
+			</li>
+		</ul>
+
+		<br />
+		<br />
+		<span class="text-le-gris-dispositif-dark font-sans text-xl font-bold"
+			>Source des articles de lois (sur fond bleu) :</span
+		>
+		<br />
+		Tous les textes de lois accessibles depuis Légiscope sont issus du projet
+		<a
+			class="lx-link-text"
+			href="https://git.tricoteuses.fr/tricoteuses/a_propos"
+			>Tricoteuses - la loi sous git</a
+		>, lui-même alimenté plusieurs fois par jour à partir des données publiques
+		de la direction des informations légales et administratives (DILA) en charge
+		de Légifrance.
+
+		<br />
+		<br />
+		Tricoteuses est un projet open source, auquel LexImpact contribue techniquement,
+		qui permet entre autres :
+		<ul class="ml-6 list-inside list-disc">
+			<li>
+				<span class="font-bold"
+					>d'ajouter automatiquement les milliers de liens URL manquants dans
+					les articles de loi</span
+				>, là où ces derniers référencent un autre article, afin d'établir le
+				réseau exhaustif des relations entre les articles. Cette tâche,
+				particulièrement fastidieuse à mettre en place, est indispensable pour
+				permettre à l'usager de naviguer d'un texte à l'autre. Si vous détectez
+				un lien cassé ou erroné, n'hésitez pas à nous
+				<a class="lx-link-text" href="#contact">contacter</a>.
+			</li>
+			<li>
+				<span class="font-bold"
+					>de regrouper et relier des bases de données relatives à la
+					législation</span
+				> dans un outil qui permet de structurer, organiser dans le temps et comparer
+				les versions entre elles (Git). Actuellement, Légiscope bénéficie du regroupement
+				des trois grandes bases de Légifrance effectué par Tricoteuses : la base
+				JORF contenant les textes publiés au Journal Officiel, la base LEGI contenant
+				les textes consolidés et la base DOLE accueillant les dossiers législatifs
+				de Légifrance. À terme, d'autres bases, telles que celles de l'Assemblée
+				nationale et du Sénat pourraient rejoindre l'outil dans l'objectif de retracer
+				plus finement le parcours de la loi dans son ensemble.
+			</li>
+		</ul>
+		<br />
+		<br />
+		<span class="text-le-gris-dispositif-dark font-sans text-xl font-bold"
+			>Source des informations sur les paramètres de la loi (taux, plafond...) :</span
+		><br />
+		Légiscope donne ponctuellement également accès à des informations sur les paramètres
+		présents dans le projet ou les textes de loi, telles que l'historique des valeurs
+		du paramètre, une description et, lorsque cela est applicable, un lien vers les
+		simulateurs LexImpact permettant d'estimer l'effet d'une modification du paramètre
+		sur cas types ou sur le budget.
+
+		<br />
+		<br />La description ou l'historique des valeurs du paramètre sont issus du
+		<a class="lx-link-text" href="https://openfisca.org/fr/"
+			>logiciel libre OpenFisca</a
+		>. L'Assemblée nationale, via LexImpact, contribue à ce moteur de calcul de
+		la législation et l'utilise pour le
+		<a class="lx-link-text" href="https://socio-fiscal.leximpact.an.fr/accueil"
+			>simulateur socio-fiscal</a
+		>
+		et le
+		<a class="lx-link-text" href="https://dotations.leximpact.an.fr/"
+			>simulateur des dotations aux communes</a
+		>.
+		<br />
+	</div>
+
+	<AnchorTitle
+		id="contact"
+		class="col-span-4 max-w-prose justify-self-center text-center text-2xl font-bold"
+		tag="h3"
+	>
+		Vous avez identifié une incohérence ou un bug ?<br />Vous souhaitez
+		contacter l'équipe ?
+	</AnchorTitle>
+	<div class="col-span-4 max-w-prose justify-self-center text-lg">
+		Si vous détectez une incohérence, un lien cassé ou erroné, ou simplement si
+		vous avez des suggestions, il vous est possible de contacter l'équipe à
+		cette adresse : <a
+			class="lx-link-text-le-bleu"
+			href="mailto:leximpact@assemblee-nationale.fr"
+			>leximpact@assemblee-nationale.fr</a
+		>
+	</div>
+	<AnchorTitle
+		id="cgu"
+		class="col-span-4 max-w-prose justify-self-center text-center text-2xl font-bold"
+		tag="h3"
+	>
+		Conditions d'utilisation
+	</AnchorTitle>
 </section>
 
 <style lang="postcss">
