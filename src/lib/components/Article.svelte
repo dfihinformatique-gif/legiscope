@@ -20,6 +20,8 @@
 			year: "numeric",
 		})
 	}
+
+	// console.log({ parameterReferences })
 </script>
 
 <div

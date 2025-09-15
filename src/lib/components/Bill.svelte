@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import { shared } from "$lib/shared.svelte"
+
 	interface Props {
 		pjlHTML: string | undefined
 	}
@@ -257,7 +258,7 @@
 			const shadow = container.attachShadow({ mode: "open" })
 
 			// Pour nettoyer le fichier HTML du PLF :
-			const cleanedHTML = pjlHTML
+			let cleanedHTML = pjlHTML
 				.replace(/style="([^"]*)"/g, (match, styleContent) => {
 					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
@@ -515,6 +516,13 @@
 					table.style.borderCollapse = "collapse"
 				}
 			})
+
+			shadow
+				.querySelectorAll<HTMLSpanElement>("span.highlighted")
+				.forEach((span) => {
+					span.style.setProperty("color", "red", "important")
+					span.style.setProperty("background-color", "yellow", "important")
+				})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML

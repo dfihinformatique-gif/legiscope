@@ -25,6 +25,12 @@
 		}
 	})
 
+	$effect(() => {
+		shared.pjlDate = data.pjlDate ?? shared.pjlDate
+	})
+
+	$inspect(shared.pjlDate)
+
 	// Permet d'afficher l'article dans la vue law quand on clique sur un lien depuis la bill
 	$effect(() => {
 		page.url
@@ -33,7 +39,7 @@
 			fetch(`/api/article/${lawArticle}/${shared.pjlDate}`)
 				.then((res) => (res.ok ? res.json() : null))
 				.then((data) => {
-					console.log({ data })
+					// console.log({ data })
 					isFetchingArticle = false
 					articleFromDb = data.article
 					associatedText = data.text
