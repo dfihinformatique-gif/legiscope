@@ -213,14 +213,15 @@ export function getSimplifiedCoordOfValuesToHighlight(
 			// )
 
 			if (
-				parameter.name ===
-					"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
-				linkCount == 16
+				parameter.name === "impot_revenu.bareme_ir_depuis_1945.bareme" &&
+				linkCount == 17
 			)
 				console.log({ stringValue, contenu, linkCount })
 
 			const stringValueToSearch = new RegExp(
-				String.raw`${escapeRegex(stringValue)}`,
+				String.raw`(^|\s+|[>\(\[])${escapeRegex(
+					stringValue,
+				)}(?!\s*\d)([\.<\)\]]|,\s+|\s+|$)`,
 				"g",
 			)
 
