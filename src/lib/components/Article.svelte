@@ -58,6 +58,7 @@
 				<a
 					class="lx-link-simple text-right text-nowrap text-gray-500"
 					href="https://www.legifrance.gouv.fr/loda/id/{articleFromDb.legi_id}"
+					target="_blank"
 					>Légifrance<iconify-icon
 						class="ml-0.5 align-[-0.15rem] text-sm"
 						icon="ri:external-link-line"
@@ -84,7 +85,7 @@
 					</div>
 				{/if}
 			{/if}
-			<div class="flex flex-wrap gap-x-3 gap-y-1">
+			<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
 					>Discussions parlementaires</a
 				>
@@ -94,7 +95,7 @@
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
 					>Jurisprudence</a
 				>
-			</div>
+			</div> -->
 		</div>
 
 		<!--Article-->

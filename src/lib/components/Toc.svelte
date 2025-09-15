@@ -126,7 +126,9 @@
 				></iconify-icon>
 			{/if}
 			{#if item.chemin === activeArticleChemin}
-				<span bind:this={activeEl}>{tocItem.title}</span>
+				<span class="rounded-md bg-white p-2 font-bold" bind:this={activeEl}
+					>{tocItem.title}</span
+				>
 			{:else if item.chemin.includes("LEGIARTI")}
 				<a href="{page.url.pathname}?lawArticle={item.dernier_segment}"
 					>{tocItem.title}</a

@@ -228,6 +228,16 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		}
 	}
 
+	const versions: { legi_id_lien: string; debut: string; fin: string } =
+		await dbConnection`
+	select legi_id_lien, debut, fin
+	from versions
+	where legi_id =${requestedArticle}
+	order by debut
+	`
+
+	// console.log({ versions })
+
 	const textTitle = await dbConnection<string>`
 	select coalesce(titre, titre_full) as titre
 	from
