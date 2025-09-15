@@ -80,14 +80,10 @@ function injectHighlightsIntoHtml(
 		const target = result.slice(originalStart, originalStop)
 		const after = result.slice(originalStop)
 
-		// console.log({ target })
-
 		const title = parameters.join(", ")
 
 		result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
 	}
-
-	// console.log({ result })
 
 	return result
 }
@@ -160,14 +156,34 @@ function highlightParameterValuesInHTML(
 						pjlDate,
 					)
 				if (simplifiedCoordToHighlight.length > 0) {
-					simplifiedCoordToHighlight.forEach((coord) => {
-						if (!simplifiedCoordWithParameters.has(coord)) {
-							simplifiedCoordWithParameters.set(coord, [])
-						}
-						simplifiedCoordWithParameters.get(coord)!.push(param.name!)
-					})
+					simplifiedCoordToHighlight.forEach(
+						(coord: { start: number; stop: number }) => {
+							// Chercher une clé existante avec les mêmes coordonnées
+							let existingKey = null
+							for (const [key] of simplifiedCoordWithParameters) {
+								if (key.start === coord.start && key.stop === coord.stop) {
+									existingKey = key
+									break
+								}
+							}
+
+							if (
+								existingKey &&
+								!simplifiedCoordWithParameters
+									.get(existingKey)!
+									.includes(param.name!)
+							) {
+								simplifiedCoordWithParameters
+									.get(existingKey)!
+									.push(param.name!)
+							} else {
+								simplifiedCoordWithParameters.set(coord, [param.name!])
+							}
+						},
+					)
 				}
 			})
+
 			const sortedSimplifiedCoord = simplifiedCoordWithParameters
 				.keys()
 				.toArray()
