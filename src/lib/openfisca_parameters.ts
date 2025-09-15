@@ -22,7 +22,6 @@ import {
 } from "@openfisca/json-model"
 
 import { ToWords } from "to-words"
-import { shared } from "./shared.svelte"
 
 const units = Object.values(
 	unitsUnknown as unknown as Record<string, unknown>,
@@ -63,19 +62,20 @@ function filterAfterDate(
 
 function* iterParameterPjlNumberValuesWithUnits(
 	parameter: ValueParameter | ScaleParameter | undefined | null,
+	pjlDate: string,
 ): Generator<{ unit: ConstantUnit | undefined; value: number }, void, unknown> {
 	if (parameter == null) {
 		return
 	}
 	if (parameter.class === ParameterClass.Scale) {
 		const scaleByInstant = scaleByInstantFromBrackets(parameter.brackets)
-		let dateLimitForParameterValues = shared.pjlDate
+		let dateLimitForParameterValues = pjlDate
 		if (
 			parameter.file_path?.startsWith(
 				"openfisca_france/parameters/impot_revenu/",
 			)
 		) {
-			const pjlTsDate = new Date(shared.pjlDate)
+			const pjlTsDate = new Date(pjlDate)
 			pjlTsDate.setFullYear(pjlTsDate.getFullYear() - 1)
 			dateLimitForParameterValues = pjlTsDate.toISOString().split("T")[0]
 		}
@@ -141,13 +141,13 @@ function* iterParameterPjlNumberValuesWithUnits(
 			}
 		}
 	} else if (parameter.class === ParameterClass.Value) {
-		let dateLimitForParameterValues = shared.pjlDate
+		let dateLimitForParameterValues = pjlDate
 		if (
 			parameter.file_path?.startsWith(
 				"openfisca_france/parameters/impot_revenu/",
 			)
 		) {
-			const pjlTsDate = new Date(shared.pjlDate)
+			const pjlTsDate = new Date(pjlDate)
 			pjlTsDate.setFullYear(pjlTsDate.getFullYear() - 1)
 			dateLimitForParameterValues = pjlTsDate.toISOString().split("T")[0]
 		}
@@ -182,10 +182,12 @@ export function getSimplifiedCoordOfValuesToHighlight(
 	contenu: string,
 	parameter: ValueParameter | ScaleParameter,
 	linkCount: number,
+	pjlDate: string,
 ): { start: number; stop: number }[] {
 	const result: { start: number; stop: number }[] = []
 	for (const { unit, value } of iterParameterPjlNumberValuesWithUnits(
 		parameter,
+		pjlDate,
 	)) {
 		for (const stringValue of [
 			...(unit === undefined || unit.ratio

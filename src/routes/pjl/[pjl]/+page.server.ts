@@ -95,6 +95,7 @@ function injectHighlightsIntoHtml(
 function highlightParameterValuesInHTML(
 	htmlContent: string,
 	parameterReferences: Map<string, Array<ValueParameter | ScaleParameter>>,
+	pjlDate: string,
 ): string {
 	const linkRegex =
 		/<a\s+[^>]*href='[^']*lawArticle=(LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*'[^>]*>.*?<\/a>/gi
@@ -152,7 +153,12 @@ function highlightParameterValuesInHTML(
 
 			parameterReferences.get(previousLawArticle)?.forEach((param) => {
 				const simplifiedCoordToHighlight =
-					getSimplifiedCoordOfValuesToHighlight(textPlain, param, linkCount)
+					getSimplifiedCoordOfValuesToHighlight(
+						textPlain,
+						param,
+						linkCount,
+						pjlDate,
+					)
 				if (simplifiedCoordToHighlight.length > 0) {
 					simplifiedCoordToHighlight.forEach((coord) => {
 						if (!simplifiedCoordWithParameters.has(coord)) {
@@ -257,6 +263,7 @@ export const load: PageServerLoad = async ({
 		const HTMLToReturn = highlightParameterValuesInHTML(
 			htmlWithLinks,
 			currentParameterReferences!,
+			pjlDate,
 		)
 		return {
 			pjlHTML: HTMLToReturn,
