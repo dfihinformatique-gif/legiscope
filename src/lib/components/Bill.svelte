@@ -289,16 +289,45 @@
 					return match
 				})
 
-			// Style les liens qui ouvrent la vue article à droite
-			const styleLawArticleLinks = (root: ShadowRoot) => {
+			// Nettoie et applique les styles aux liens vers les textes de loi
+			const cleanAndStyleLienTexteExterne = (
+				root: ShadowRoot | HTMLElement,
+			) => {
 				root
 					.querySelectorAll<HTMLAnchorElement>('a[href*="?lawArticle="]')
 					.forEach((link) => {
 						if (!link.href.includes("#")) {
+							link.querySelectorAll("span, p").forEach((el) => {
+								const computed = getComputedStyle(el)
+								const vAlign = computed.verticalAlign
+
+								// Si le span a un style vertical-align baseline ou vide,cela signifie que c’est un texte normal. On applique sa font-size au lien parent pour les cas où le style du texte entier est corrigé par des font-size dans des spans.
+								if (!vAlign || vAlign === "baseline") {
+									const fontSize = computed.fontSize
+									link.style.fontSize = fontSize
+
+									// Remplacer le span/p par un texte brut
+									el.replaceWith(document.createTextNode(el.textContent || ""))
+								}
+								// Si vertical-align est numérique (ex: 3pt, 2px), le span sert probablement à créer un exposant. On remplace le span par un <sup>.
+								else if (/\d+(px|pt)/.test(vAlign)) {
+									const sup = document.createElement("sup")
+									sup.textContent = el.textContent || ""
+									el.replaceWith(sup)
+									return
+								}
+								// Cas de sécurité : autres spans avec vertical-align non standard, on les remplace par texte brut pour éviter des styles inattendus
+								else {
+									el.replaceWith(document.createTextNode(el.textContent || ""))
+								}
+							})
+
+							// Ajouter la classe pour styler le lien
 							link.classList.add("law-article-link")
 						}
 					})
 			}
+
 			shadow.innerHTML = `
 				<style>
 						/* STYLES POUR RENDRE LISIBLE LE HTML */
@@ -425,13 +454,26 @@
 							text-decoration-thickness: 0.1rem !important;
 						}
 
+						/* STYLES des numéros d'alinéas dans les articles du projet de loi */
+
+						li.assnatFPFprojetloiartexte::before {
+							margin-right: 0.9em;
+							padding:0.1em;
+							counter-increment: li;
+							content: counter(li);
+							background-color: #f5f5f5;
+							color: #737373;
+							border-radius: 40%;
+							font-size: 0.7em;
+							font-family: sans-serif;
+						}
 
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
       `
 
 			// Style les liens qui ouvrent la vue Article
-			styleLawArticleLinks(shadow)
+			cleanAndStyleLienTexteExterne(shadow)
 
 			/* Ajoute l'icône svg en amont du lien et à l'intérieur */
 			shadow.querySelectorAll("a.law-article-link").forEach((link) => {

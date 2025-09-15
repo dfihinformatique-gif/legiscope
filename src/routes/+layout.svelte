@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from "$app/state"
+	import NavBarHome from "$lib/components/home_page/NavBarHome.svelte"
 	import { shared } from "$lib/shared.svelte"
 	import "iconify-icon"
 	import "../app.css"
@@ -20,9 +22,15 @@
 	<title>Assemblée nationale - LexImpact | Legi-UI</title>
 	<meta name="description" content="Explorateur de legislation LexImpact" />
 </svelte:head>
-<!-- Zone principale -->
-<main class="absolute inset-0 min-h-full overflow-hidden">
-	{@render children()}
-</main>
-<!-- Navbar -->
-<NavBar></NavBar>
+
+{#if page.url.pathname === "/"}
+	<NavBarHome></NavBarHome>
+	<main class="">{@render children()}</main>
+{:else}
+	<!-- Zone principale -->
+	<main class="absolute inset-0 min-h-full overflow-hidden">
+		{@render children()}
+	</main>
+	<!-- Navbar -->
+	<NavBar></NavBar>
+{/if}
