@@ -202,21 +202,12 @@ export function getSimplifiedCoordOfValuesToHighlight(
 			if (stringValue === null) {
 				continue
 			}
-			// const contenuHiglighted = contenu.replace(
-			// 	new RegExp(
-			// 		String.raw`(^|\s+|[>\(\[])${escapeRegex(
-			// 			stringValue,
-			// 		)}([\.<\)\]]|,\s+|\s+|$)`,
-			// 		"g",
-			// 	),
-			// 	`$1<span class="bg-le-gris-dispositif-light">${stringValue}</span>$2`,
-			// )
 
-			if (
-				parameter.name === "impot_revenu.bareme_ir_depuis_1945.bareme" &&
-				linkCount == 17
-			)
-				console.log({ stringValue, contenu, linkCount })
+			// if (
+			// 	parameter.name === "impot_revenu.bareme_ir_depuis_1945.bareme" &&
+			// 	linkCount == 17
+			// )
+			// 	console.log({ stringValue, contenu, linkCount })
 
 			const stringValueToSearch = new RegExp(
 				String.raw`(^|\s+|[>\(\[])${escapeRegex(
@@ -228,12 +219,12 @@ export function getSimplifiedCoordOfValuesToHighlight(
 			let match: RegExpExecArray | null
 
 			while ((match = stringValueToSearch.exec(contenu)) !== null) {
-				if (
-					parameter.name ===
-						"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
-					linkCount === 16
-				)
-					console.log({ match })
+				// if (
+				// 	parameter.name ===
+				// 		"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
+				// 	linkCount === 16
+				// )
+				// 	console.log({ match })
 				result.push({
 					start: match.index,
 					stop: match.index + match[0].length,
@@ -272,7 +263,6 @@ export function collectParameterReferences(
 			const identifiers = extractLegalIdentifiers(urlField)
 			identifiers.forEach((identifier) => {
 				if (!referenceMap.has(identifier)) {
-					//TODO: search for other Identifier
 					referenceMap.set(identifier, [])
 				}
 				if (
@@ -282,24 +272,6 @@ export function collectParameterReferences(
 					referenceMap.get(identifier)!.push(parameter)
 			})
 		}
-
-		// Si aucun identifiant n'est trouvé, utilise une clé de fallback
-		// if (
-		// 	!urlField ||
-		// 	typeof urlField !== "string" ||
-		// 	extractLegalIdentifiers(urlField).length === 0
-		// ) {
-		// 	const titleField = "title" in reference ? reference.title : undefined
-		// 	const fallbackKey =
-		// 		titleField && typeof titleField === "string"
-		// 			? titleField
-		// 			: JSON.stringify(reference)
-
-		// 	if (!referenceMap.has(fallbackKey)) {
-		// 		referenceMap.set(fallbackKey, [])
-		// 	}
-		// 	referenceMap.get(fallbackKey)!.push(parameter)
-		// }
 	}
 
 	/**

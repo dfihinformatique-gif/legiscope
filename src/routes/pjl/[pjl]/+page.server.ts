@@ -124,13 +124,13 @@ function highlightParameterValuesInHTML(
 			const textPlain = simplified.output
 			let processedHtml = textBefore
 
-			if (
-				previousLawArticle === "LEGIARTI000048805464" &&
-				currentLawArticle === "LEGIARTI000048805432"
-			) {
-				// console.log({ plainText, previousLawArticle })
-				console.log({ textBefore, transformation: simplified })
-			}
+			// if (
+			// 	previousLawArticle === "LEGIARTI000048805464" &&
+			// 	currentLawArticle === "LEGIARTI000048805432"
+			// ) {
+			// 	// console.log({ plainText, previousLawArticle })
+			// 	console.log({ textBefore, transformation: simplified })
+			// }
 
 			const simplifiedCoordWithParameters: Map<
 				{ start: number; stop: number },
@@ -184,12 +184,12 @@ function highlightParameterValuesInHTML(
 				sortedSimplifiedCoord,
 			)
 			if (sortedSimplifiedCoord.length > 0) {
-				if (linkCount === 16) {
-					console.log({
-						sortedSimplifiedCoord,
-						coordsInOriginal,
-					})
-				}
+				// if (linkCount === 16) {
+				// 	console.log({
+				// 		sortedSimplifiedCoord,
+				// 		coordsInOriginal,
+				// 	})
+				// }
 				sortedSimplifiedCoord.forEach((coord, index) => {
 					coordsToHighlight.set(
 						{
