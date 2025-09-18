@@ -1,14 +1,12 @@
 <script lang="ts">
 	import Toc from "$lib/components/Toc.svelte"
-	import type { Legiarti } from "$lib/db_data_types"
+	import type { ArticleInfo } from "$lib/db_data_types"
 
 	interface Props {
-		articleFromDb: Legiarti
-		associatedText: string
-		associatedTextTitle: string
+		articleInfo: ArticleInfo
 		pjlDate: string
 	}
-	let { articleFromDb, associatedText, associatedTextTitle }: Props = $props()
+	let { articleInfo }: Props = $props()
 	let tocIsOpen = $state(false)
 </script>
 
@@ -29,12 +27,12 @@
 			icon={tocIsOpen ? "ri:arrow-down-s-line" : "ri:arrow-right-s-line"}
 		>
 		</iconify-icon>
-		{associatedTextTitle}
+		{articleInfo.textTitle}
 	</button>
 
 	{#if tocIsOpen}
 		<div class="mb-10 ml-6">
-			<Toc {articleFromDb} {associatedText}></Toc>
+			<Toc {articleInfo}></Toc>
 		</div>
 	{/if}
 </div>

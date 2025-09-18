@@ -1,16 +1,13 @@
 <script lang="ts">
-	import type { Legiarti } from "$lib/db_data_types"
+	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
-		articleFromDb: Legiarti
+		articleInfo: ArticleInfo
 		pjlDate: string
-		associatedText: string
-		associatedTextTitle: string
 	}
-	const { articleFromDb, pjlDate, associatedText, associatedTextTitle }: Props =
-		$props()
+	const { articleInfo, pjlDate }: Props = $props()
 
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
@@ -28,14 +25,9 @@
 	class="mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
-	{#if articleFromDb}
+	{#if articleInfo.article}
 		<!--Sommaire-->
-		<ArticleSummary
-			{articleFromDb}
-			{pjlDate}
-			{associatedText}
-			{associatedTextTitle}
-		></ArticleSummary>
+		<ArticleSummary {articleInfo} {pjlDate}></ArticleSummary>
 
 		<!--En-tête-->
 		<div
@@ -50,14 +42,15 @@
 					icon="ri:book-marked-fill"
 				>
 				</iconify-icon>
-				{#if articleFromDb.num !== undefined}
-					<span class="text-nowrap">Article {articleFromDb.num}</span>
-				{/if} · <span class="">{associatedTextTitle}</span>
+				{#if articleInfo.article.num !== undefined}
+					<span class="text-nowrap">Article {articleInfo.article.num}</span>
+				{/if} · <span class="">{articleInfo.textTitle}</span>
 			</div>
 			<div class="flex w-full justify-end md:mt-1 md:w-min">
 				<a
 					class="lx-link-simple text-right text-nowrap text-gray-500"
-					href="https://www.legifrance.gouv.fr/loda/id/{articleFromDb.legi_id}"
+					href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
+						.legi_id}"
 					target="_blank"
 					>Légifrance<iconify-icon
 						class="ml-0.5 align-[-0.15rem] text-sm"
@@ -67,23 +60,28 @@
 			</div>
 		</div>
 		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
-			{#if articleFromDb.date_debut}
-				{#if articleFromDb.date_fin === "2999-01-01"}
-					<div
-						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
-					>
-						Version en vigueur depuis le {formatDateFr(
-							articleFromDb.date_debut,
-						)}
-					</div>
-				{:else}
-					<div
-						class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
-					>
-						Version valable du {formatDateFr(articleFromDb.date_debut)}
-						au {formatDateFr(articleFromDb.date_fin)}
-					</div>
-				{/if}
+			{#if articleInfo.versions}
+				<select
+					name="versions"
+					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
+				>
+					{#each articleInfo.versions as version (version.legi_id_lien)}
+						<option
+							value={version}
+							selected={shared.pjlDate > version.debut &&
+								shared.pjlDate < version.fin}
+						>
+							{#if articleInfo.article.date_debut}
+								{#if articleInfo.article.date_fin === "2999-01-01"}
+									Version en vigueur depuis le {formatDateFr(version.debut)}
+								{:else}
+									Version valable du {formatDateFr(version.debut)}
+									au {formatDateFr(version.fin)}
+								{/if}
+							{/if}
+						</option>
+					{/each}
+				</select>
 			{/if}
 			<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
@@ -99,9 +97,9 @@
 		</div>
 
 		<!--Article-->
-		{#if articleFromDb.bloc_textuel !== undefined && articleFromDb.bloc_textuel !== null}
+		{#if articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html articleFromDb.bloc_textuel}</span
+				>{@html articleInfo.article.bloc_textuel}</span
 			>
 		{/if}
 	{:else}

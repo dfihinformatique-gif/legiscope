@@ -1,6 +1,5 @@
+import type { ArticleInfo, Legiarti } from "$lib/db_data_types"
 import { error, json } from "@sveltejs/kit"
-// import type { LegiArticle } from "@tricoteuses/legifrance"
-import type { Legiarti } from "$lib/db_data_types"
 import type { RequestHandler } from "../$types"
 
 interface queryFirstArticle {
@@ -13,14 +12,11 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		date: string
 	}
 	const { sql } = locals
-	const output: {
-		article: Legiarti | undefined
-		text: string | undefined
-		textTitle: string | undefined
-	} = {
+	const output: ArticleInfo = {
 		article: undefined,
 		text: undefined,
 		textTitle: undefined,
+		versions: undefined,
 	}
 	const dbConnection = await sql.reserve()
 	let articleFromDb: Legiarti[] = []
@@ -228,13 +224,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		}
 	}
 
-	const versions: { legi_id_lien: string; debut: string; fin: string } =
+	const versions: { legi_id_lien: string; debut: string; fin: string }[] =
 		await dbConnection`
 	select legi_id_lien, debut, fin
 	from versions
 	where legi_id =${requestedArticle}
 	order by debut
 	`
+	output.versions = versions
 
 	// console.log({ versions })
 

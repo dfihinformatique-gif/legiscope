@@ -3,7 +3,7 @@
 	import Article from "$lib/components/Article.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
-	import type { Legiarti } from "$lib/db_data_types"
+	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import type { PageProps } from "./$types"
 
@@ -11,9 +11,7 @@
 
 	let { data }: PageProps = $props()
 
-	let articleFromDb: Legiarti | undefined = $state(undefined)
-	let associatedText: string = $state("")
-	let associatedTextTitle: string = $state("")
+	let articleInfo: ArticleInfo | undefined = $state(undefined)
 	let lawArticle = $derived(page.url.searchParams.get("lawArticle") || "")
 	let pjlHTML = $state(data.pjlHTML)
 
@@ -41,9 +39,7 @@
 				.then((data) => {
 					// console.log({ data })
 					isFetchingArticle = false
-					articleFromDb = data.article
-					associatedText = data.text
-					associatedTextTitle = data.textTitle ?? ""
+					articleInfo = data
 					if (shared.isMobilePhone) {
 						shared.activePanelMobile = "law"
 					} else {
@@ -52,7 +48,7 @@
 				})
 				.catch(() => (lawArticle = ""))
 		} else {
-			articleFromDb = undefined
+			articleInfo = undefined
 		}
 	})
 </script>
@@ -82,13 +78,8 @@
 		>
 			{#if isFetchingArticle}
 				<SkeletonArticleLoader />
-			{:else if articleFromDb !== undefined}
-				<Article
-					{articleFromDb}
-					pjlDate={shared.pjlDate}
-					{associatedText}
-					{associatedTextTitle}
-				></Article>
+			{:else if articleInfo !== undefined}
+				<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
@@ -132,13 +123,8 @@
 				>
 					<SkeletonArticleLoader />
 				</div>
-			{:else if articleFromDb !== undefined}
-				<Article
-					{articleFromDb}
-					pjlDate={shared.pjlDate}
-					{associatedText}
-					{associatedTextTitle}
-				></Article>
+			{:else if articleInfo !== undefined}
+				<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"

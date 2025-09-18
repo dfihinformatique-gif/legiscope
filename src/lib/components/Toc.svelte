@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state"
-	import type { Legiarti, TocData, TocDataRow } from "$lib/db_data_types"
+	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 
 	interface Props {
-		articleFromDb: Legiarti
-		associatedText: string
+		articleInfo: ArticleInfo
 	}
-	let { articleFromDb, associatedText }: Props = $props()
+	let { articleInfo }: Props = $props()
 	let tocData: TocData | undefined = $state(undefined)
 
 	let topLevelItems = $derived(getTopLevelItems(tocData))
@@ -28,7 +27,7 @@
 		}
 	})
 
-	fetch(`/api/toc/${associatedText}/${shared.pjlDate}`)
+	fetch(`/api/toc/${articleInfo.text}/${shared.pjlDate}`)
 		.then((res) => (res.ok ? res.json() : null))
 		.then((data) => (tocData = data))
 		.catch(() => (tocData = undefined))
@@ -92,7 +91,9 @@
 		if (!data) {
 			return undefined
 		}
-		return data.filter((item) => item.dernier_segment === articleFromDb.legi_id)
+		return data.filter(
+			(item) => item.dernier_segment === articleInfo.article.legi_id,
+		)
 	}
 </script>
 
