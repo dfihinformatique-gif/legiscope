@@ -57,9 +57,15 @@ export interface TocDataRow {
 }
 export type TocData = TocDataRow[]
 
+export type VersionArticle = {
+	legi_id_lien: string
+	debut: string
+	fin: string
+}
+
 export type ArticleInfo = {
 	article: Legiarti | undefined
 	text: string | undefined
 	textTitle: string | undefined
-	versions: { legi_id_lien: string; debut: string; fin: string }[] | undefined
+	versions: VersionArticle[] | undefined
 }

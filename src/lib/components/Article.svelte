@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import type { ArticleInfo } from "$lib/db_data_types"
+	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
@@ -20,13 +20,7 @@
 		})
 	}
 
-	let selectedVersion:
-		| {
-				legi_id_lien: string
-				debut: string
-				fin: string
-		  }
-		| undefined = $state(undefined)
+	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 </script>
@@ -37,7 +31,7 @@
 >
 	{#if articleInfo.article}
 		<!--Sommaire-->
-		<ArticleSummary {articleInfo} {pjlDate}></ArticleSummary>
+		<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 
 		<!--En-tête-->
 		<div

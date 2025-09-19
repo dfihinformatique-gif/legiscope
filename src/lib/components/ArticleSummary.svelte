@@ -4,9 +4,9 @@
 
 	interface Props {
 		articleInfo: ArticleInfo
-		pjlDate: string
+		date: string
 	}
-	let { articleInfo }: Props = $props()
+	let { articleInfo, date }: Props = $props()
 	let tocIsOpen = $state(false)
 </script>
 
@@ -32,7 +32,7 @@
 
 	{#if tocIsOpen}
 		<div class="mb-10 ml-6">
-			<Toc {articleInfo}></Toc>
+			<Toc {articleInfo} {date}></Toc>
 		</div>
 	{/if}
 </div>

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
-	import { shared } from "$lib/shared.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
+		date: string
 	}
-	let { articleInfo }: Props = $props()
+	let { articleInfo, date }: Props = $props()
 	let tocData: TocData | undefined = $state(undefined)
 
 	let topLevelItems = $derived(getTopLevelItems(tocData))
@@ -27,7 +27,7 @@
 		}
 	})
 
-	fetch(`/api/toc/${articleInfo.text}/${shared.pjlDate}`)
+	fetch(`/api/toc/${articleInfo.text}/${date}`)
 		.then((res) => (res.ok ? res.json() : null))
 		.then((data) => (tocData = data))
 		.catch(() => (tocData = undefined))
