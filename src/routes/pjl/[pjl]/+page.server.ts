@@ -265,10 +265,11 @@ export const load: PageServerLoad = async ({
 }> => {
 	const lawArticle = url.searchParams.get("article")
 	const urlDate = url.searchParams.get("date")
+	const requestedDate = urlDate ?? shared.pjlDate
 
 	try {
-		if (lawArticle) {
-			return { articleInfoPromise: getArticle(lawArticle, shared.pjlDate) }
+		if (lawArticle !== undefined && lawArticle !== null) {
+			return { articleInfoPromise: getArticle(lawArticle, requestedDate) }
 		} else {
 			return {
 				articleInfoPromise: undefined,

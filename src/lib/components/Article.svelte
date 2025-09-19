@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from "$app/navigation"
+	import { page } from "$app/state"
 	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -18,7 +20,15 @@
 		})
 	}
 
-	// console.log({ parameterReferences })
+	let selectedVersion:
+		| {
+				legi_id_lien: string
+				debut: string
+				fin: string
+		  }
+		| undefined = $state(undefined)
+
+	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 </script>
 
 <div
@@ -64,12 +74,25 @@
 				<select
 					name="versions"
 					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
+					onchange={() => {
+						const urlToNavigate = new URL(page.url)
+						urlToNavigate.searchParams.set(
+							"article",
+							selectedVersion!.legi_id_lien,
+						)
+						urlToNavigate.searchParams.set(
+							"date",
+							new Date(selectedVersion!.debut).toISOString().split("T")[0],
+						)
+						goto(urlToNavigate, { replaceState: false })
+					}}
+					bind:value={selectedVersion}
 				>
 					{#each articleInfo.versions as version (version.legi_id_lien)}
 						<option
 							value={version}
-							selected={new Date(shared.pjlDate) >= new Date(version.debut) &&
-								new Date(shared.pjlDate) < new Date(version.fin)}
+							selected={new Date(dateForSelect) >= new Date(version.debut) &&
+								new Date(dateForSelect) < new Date(version.fin)}
 						>
 							{#if articleInfo.article.date_debut}
 								{#if articleInfo.article.date_fin === "2999-01-01"}
