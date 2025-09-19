@@ -99,10 +99,24 @@ async function getArticle(
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
 			} else if (associatedText.length === 0) {
-				throw error(
-					422,
-					`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
-				)
+				const associatedTextOutOfBoundaries = await dbConnection`
+				select distinct subltree(s.chemin, 0, 1) as associated_text
+				from scta s
+				where dernier_segment = ${requestedArticle}`
+
+				if (associatedTextOutOfBoundaries.length === 1) {
+					output.text = associatedTextOutOfBoundaries[0].associated_text
+				} else if (associatedTextOutOfBoundaries.length > 1) {
+					throw error(
+						422,
+						`Could not find text associated to ${requestedArticle} for date ${requestedDate}`,
+					)
+				} else {
+					throw error(
+						422,
+						`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
+					)
+				}
 			} else {
 				throw error(
 					422,
