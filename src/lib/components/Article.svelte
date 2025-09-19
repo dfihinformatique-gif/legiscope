@@ -13,11 +13,13 @@
 
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
-		return date.toLocaleDateString("fr-FR", {
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		})
+		return date
+			.toLocaleDateString("fr-FR", {
+				day: "numeric",
+				month: "long",
+				year: "numeric",
+			})
+			.replace(/^1 /, "1er ")
 	}
 
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
