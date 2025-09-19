@@ -220,7 +220,7 @@ async function getArticle(
 			select legi_id_lien, debut, fin
 			from versions
 			where legi_id = ${requestedArticle}
-			order by debut`
+			order by debut desc`
 		output.versions = versionsResult
 
 		// Récupération du titre du texte

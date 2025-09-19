@@ -68,8 +68,8 @@
 					{#each articleInfo.versions as version (version.legi_id_lien)}
 						<option
 							value={version}
-							selected={shared.pjlDate > version.debut &&
-								shared.pjlDate < version.fin}
+							selected={new Date(shared.pjlDate) >= new Date(version.debut) &&
+								new Date(shared.pjlDate) < new Date(version.fin)}
 						>
 							{#if articleInfo.article.date_debut}
 								{#if articleInfo.article.date_fin === "2999-01-01"}
