@@ -131,7 +131,7 @@
 					>{tocItem.title}</span
 				>
 			{:else if item.chemin.includes("LEGIARTI")}
-				<a href="{page.url.pathname}?lawArticle={item.dernier_segment}"
+				<a href="{page.url.pathname}?article={item.dernier_segment}"
 					>{tocItem.title}</a
 				>
 			{:else}

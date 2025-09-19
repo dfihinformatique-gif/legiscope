@@ -263,7 +263,9 @@ export const load: PageServerLoad = async ({
 }): Promise<{
 	articleInfoPromise: Promise<ArticleInfo> | undefined
 }> => {
-	const lawArticle = url.searchParams.get("lawArticle")
+	const lawArticle = url.searchParams.get("article")
+	const urlDate = url.searchParams.get("date")
+
 	try {
 		if (lawArticle) {
 			return { articleInfoPromise: getArticle(lawArticle, shared.pjlDate) }

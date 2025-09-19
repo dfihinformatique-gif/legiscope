@@ -95,7 +95,7 @@ function highlightParameterValuesInHTML(
 	pjlDate: string,
 ): string {
 	const linkRegex =
-		/<a\s+[^>]*href='[^']*lawArticle=(LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*'[^>]*>.*?<\/a>/gi
+		/<a\s+[^>]*href='[^']*article=(LEGITEXT|LEGIARTI|JORFTEXT|JORFARTI)[^']*'[^>]*>.*?<\/a>/gi
 
 	const parts: string[] = []
 	let lastIndex = 0
@@ -120,14 +120,6 @@ function highlightParameterValuesInHTML(
 			const simplified = simplifyHtml({ removeAWithHref: true })(textBefore)
 			const textPlain = simplified.output
 			let processedHtml = textBefore
-
-			// if (
-			// 	previousLawArticle === "LEGIARTI000048805464" &&
-			// 	currentLawArticle === "LEGIARTI000048805432"
-			// ) {
-			// 	// console.log({ plainText, previousLawArticle })
-			// 	console.log({ textBefore, transformation: simplified })
-			// }
 
 			const simplifiedCoordWithParameters: Map<
 				{ start: number; stop: number },
@@ -201,12 +193,6 @@ function highlightParameterValuesInHTML(
 				sortedSimplifiedCoord,
 			)
 			if (sortedSimplifiedCoord.length > 0) {
-				// if (linkCount === 16) {
-				// 	console.log({
-				// 		sortedSimplifiedCoord,
-				// 		coordsInOriginal,
-				// 	})
-				// }
 				sortedSimplifiedCoord.forEach((coord, index) => {
 					coordsToHighlight.set(
 						{
@@ -224,7 +210,6 @@ function highlightParameterValuesInHTML(
 				})
 			}
 			if (coordsToHighlight.size > 0) {
-				// console.log({ coordsToHighlight })
 				// Réinjecter les highlights dans le HTML original
 				processedHtml = injectHighlightsIntoHtml(textBefore, coordsToHighlight)
 			}
@@ -273,7 +258,7 @@ export const load: LayoutServerLoad = async ({
 			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
 			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
-				return `<a href='/pjl/${pjl}?lawArticle=${lawArticle}'>${p2}</a>`
+				return `<a href='/pjl/${pjl}?article=${lawArticle}'>${p2}</a>`
 			},
 		)
 		const HTMLToReturn = highlightParameterValuesInHTML(

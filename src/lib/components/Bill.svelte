@@ -294,7 +294,7 @@
 				root: ShadowRoot | HTMLElement,
 			) => {
 				root
-					.querySelectorAll<HTMLAnchorElement>('a[href*="?lawArticle="]')
+					.querySelectorAll<HTMLAnchorElement>('a[href*="?article="]')
 					.forEach((link) => {
 						if (!link.href.includes("#")) {
 							link.querySelectorAll("span, p").forEach((el) => {
