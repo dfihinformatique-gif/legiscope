@@ -92,7 +92,7 @@
 			return undefined
 		}
 		return data.filter(
-			(item) => item.dernier_segment === articleInfo.article.legi_id,
+			(item) => item.dernier_segment === articleInfo.article?.legi_id,
 		)
 	}
 </script>

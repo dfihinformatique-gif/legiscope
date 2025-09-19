@@ -1,18 +1,11 @@
 <script lang="ts">
-	import { page } from "$app/state"
 	import Article from "$lib/components/Article.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
-	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import type { PageProps } from "./$types"
 
-	let isFetchingArticle = $state(false)
-
 	let { data }: PageProps = $props()
-
-	let articleInfo: ArticleInfo | undefined = $state(undefined)
-	let lawArticle = $derived(page.url.searchParams.get("lawArticle") || "")
 	let pjlHTML = $state(data.pjlHTML)
 
 	let lawContainer: HTMLDivElement | undefined = $state()
@@ -24,32 +17,15 @@
 	})
 
 	$effect(() => {
-		shared.pjlDate = data.pjlDate ?? shared.pjlDate
+		if (data.articleInfoPromise) {
+			data.articleInfoPromise.then((articleInfo) => {
+				shared.activePanelMobile = "law"
+			})
+		}
 	})
 
-	$inspect(shared.pjlDate)
-
-	// Permet d'afficher l'article dans la vue law quand on clique sur un lien depuis la bill
 	$effect(() => {
-		page.url
-		if (lawArticle) {
-			isFetchingArticle = true
-			fetch(`/api/article/${lawArticle}/${shared.pjlDate}`)
-				.then((res) => (res.ok ? res.json() : null))
-				.then((data) => {
-					// console.log({ data })
-					isFetchingArticle = false
-					articleInfo = data
-					if (shared.isMobilePhone) {
-						shared.activePanelMobile = "law"
-					} else {
-						shared.showLawDesktop = true
-					}
-				})
-				.catch(() => (lawArticle = ""))
-		} else {
-			articleInfo = undefined
-		}
+		shared.pjlDate = data.pjlDate ?? shared.pjlDate
 	})
 </script>
 
@@ -76,10 +52,14 @@
 						: "pointer-events-none w-0 opacity-0"
 			}`}
 		>
-			{#if isFetchingArticle}
-				<SkeletonArticleLoader />
-			{:else if articleInfo !== undefined}
-				<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+			{#if data.articleInfoPromise !== undefined}
+				{#await data.articleInfoPromise}
+					<SkeletonArticleLoader />
+				{:then articleInfo}
+					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+				{:catch error}
+					<p>Erreur: {error.message}</p>
+				{/await}
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
@@ -117,14 +97,18 @@
 			class="h-screen w-full overflow-y-auto bg-blue-100"
 			class:hidden={shared.activePanelMobile !== "law"}
 		>
-			{#if isFetchingArticle}
-				<div
-					class="flex h-screen flex-col items-center justify-center text-center"
-				>
-					<SkeletonArticleLoader />
-				</div>
-			{:else if articleInfo !== undefined}
-				<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+			{#if data.articleInfoPromise !== undefined}
+				{#await data.articleInfoPromise}
+					<div
+						class="flex h-screen flex-col items-center justify-center text-center"
+					>
+						<SkeletonArticleLoader />
+					</div>
+				{:then articleInfo}
+					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+				{:catch error}
+					<p>Erreur: {error.message}</p>
+				{/await}
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
