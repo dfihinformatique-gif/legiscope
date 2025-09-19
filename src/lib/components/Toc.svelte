@@ -8,6 +8,7 @@
 	}
 	let { articleInfo, date }: Props = $props()
 	let tocData: TocData | undefined = $state(undefined)
+	let articleIsNotInValidSection = $state(false)
 
 	let topLevelItems = $derived(getTopLevelItems(tocData))
 	let activeArticleChemin = $derived(
@@ -29,7 +30,14 @@
 
 	fetch(`/api/toc/${articleInfo.text}/${date}`)
 		.then((res) => (res.ok ? res.json() : null))
-		.then((data) => (tocData = data))
+		.then((data) => {
+			tocData = data
+			const articleRow = (tocData as TocData).find(
+				(scta: TocDataRow) =>
+					scta.dernier_segment === articleInfo.article?.legi_id,
+			)
+			articleIsNotInValidSection = articleRow?.invalid_sections === "1"
+		})
 		.catch(() => (tocData = undefined))
 
 	const TocItemRecursive = ({
@@ -95,8 +103,26 @@
 			(item) => item.dernier_segment === articleInfo.article?.legi_id,
 		)
 	}
+
+	function formatDateFr(dateStr: string): string {
+		const date = new Date(dateStr)
+		return date.toLocaleDateString("fr-FR", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		})
+	}
 </script>
 
+{#if articleIsNotInValidSection}
+	<p>
+		<span class="text-red-600"
+			>Les données disponibles ne permettent pas d'afficher le contexte de cet
+			article à la date du {formatDateFr(date)}</span
+		>
+	</p>
+	<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
+{/if}
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
 		{#each topLevelItems as item}

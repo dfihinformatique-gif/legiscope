@@ -34,6 +34,7 @@ export interface SctaRow {
 	ordinalite: number | null
 	tri_hierarchique: string | null
 	parents_valid_period: string | null
+	invalid_sections: string
 	dernier_segment: string | null
 }
 
@@ -54,6 +55,7 @@ export interface TocDataRow {
 	tri_hierarchique: string | null
 	parents_valid_period: DateRange | null
 	dernier_segment: string | null
+	invalid_sections: string
 }
 export type TocData = TocDataRow[]
 

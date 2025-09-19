@@ -46,6 +46,7 @@ function parseTocDataRow(raw: SctaRow): TocDataRow {
 		ordinalite: raw.ordinalite,
 		tri_hierarchique: raw.tri_hierarchique,
 		parents_valid_period: parseDateRange(raw.parents_valid_period),
+		invalid_sections: raw.invalid_sections,
 		dernier_segment: raw.dernier_segment,
 	}
 }
