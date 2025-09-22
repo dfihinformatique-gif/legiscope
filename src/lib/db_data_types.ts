@@ -70,4 +70,5 @@ export type ArticleInfo = {
 	text: string | undefined
 	textTitle: string | undefined
 	versions: VersionArticle[] | undefined
+	jorfTextDatePubli: string | undefined
 }

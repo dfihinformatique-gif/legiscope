@@ -12,6 +12,7 @@ async function getArticle(
 		article: undefined,
 		text: undefined,
 		textTitle: undefined,
+		jorfTextDatePubli: undefined,
 		versions: undefined,
 	}
 
@@ -237,7 +238,7 @@ async function getArticle(
 			order by debut desc`
 		output.versions = versionsResult
 
-		// Récupération du titre du texte
+		// Récupération du titre du texte et de la date de publication JO le cas échéant
 		if (output.text) {
 			const textTitle = await dbConnection`
 				select coalesce(titre, titre_full) as titre
@@ -250,6 +251,35 @@ async function getArticle(
 
 			if (textTitle.length > 0) {
 				output.textTitle = textTitle[0].titre
+			}
+
+			let jorfText: string | undefined = output.text
+			if (!jorfText.startsWith("JORFTEXT")) {
+				const jorfArti = output.versions.filter((version) =>
+					version.legi_id_lien.startsWith("JORF"),
+				)[0]
+				if (jorfArti !== undefined) {
+					const jorfTextResults = await dbConnection`
+					select distinct subltree(s.chemin, 0, 1) as associated_text
+				from scta s
+				where dernier_segment = ${jorfArti.legi_id_lien}`
+
+					if (jorfTextResults.length > 0) {
+						jorfText = jorfTextResults[0].associated_text
+					} else {
+						jorfText = undefined
+					}
+				}
+			}
+			if (jorfText !== undefined) {
+				const jorfTextDatePubli = await dbConnection`
+				select to_char(date_publi, 'YYYY-MM-DD') date_publi
+				from jorftext
+				where legi_id = ${jorfText}
+				`
+				if (jorfTextDatePubli.length === 1 && jorfTextDatePubli[0].date_publi) {
+					output.jorfTextDatePubli = jorfTextDatePubli[0].date_publi
+				}
 			}
 		}
 
