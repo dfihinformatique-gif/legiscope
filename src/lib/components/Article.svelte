@@ -90,8 +90,8 @@
 							selected={new Date(dateForSelect) >= new Date(version.debut) &&
 								new Date(dateForSelect) < new Date(version.fin)}
 						>
-							{#if articleInfo.article.date_debut}
-								{#if articleInfo.article.date_fin === "2999-01-01"}
+							{#if version.debut}
+								{#if version.fin === "2999-01-01"}
 									Version en vigueur depuis le {formatDateFr(version.debut)}
 								{:else}
 									Version valable du {formatDateFr(version.debut)}
