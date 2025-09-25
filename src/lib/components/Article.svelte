@@ -3,6 +3,7 @@
 	import { page } from "$app/state"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
+	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
 	interface Props {
@@ -25,6 +26,7 @@
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
+	let historyIsOpen = $state(false)
 </script>
 
 <div
@@ -116,6 +118,32 @@
 					>Jurisprudence</a
 				>
 			</div> -->
+		</div>
+		<div
+			class:mb-10={historyIsOpen}
+			class:border-b={historyIsOpen}
+			class:shadow-bottom-extralight={historyIsOpen}
+			class:border-gray-200={historyIsOpen}
+		>
+			<button
+				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				onclick={() => {
+					historyIsOpen = !historyIsOpen
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.3rem] text-xl"
+					icon={historyIsOpen
+						? "ri:arrow-down-s-line"
+						: "ri:arrow-right-s-line"}
+				>
+				</iconify-icon>
+				Historique de l'article
+			</button>
+
+			{#if historyIsOpen}
+				<ArticleHistory {articleInfo}></ArticleHistory>
+			{/if}
 		</div>
 
 		<!--Article-->
