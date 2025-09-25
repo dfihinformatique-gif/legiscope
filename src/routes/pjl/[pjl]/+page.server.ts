@@ -234,7 +234,7 @@ async function getArticle(
 		}[] = await dbConnection`
 			select legi_id_lien, to_char(debut, 'YYYY-MM-DD') debut, to_char(fin, 'YYYY-MM-DD') fin
 			from versions
-			where legi_id = ${requestedArticle}
+			where legi_id = ${articleFromDb[0].legi_id}
 			order by debut desc`
 		output.versions = versionsResult
 
