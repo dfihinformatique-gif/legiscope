@@ -25,7 +25,7 @@
 	}
 </script>
 
-{#if historyData}
+{#if historyData !== undefined}
 	<ul>
 		{#each historyData as row}
 			{@const urlToNavigate = new URL(page.url)}
