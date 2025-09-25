@@ -14,15 +14,6 @@
 			historyData = data
 		})
 		.catch(() => (historyData = undefined))
-
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date.toLocaleDateString("fr-FR", {
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		})
-	}
 </script>
 
 {#if historyData !== undefined}
