@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				where legi_id = ${id}
 				),
 			creat_modif as (
-				select v.*, al.cidtexte, jt.titre_full titre_texte , al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
+				select v.*, al.cidtexte, jt.titre_full titre_texte, jt.date_publi, al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
 				from articles_liens al
 				join v on (v.legi_id_lien = al.legi_id)
 				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
@@ -27,9 +27,9 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				when typelien = 'CREATION' then 'CREE'
 				when typelien = 'ABROGATION' then 'ABROGE'
 				else typelien
-				end typelien, debut
+				end typelien, date_publi
 			from creat_modif cm
-			order by debut desc`
+			order by date_publi desc`
 	await dbConnection.release()
 
 	if (historyData.length === 0) {

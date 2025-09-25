@@ -79,6 +79,6 @@ export interface HistoryDataRow {
 	article_jorf: string | null
 	num: string | null
 	typelien: string
-	debut: Date | null
+	date_publi: Date | null
 }
 export type HistoryData = HistoryDataRow[]
