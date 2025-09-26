@@ -89,13 +89,14 @@
 					{#each articleInfo.versions as version (version.legi_id_lien)}
 						<option
 							value={version}
-							selected={new Date(dateForSelect) >= new Date(version.debut) &&
-								new Date(dateForSelect) < new Date(version.fin)}
+							selected={articleInfo.article.legi_id === version.legi_id_lien}
 						>
 							{#if version.debut}
 								{#if version.legi_id_lien.startsWith("JORF")}(JORF {formatDateFr(
 										articleInfo.jorfTextDatePubli!,
 									)})
+								{:else if version.debut === "2999-01-01"}
+									Version de versement
 								{:else if version.fin === "2999-01-01"}
 									Version en vigueur depuis le {formatDateFr(version.debut)}
 								{:else}
