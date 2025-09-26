@@ -17,7 +17,7 @@
 	function historyDataToHistoryByText(historyData: HistoryData): HistoryByText {
 		const grouped = historyData.reduce(
 			(acc, row) => {
-				const key = row.cidtexte
+				const key = `${row.cidtexte}_${row.typelien}`
 
 				if (!acc[key]) {
 					acc[key] = {
@@ -29,19 +29,10 @@
 					}
 				}
 
-				if (row.article_jorf !== null) {
-					acc[key].articles_jorf.push({
-						id: row.article_jorf,
-						num: row.num || "",
-					})
-				}
-
-				if (
-					row.date_publi !== null &&
-					(acc[key].date_publi === null || row.date_publi < acc[key].date_publi)
-				) {
-					acc[key].date_publi = row.date_publi
-				}
+				acc[key].articles_jorf.push({
+					id: row.article_jorf || "",
+					num: row.num || "",
+				})
 
 				return acc
 			},
@@ -73,16 +64,24 @@
 			{urlToNavigate.searchParams.set("article", text.cidtexte)}
 			<li>
 				{text.typelien} par <a href={urlToNavigate.href}>{text.titre_texte}</a>
-				(
-				{#each text.articles_jorf as article, i}
-					{urlToNavigate.searchParams.set("article", article.id)}
-					{#if article.id !== undefined}
-						<a href={urlToNavigate.href}>art. n°{article.num ?? i}</a>
-					{:else}
-						art. {article.num ?? i}
-					{/if}
-				{/each}
-				)
+				{#if text.articles_jorf.filter((article) => {
+					article.id !== ""
+				}).length > 0}
+					(
+					{#each text.articles_jorf as article, i}
+						{urlToNavigate.searchParams.set("article", article.id)}
+						{#if article.id !== ""}
+							<a href={urlToNavigate.href}
+								>art. n°{article.num !== ""
+									? article.num
+									: `non identifié ${i + 1}`}</a
+							>
+						{:else}
+							art. {article.num !== "" ? article.num : `non identifié ${i + 1}`}
+						{/if}
+					{/each}
+					)
+				{/if}
 			</li>
 		{/each}
 	</ul>
