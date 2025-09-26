@@ -101,7 +101,7 @@
 								{:else if version.fin === "2999-01-01"}
 									Version en vigueur depuis le {formatDateFr(version.debut)}
 								{:else}
-									Version valable du {formatDateFr(version.debut)}
+									Version du {formatDateFr(version.debut)}
 									au {formatDateFr(version.fin)}
 								{/if}
 							{/if}
