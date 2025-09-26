@@ -198,7 +198,6 @@
 				.flatMap(([, values]) => values),
 		),
 	)
-	console.log({ articleParameterReferences })
 </script>
 
 <div
