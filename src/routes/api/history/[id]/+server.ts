@@ -19,18 +19,41 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				join v on (v.legi_id_lien = al.legi_id)
 				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
 				left join jorftext jt on (jt.legi_id = al.cidtexte)
-				where (al.typelien, al.cible) in
-				(('CREATION', false), ('CREE', true), ('MODIFICATION', false), ('MODIFIE', true), ('ABROGATION', false), ('ABROGE', true), ('TRANSFERT', false), ('TRANSFERE', true))
-				)
-			select distinct cm.cidtexte, cm.titre_texte, cm.article_jorf, num,
-				case when typelien = 'MODIFICATION' then 'MODIFIE'
-				when typelien = 'CREATION' then 'CREE'
-				when typelien = 'ABROGATION' then 'ABROGE'
-				when typelien = 'TRANSFERT' then 'TRANSFERE'
-				else typelien
-				end typelien, date_publi
+					where (al.typelien, al.cible) in
+					(
+						('ABROGATION', false),
+						('ABROGE', true),
+						('ANNULATION', false),
+						('ANNULE', true),
+						('CODIFICATION', false),
+						('CODIFIE', true),
+						('CREATION', false),
+						('CREE', true),
+						('MODIFICATION', false),
+						('MODIFIE', true),
+						('PEREMPTION', false),
+						('PERIME', true),
+						('TRANSFERT', false),
+						('TRANSFERE', true))
+					)
+				select distinct cm.cidtexte, cm.titre_texte, cm.article_jorf, num,
+					case
+					when typelien = 'ABROGATION' then 'ABROGE'
+					when typelien = 'ANNULATION' then 'ANNULE'
+					when typelien = 'CODIFICATION' then 'CODIFIE'
+					when typelien = 'CREATION' then 'CREE'
+					when typelien = 'MODIFICATION' then 'MODIFIE'
+					when typelien = 'PEREMPTION' then 'PERIME'
+					when typelien = 'TRANSFERT' then 'TRANSFERE'
+					else typelien
+					end typelien, date_publi,
+					case
+						when typelien in ('CREATION', 'CREE') then 1
+						when typelien in ('ABROGATION', 'ABROGE', 'ANNULATION', 'ANNULE', 'PEREMPTION', 'PERIME') then 3
+						else 2
+					end ordinalite
 			from creat_modif cm
-			order by date_publi desc`
+			order by date_publi desc, ordinalite desc`
 	await dbConnection.release()
 
 	if (historyData.length === 0) {
