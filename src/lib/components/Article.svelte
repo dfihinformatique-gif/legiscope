@@ -52,7 +52,8 @@
 				</iconify-icon>
 				{#if articleInfo.article.num !== undefined}
 					<span class="text-nowrap">Article {articleInfo.article.num}</span>
-				{/if} · <span class="">{articleInfo.textTitle}</span>
+				{/if} ·
+				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 			</div>
 			<div class="flex w-full justify-end md:mt-1 md:w-min">
 				<a
