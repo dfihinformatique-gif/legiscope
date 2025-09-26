@@ -20,12 +20,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
 				left join jorftext jt on (jt.legi_id = al.cidtexte)
 				where (al.typelien, al.cible) in
-				(('CREATION', false), ('CREE', true), ('MODIFICATION', false), ('MODIFIE', true), ('ABROGATION', false), ('ABROGE', true))
+				(('CREATION', false), ('CREE', true), ('MODIFICATION', false), ('MODIFIE', true), ('ABROGATION', false), ('ABROGE', true), ('TRANSFERT', false), ('TRANSFERE', true))
 				)
 			select distinct cm.cidtexte, cm.titre_texte, cm.article_jorf, num,
 				case when typelien = 'MODIFICATION' then 'MODIFIE'
 				when typelien = 'CREATION' then 'CREE'
 				when typelien = 'ABROGATION' then 'ABROGE'
+				when typelien = 'TRANSFERT' then 'TRANSFERE'
 				else typelien
 				end typelien, date_publi
 			from creat_modif cm
