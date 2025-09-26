@@ -67,6 +67,18 @@
 		return result
 	}
 
+	function generateMiddleDate(startDate: string, endDate: string): string {
+		const start = new Date(startDate + "T00:00:00")
+		const end = new Date(endDate + "T00:00:00")
+
+		const middleTimestamp =
+			start.getTime() + (end.getTime() - start.getTime()) / 2
+
+		const middleDate = new Date(middleTimestamp)
+
+		return middleDate.toISOString().split("T")[0]
+	}
+
 	function highlightParameterValuesInArticleHTML(
 		articleParameterReferences: Array<ValueParameter | ScaleParameter>,
 	): string {
@@ -95,11 +107,16 @@
 			{ parameters: Array<string> }
 		> = new Map()
 
+		const dateForParameterValuesSearch = generateMiddleDate(
+			articleInfo.article?.date_debut!,
+			articleInfo.article?.date_fin!,
+		)
+
 		articleParameterReferences.forEach((param) => {
 			const simplifiedCoordToHighlight = getSimplifiedCoordOfValuesToHighlight(
 				textPlain,
 				param,
-				articleInfo.article?.date_debut!,
+				dateForParameterValuesSearch,
 			)
 			if (simplifiedCoordToHighlight.length > 0) {
 				simplifiedCoordToHighlight.forEach(
