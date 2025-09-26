@@ -82,6 +82,11 @@ function* iterParameterPjlNumberValuesWithUnits(
 		const latestInstantScaleCouple = Object.entries(
 			filterAfterDate(scaleByInstant, dateLimitForParameterValues),
 		).sort(([instant1], [instant2]) => instant2.localeCompare(instant1))[0]
+
+		if (latestInstantScaleCouple === undefined) {
+			return
+		}
+
 		const [latestInstant, latestScale] = latestInstantScaleCouple as [
 			string,
 			ScaleAtInstant,
@@ -154,6 +159,11 @@ function* iterParameterPjlNumberValuesWithUnits(
 		const latestInstantValueCouple = Object.entries(
 			filterAfterDate(parameter.values, dateLimitForParameterValues),
 		).sort(([instant1], [instant2]) => instant2.localeCompare(instant1))[0]
+
+		if (latestInstantValueCouple === undefined) {
+			return
+		}
+
 		if (latestInstantValueCouple === undefined) {
 			return
 		}
