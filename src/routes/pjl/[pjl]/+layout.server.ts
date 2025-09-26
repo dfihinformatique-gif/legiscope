@@ -31,7 +31,6 @@ async function getCurrentLegiIds(
 		const dictionary = new Map(
 			result.map((row) => [row.legi_id, row.legi_id_lien]),
 		)
-		console.log(`Trouvé ${dictionary.size} correspondances en base de données.`)
 		dbConnection.release()
 
 		for (const [key, value] of originalMap.entries()) {
