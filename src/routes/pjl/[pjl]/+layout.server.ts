@@ -141,12 +141,7 @@ function highlightParameterValuesInHTML(
 
 			parameterReferences.get(previousLawArticle)?.forEach((param) => {
 				const simplifiedCoordToHighlight =
-					getSimplifiedCoordOfValuesToHighlight(
-						textPlain,
-						param,
-						linkCount,
-						pjlDate,
-					)
+					getSimplifiedCoordOfValuesToHighlight(textPlain, param, pjlDate)
 				if (simplifiedCoordToHighlight.length > 0) {
 					simplifiedCoordToHighlight.forEach(
 						(coord: { start: number; stop: number }) => {

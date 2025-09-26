@@ -53,7 +53,7 @@ function filterAfterDate(
 ): typeof obj {
 	const result: { [instant: string]: unknown } = {}
 	for (const instant in obj) {
-		if (instant < afterDate) {
+		if (instant <= afterDate) {
 			result[instant] = obj[instant]
 		}
 	}
@@ -181,7 +181,6 @@ function escapeRegex(s: string): string {
 export function getSimplifiedCoordOfValuesToHighlight(
 	contenu: string,
 	parameter: ValueParameter | ScaleParameter,
-	linkCount: number,
 	pjlDate: string,
 ): { start: number; stop: number }[] {
 	const result: { start: number; stop: number }[] = []

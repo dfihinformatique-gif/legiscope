@@ -2,7 +2,16 @@
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
+	import {
+		getSimplifiedCoordOfValuesToHighlight,
+		parameterReferences,
+	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
+	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
+	import {
+		originalMergedPositionsFromTransformed,
+		simplifyHtml,
+	} from "@tricoteuses/tisseuse"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 
@@ -22,11 +31,157 @@
 			})
 			.replace(/^1 /, "1er ")
 	}
+	function injectHighlightsIntoHtml(
+		html: string,
+		coordsToHighlight: Map<
+			{
+				simplifiedStart: number
+				simplifiedStop: number
+				originalStart: number
+				originalStop: number
+				innerPrefix?: string
+				innerSuffix?: string
+				outerPrefix?: string
+				outerSuffix?: string
+			},
+			{ parameters: string[] }
+		>,
+	): string {
+		const highlights = Array.from(coordsToHighlight.entries()).sort(
+			([a], [b]) => b.originalStart - a.originalStart,
+		)
+
+		let result = html
+
+		for (const [coords, { parameters }] of highlights) {
+			const { originalStart, originalStop } = coords
+			const before = result.slice(0, originalStart)
+			const target = result.slice(originalStart, originalStop)
+			const after = result.slice(originalStop)
+
+			const title = parameters.join(", ")
+
+			result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
+		}
+
+		return result
+	}
+
+	function highlightParameterValuesInArticleHTML(
+		articleParameterReferences: Array<ValueParameter | ScaleParameter>,
+	): string {
+		const articleText = articleInfo.article?.bloc_textuel ?? ""
+
+		const simplified = simplifyHtml({ removeAWithHref: true })(articleText)
+		const textPlain = simplified.output
+		let processedHtml = articleText
+
+		const simplifiedCoordWithParameters: Map<
+			{ start: number; stop: number },
+			Array<string>
+		> = new Map()
+
+		const coordsToHighlight: Map<
+			{
+				simplifiedStart: number
+				simplifiedStop: number
+				originalStart: number
+				originalStop: number
+				innerPrefix?: string
+				innerSuffix?: string
+				outerPrefix?: string
+				outerSuffix?: string
+			},
+			{ parameters: Array<string> }
+		> = new Map()
+
+		articleParameterReferences.forEach((param) => {
+			const simplifiedCoordToHighlight = getSimplifiedCoordOfValuesToHighlight(
+				textPlain,
+				param,
+				articleInfo.article?.date_debut!,
+			)
+			if (simplifiedCoordToHighlight.length > 0) {
+				simplifiedCoordToHighlight.forEach(
+					(coord: { start: number; stop: number }) => {
+						let existingKey = null
+						for (const [key] of simplifiedCoordWithParameters) {
+							if (key.start === coord.start && key.stop === coord.stop) {
+								existingKey = key
+								break
+							}
+						}
+
+						if (
+							existingKey &&
+							!simplifiedCoordWithParameters
+								.get(existingKey)!
+								.includes(param.name!)
+						) {
+							simplifiedCoordWithParameters.get(existingKey)!.push(param.name!)
+						} else {
+							simplifiedCoordWithParameters.set(coord, [param.name!])
+						}
+					},
+				)
+			}
+		})
+
+		const sortedSimplifiedCoord = simplifiedCoordWithParameters
+			.keys()
+			.toArray()
+			.filter(
+				(item, index, self) =>
+					index ===
+					self.findIndex((r) => r.start === item.start && r.stop === item.stop),
+			)
+			.sort((a, b) => a.start - b.start)
+		const coordsInOriginal = originalMergedPositionsFromTransformed(
+			simplified,
+			sortedSimplifiedCoord,
+		)
+		if (sortedSimplifiedCoord.length > 0) {
+			sortedSimplifiedCoord.forEach((coord, index) => {
+				coordsToHighlight.set(
+					{
+						simplifiedStart: coord.start,
+						simplifiedStop: coord.stop,
+						originalStart: coordsInOriginal[index].position.start,
+						originalStop: coordsInOriginal[index].position.stop,
+						innerPrefix: coordsInOriginal[index].innerPrefix,
+						outerPrefix: coordsInOriginal[index].outerPrefix,
+						innerSuffix: coordsInOriginal[index].innerSuffix,
+						outerSuffix: coordsInOriginal[index].outerSuffix,
+					},
+					{ parameters: simplifiedCoordWithParameters.get(coord)! },
+				)
+			})
+		}
+		if (coordsToHighlight.size > 0) {
+			processedHtml = injectHighlightsIntoHtml(articleText, coordsToHighlight)
+		}
+
+		return processedHtml
+	}
 
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 	let historyIsOpen = $state(false)
+
+	const allVersions =
+		articleInfo.versions !== undefined && articleInfo.versions.length > 1
+			? new Set(articleInfo.versions.map((article) => article.legi_id_lien))
+			: new Set(articleInfo.article?.legi_id)
+
+	const articleParameterReferences = Array.from(
+		new Set(
+			Array.from(parameterReferences.entries())
+				.filter(([key]) => allVersions.has(key))
+				.flatMap(([, values]) => values),
+		),
+	)
+	console.log({ articleParameterReferences })
 </script>
 
 <div
@@ -151,7 +306,9 @@
 		<!--Article-->
 		{#if articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html articleInfo.article.bloc_textuel}</span
+				>{@html highlightParameterValuesInArticleHTML(
+					articleParameterReferences,
+				)}</span
 			>
 		{/if}
 	{:else}
