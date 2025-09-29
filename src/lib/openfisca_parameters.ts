@@ -219,7 +219,7 @@ export function getSimplifiedCoordOfValuesToHighlight(
 			// 	console.log({ stringValue, contenu, linkCount })
 
 			const stringValueToSearch = new RegExp(
-				String.raw`(^|\s+|[>\(\[])${escapeRegex(
+				String.raw`(^|(?<!\d)\s+|[>\(\[])${escapeRegex(
 					stringValue,
 				)}(?!\s*\d)([\.<\)\]]|,\s+|\s+|$)`,
 				"g",
@@ -233,10 +233,17 @@ export function getSimplifiedCoordOfValuesToHighlight(
 				// 		"impot_revenu.calcul_revenus_imposables.abat_rni.enfant_marie" &&
 				// 	linkCount === 16
 				// )
-				// 	console.log({ match })
+				const start =
+					match[0].startsWith("\n") || match[0].startsWith(" ")
+						? match.index + 1
+						: match.index
+				const stop =
+					match[0].endsWith("\n") || match[0].endsWith(" ")
+						? match.index + match[0].length - 1
+						: match.index + match[0].length
 				result.push({
-					start: match.index,
-					stop: match.index + match[0].length,
+					start: start,
+					stop: stop,
 				})
 			}
 
