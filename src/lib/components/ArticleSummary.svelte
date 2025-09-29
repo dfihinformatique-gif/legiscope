@@ -27,7 +27,7 @@
 			icon={tocIsOpen ? "ri:arrow-down-s-line" : "ri:arrow-right-s-line"}
 		>
 		</iconify-icon>
-		{articleInfo.textTitle}
+		{articleInfo.textTitle?.replaceAll("\\n", " ")}
 	</button>
 
 	{#if tocIsOpen}

@@ -53,7 +53,7 @@ function filterAfterDate(
 ): typeof obj {
 	const result: { [instant: string]: unknown } = {}
 	for (const instant in obj) {
-		if (instant < afterDate) {
+		if (instant <= afterDate) {
 			result[instant] = obj[instant]
 		}
 	}
@@ -82,6 +82,11 @@ function* iterParameterPjlNumberValuesWithUnits(
 		const latestInstantScaleCouple = Object.entries(
 			filterAfterDate(scaleByInstant, dateLimitForParameterValues),
 		).sort(([instant1], [instant2]) => instant2.localeCompare(instant1))[0]
+
+		if (latestInstantScaleCouple === undefined) {
+			return
+		}
+
 		const [latestInstant, latestScale] = latestInstantScaleCouple as [
 			string,
 			ScaleAtInstant,
@@ -154,6 +159,11 @@ function* iterParameterPjlNumberValuesWithUnits(
 		const latestInstantValueCouple = Object.entries(
 			filterAfterDate(parameter.values, dateLimitForParameterValues),
 		).sort(([instant1], [instant2]) => instant2.localeCompare(instant1))[0]
+
+		if (latestInstantValueCouple === undefined) {
+			return
+		}
+
 		if (latestInstantValueCouple === undefined) {
 			return
 		}
@@ -181,7 +191,6 @@ function escapeRegex(s: string): string {
 export function getSimplifiedCoordOfValuesToHighlight(
 	contenu: string,
 	parameter: ValueParameter | ScaleParameter,
-	linkCount: number,
 	pjlDate: string,
 ): { start: number; stop: number }[] {
 	const result: { start: number; stop: number }[] = []

@@ -31,7 +31,6 @@ async function getCurrentLegiIds(
 		const dictionary = new Map(
 			result.map((row) => [row.legi_id, row.legi_id_lien]),
 		)
-		console.log(`Trouvé ${dictionary.size} correspondances en base de données.`)
 		dbConnection.release()
 
 		for (const [key, value] of originalMap.entries()) {
@@ -142,12 +141,7 @@ function highlightParameterValuesInHTML(
 
 			parameterReferences.get(previousLawArticle)?.forEach((param) => {
 				const simplifiedCoordToHighlight =
-					getSimplifiedCoordOfValuesToHighlight(
-						textPlain,
-						param,
-						linkCount,
-						pjlDate,
-					)
+					getSimplifiedCoordOfValuesToHighlight(textPlain, param, pjlDate)
 				if (simplifiedCoordToHighlight.length > 0) {
 					simplifiedCoordToHighlight.forEach(
 						(coord: { start: number; stop: number }) => {

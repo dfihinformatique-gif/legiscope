@@ -72,3 +72,13 @@ export type ArticleInfo = {
 	versions: VersionArticle[] | undefined
 	jorfTextDatePubli: string | undefined
 }
+
+export interface HistoryDataRow {
+	cidtexte: string
+	titre_texte: string
+	article_jorf: string | null
+	num: string | null
+	typelien: string
+	date_publi: Date | null
+}
+export type HistoryData = HistoryDataRow[]
