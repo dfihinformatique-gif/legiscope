@@ -563,7 +563,8 @@
 				.querySelectorAll<HTMLSpanElement>("span.highlighted")
 				.forEach((span) => {
 					span.style.setProperty("color", "red", "important")
-					span.style.setProperty("background-color", "yellow", "important")
+					span.style.setProperty("background-color", "#ccd3e7", "important")
+					span.style.setProperty("padding", "3px", "important")
 				})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
