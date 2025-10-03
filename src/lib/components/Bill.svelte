@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
+	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
 	import {
 		decodeParametersToVariables,
 		getParameter,
@@ -7,7 +8,6 @@
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
-	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 
 	interface Props {
 		pjlHTML: string | undefined
