@@ -1,5 +1,10 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
+	import {
+		getParameter,
+		rootParameter,
+		variablesSummaries,
+	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 
@@ -580,7 +585,6 @@
 			shadow
 				.querySelectorAll<HTMLSpanElement>("button.highlighted")
 				.forEach((button) => {
-					button.style.setProperty("color", "red", "important")
 					button.style.setProperty("background-color", "#ccd3e7", "important")
 
 					button.addEventListener("click", (e: Event) => {
@@ -596,7 +600,6 @@
 		}
 		return () => resizeObserver?.disconnect()
 	})
-	$inspect(showParameterModal)
 </script>
 
 <div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
@@ -611,11 +614,17 @@
 <ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
 	{#if parametersToVariables !== null}
 		{#each Object.entries(parametersToVariables) as [parameter, variables]}
+			{@const parameterLabel =
+				getParameter(rootParameter, parameter)?.short_label ?? parameter}
 			<div>
-				Paramètre {parameter} correspond aux variables
-				<ul class="list-inside">
+				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
+				dispositifs :
+				<ul class="list-inside list-disc">
 					{#each variables as variable}
-						<li>{variable}</li>
+						{@const variableLabel =
+							variablesSummaries[variable].label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
+						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
 					{/each}
 				</ul>
 			</div>

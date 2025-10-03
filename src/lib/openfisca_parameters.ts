@@ -33,7 +33,7 @@ const units = Object.values(
 const unitByName = Object.fromEntries(units.map((unit) => [unit.name, unit]))
 
 improveParameter(rootParameterUnknown as NodeParameter)
-const rootParameter = rootParameterUnknown as NodeParameter
+export const rootParameter = rootParameterUnknown as NodeParameter
 export const variablesSummaries =
 	variablesSummariesUnknown as unknown as VariableByName
 export const customizations =
@@ -414,6 +414,25 @@ export function collectParameterReferences(
 	walkParameter(rootParameter)
 
 	return referenceMap
+}
+
+export function getParameter(
+	rootParameter: Parameter,
+	name: string,
+): Parameter | undefined {
+	let parameter = rootParameter
+	for (const id of name.split(".")) {
+		const children =
+			parameter.class === ParameterClass.Node ? parameter.children : undefined
+		if (children === undefined) {
+			return undefined
+		}
+		parameter = children[id]
+		if (parameter === undefined) {
+			return undefined
+		}
+	}
+	return parameter
 }
 
 export const parameterReferences = collectParameterReferences(rootParameter)

@@ -92,7 +92,7 @@
 			class="z-10 h-screen w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
-			<Bill {pjlHTML}></Bill>
+			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
 		</div>
 
 		<div
