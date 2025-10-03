@@ -3,8 +3,14 @@
 	import { page } from "$app/state"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
 	import {
+		decodeParametersToVariables,
+		encodeParametersToVariables,
+		findVariablesByParameter,
+		getParameter,
 		getSimplifiedCoordOfValuesToHighlight,
 		parameterReferences,
+		rootParameter,
+		variablesSummaries,
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
@@ -12,14 +18,38 @@
 		originalMergedPositionsFromTransformed,
 		simplifyHtml,
 	} from "@tricoteuses/tisseuse"
+	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
+	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
 		pjlDate: string
+		showParameterModal: boolean
+		parametersToVariables: Record<string, string[]> | null
 	}
-	const { articleInfo, pjlDate }: Props = $props()
+	let {
+		articleInfo,
+		pjlDate,
+		showParameterModal,
+		parametersToVariables,
+	}: Props = $props()
+
+	onMount(() => {
+		document
+			.querySelectorAll<HTMLSpanElement>("button.highlighted")
+			.forEach((button) => {
+				button.style.setProperty("background-color", "#ccd3e7", "important")
+
+				button.addEventListener("click", (e: Event) => {
+					parametersToVariables = button.dataset.params
+						? decodeParametersToVariables(button.dataset.params)
+						: {}
+					showParameterModal = true
+				})
+			})
+	})
 
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
@@ -60,8 +90,14 @@
 			const after = result.slice(originalStop)
 
 			const title = parameters.join(", ")
+			const parametersToVariables: Record<string, string[]> = {}
 
-			result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
+			for (const parameter of parameters) {
+				// const possibleVariables = findVariablesByParameter(parameter)
+				parametersToVariables[parameter] = findVariablesByParameter(parameter)
+			}
+
+			result = `${before}${coords.outerPrefix ?? ""}<button class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 		}
 
 		return result
@@ -341,3 +377,24 @@
 		</div>
 	{/if}
 </div>
+
+<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+	{#if parametersToVariables !== null}
+		{#each Object.entries(parametersToVariables) as [parameter, variables]}
+			{@const parameterLabel =
+				getParameter(rootParameter, parameter)?.short_label ?? parameter}
+			<div>
+				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
+				dispositifs :
+				<ul class="list-inside list-disc">
+					{#each variables as variable}
+						{@const variableLabel =
+							variablesSummaries[variable].label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
+						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	{/if}
+</ParameterLinkModal>

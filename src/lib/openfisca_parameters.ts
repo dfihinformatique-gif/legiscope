@@ -1,5 +1,7 @@
+import customizationsUnknown from "@leximpact/socio-fiscal-openfisca-json/custom/customizations.json"
 import rootParameterUnknown from "@leximpact/socio-fiscal-openfisca-json/editable_processed_parameters.json"
 import unitsUnknown from "@leximpact/socio-fiscal-openfisca-json/units.yaml?raw"
+import variablesSummariesUnknown from "@leximpact/socio-fiscal-openfisca-json/variables_summaries.json"
 import {
 	getUnitAtDate as getUnitAtDateOriginal,
 	improveParameter,
@@ -7,6 +9,7 @@ import {
 	scaleByInstantFromBrackets,
 	type AmountBracketAtInstant,
 	type ConstantUnit,
+	type CustomizationByName,
 	type LinearAverageRateScaleParameter,
 	type NodeParameter,
 	type Parameter,
@@ -19,6 +22,7 @@ import {
 	type Unit,
 	type ValueAtInstant,
 	type ValueParameter,
+	type VariableByName,
 } from "@openfisca/json-model"
 
 import { ToWords } from "to-words"
@@ -29,7 +33,11 @@ const units = Object.values(
 const unitByName = Object.fromEntries(units.map((unit) => [unit.name, unit]))
 
 improveParameter(rootParameterUnknown as NodeParameter)
-const rootParameter = rootParameterUnknown as NodeParameter
+export const rootParameter = rootParameterUnknown as NodeParameter
+export const variablesSummaries =
+	variablesSummariesUnknown as unknown as VariableByName
+export const customizations =
+	customizationsUnknown as unknown as CustomizationByName
 
 function extractLegalIdentifiers(url: string): string[] {
 	const identifierRegex = /(LEGIARTI\d+|JORFART\d+|LEGITEXT\d+|JORFTEXT\d+)/g
@@ -408,4 +416,88 @@ export function collectParameterReferences(
 	return referenceMap
 }
 
+export function getParameter(
+	rootParameter: Parameter,
+	name: string,
+): Parameter | undefined {
+	let parameter = rootParameter
+	for (const id of name.split(".")) {
+		const children =
+			parameter.class === ParameterClass.Node ? parameter.children : undefined
+		if (children === undefined) {
+			return undefined
+		}
+		parameter = children[id]
+		if (parameter === undefined) {
+			return undefined
+		}
+	}
+	return parameter
+}
+
 export const parameterReferences = collectParameterReferences(rootParameter)
+
+export function findVariablesByParameter(parameterName: string): string[] {
+	const result: string[] = []
+	for (const [varName, variable] of Object.entries(variablesSummaries)) {
+		if (!variable.formulas) {
+			continue
+		}
+
+		for (const formula of Object.values(variable.formulas)) {
+			if (formula?.parameters?.includes(parameterName)) {
+				result.push(varName)
+				break
+			}
+		}
+	}
+
+	const variablesToExclude = new Set<string>()
+	for (const varName of result) {
+		const variable = variablesSummaries[varName]
+		if (variable.formulas) {
+			for (const formula of Object.values(variable.formulas)) {
+				if (formula?.variables) {
+					formula.variables.forEach((v) => variablesToExclude.add(v))
+				}
+			}
+		}
+	}
+
+	return result
+		.filter((varName) => !variablesToExclude.has(varName))
+		.sort((a, b) => {
+			const aInCustomization = a in customizations
+			const bInCustomization = b in customizations
+
+			if (aInCustomization && !bInCustomization) return -1
+			if (!aInCustomization && bInCustomization) return 1
+			return 0
+		})
+}
+
+export function encodeParametersToVariables(
+	params: Record<string, string[]>,
+): string {
+	const json = JSON.stringify(params)
+	const bytes = new TextEncoder().encode(json)
+	const binString = Array.from(bytes, (byte) =>
+		String.fromCodePoint(byte),
+	).join("")
+	return btoa(binString)
+}
+
+export function decodeParametersToVariables(
+	encoded: string,
+): Record<string, string[]> | null {
+	try {
+		const binString = atob(encoded)
+		const bytes = Uint8Array.from(binString, (char) => char.codePointAt(0)!)
+		const json = new TextDecoder().decode(bytes)
+
+		return JSON.parse(json) as Record<string, string[]>
+	} catch (error) {
+		console.error("Erreur décodage:", error)
+		return null
+	}
+}

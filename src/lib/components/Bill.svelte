@@ -1,13 +1,22 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
+	import {
+		decodeParametersToVariables,
+		getParameter,
+		rootParameter,
+		variablesSummaries,
+	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
+	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 
 	interface Props {
 		pjlHTML: string | undefined
+		showParameterModal: boolean
+		parametersToVariables: Record<string, string[]> | null
 	}
 
 	let container: HTMLDivElement | undefined = $state()
-	let { pjlHTML }: Props = $props()
+	let { pjlHTML, showParameterModal, parametersToVariables }: Props = $props()
 	let resizeObserver: ResizeObserver
 
 	const adjustSizes = (shadowRoot: ShadowRoot) => {
@@ -560,11 +569,16 @@
 			})
 
 			shadow
-				.querySelectorAll<HTMLSpanElement>("span.highlighted")
-				.forEach((span) => {
-					span.style.setProperty("color", "red", "important")
-					span.style.setProperty("background-color", "#ccd3e7", "important")
-					span.style.setProperty("padding", "3px", "important")
+				.querySelectorAll<HTMLSpanElement>("button.highlighted")
+				.forEach((button) => {
+					button.style.setProperty("background-color", "#ccd3e7", "important")
+
+					button.addEventListener("click", (e: Event) => {
+						parametersToVariables = button.dataset.params
+							? decodeParametersToVariables(button.dataset.params)
+							: {}
+						showParameterModal = true
+					})
 				})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
@@ -582,3 +596,24 @@
 		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>
+
+<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+	{#if parametersToVariables !== null}
+		{#each Object.entries(parametersToVariables) as [parameter, variables]}
+			{@const parameterLabel =
+				getParameter(rootParameter, parameter)?.short_label ?? parameter}
+			<div>
+				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
+				dispositifs :
+				<ul class="list-inside list-disc">
+					{#each variables as variable}
+						{@const variableLabel =
+							variablesSummaries[variable].label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
+						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	{/if}
+</ParameterLinkModal>

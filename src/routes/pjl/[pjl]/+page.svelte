@@ -8,6 +8,9 @@
 	let { data }: PageProps = $props()
 	let pjlHTML = $state(data.pjlHTML)
 
+	let showParameterModal = $state(false)
+	let parametersToVariables = $state<Record<string, string[]>>({})
+
 	let lawContainer: HTMLDivElement | undefined = $state()
 
 	$effect(() => {
@@ -40,7 +43,7 @@
 						: "pointer-events-none w-0 opacity-0"
 			}`}
 		>
-			<Bill {pjlHTML}></Bill>
+			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
 		</div>
 
 		<div
@@ -56,7 +59,12 @@
 				{#await data.articleInfoPromise}
 					<SkeletonArticleLoader />
 				{:then articleInfo}
-					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+					<Article
+						{articleInfo}
+						pjlDate={shared.pjlDate}
+						{showParameterModal}
+						{parametersToVariables}
+					></Article>
 				{:catch error}
 					<p>Erreur: {error.message}</p>
 				{/await}
@@ -89,7 +97,7 @@
 			class="z-10 h-screen w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
-			<Bill {pjlHTML}></Bill>
+			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
 		</div>
 
 		<div
@@ -105,7 +113,12 @@
 						<SkeletonArticleLoader />
 					</div>
 				{:then articleInfo}
-					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+					<Article
+						{articleInfo}
+						pjlDate={shared.pjlDate}
+						{showParameterModal}
+						{parametersToVariables}
+					></Article>
 				{:catch error}
 					<p>Erreur: {error.message}</p>
 				{/await}
@@ -131,5 +144,10 @@
 				</div>
 			{/if}
 		</div>
+	</div>
+{/if}
+{#if showParameterModal}
+	<div>
+		{parametersToVariables}
 	</div>
 {/if}

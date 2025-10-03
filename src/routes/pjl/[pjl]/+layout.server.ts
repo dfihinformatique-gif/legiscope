@@ -2,6 +2,8 @@ import fs from "fs/promises"
 import path from "path"
 
 import {
+	encodeParametersToVariables,
+	findVariablesByParameter,
 	getSimplifiedCoordOfValuesToHighlight,
 	parameterReferences,
 } from "$lib/openfisca_parameters"
@@ -67,7 +69,6 @@ function injectHighlightsIntoHtml(
 		{ parameters: string[] }
 	>,
 ): string {
-	// Convertir la Map en tableau trié par `originalStart` décroissant
 	const highlights = Array.from(coordsToHighlight.entries()).sort(
 		([a], [b]) => b.originalStart - a.originalStart,
 	)
@@ -79,10 +80,13 @@ function injectHighlightsIntoHtml(
 		const before = result.slice(0, originalStart)
 		const target = result.slice(originalStart, originalStop)
 		const after = result.slice(originalStop)
+		const parametersToVariables: Record<string, string[]> = {}
 
-		const title = parameters.join(", ")
+		for (const parameter of parameters) {
+			parametersToVariables[parameter] = findVariablesByParameter(parameter)
+		}
 
-		result = `${before}${coords.outerPrefix ?? ""}<span class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</span>${coords.outerSuffix ?? ""}${after}`
+		result = `${before}${coords.outerPrefix ?? ""}<button class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 	}
 
 	return result
