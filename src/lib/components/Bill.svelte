@@ -599,6 +599,8 @@
 
 <ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
 	{#if parametersToVariables !== null}
+		{@const parameterCount = Object.keys(parametersToVariables).length}
+		<h2>{parameterCount} paramètre(s) correspondants :</h2>
 		{#each Object.entries(parametersToVariables) as [parameter, variables]}
 			{@const parameterLabel =
 				getParameter(rootParameter, parameter)?.short_label ?? parameter}
