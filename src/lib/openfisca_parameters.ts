@@ -1,5 +1,7 @@
+import customizationsUnknown from "@leximpact/socio-fiscal-openfisca-json/custom/customizations.json"
 import rootParameterUnknown from "@leximpact/socio-fiscal-openfisca-json/editable_processed_parameters.json"
 import unitsUnknown from "@leximpact/socio-fiscal-openfisca-json/units.yaml?raw"
+import variablesSummariesUnknown from "@leximpact/socio-fiscal-openfisca-json/variables_summaries.json"
 import {
 	getUnitAtDate as getUnitAtDateOriginal,
 	improveParameter,
@@ -7,6 +9,7 @@ import {
 	scaleByInstantFromBrackets,
 	type AmountBracketAtInstant,
 	type ConstantUnit,
+	type CustomizationByName,
 	type LinearAverageRateScaleParameter,
 	type NodeParameter,
 	type Parameter,
@@ -19,6 +22,7 @@ import {
 	type Unit,
 	type ValueAtInstant,
 	type ValueParameter,
+	type VariableByName,
 } from "@openfisca/json-model"
 
 import { ToWords } from "to-words"
@@ -30,6 +34,10 @@ const unitByName = Object.fromEntries(units.map((unit) => [unit.name, unit]))
 
 improveParameter(rootParameterUnknown as NodeParameter)
 const rootParameter = rootParameterUnknown as NodeParameter
+export const variablesSummaries =
+	variablesSummariesUnknown as unknown as VariableByName
+export const customizations =
+	customizationsUnknown as unknown as CustomizationByName
 
 function extractLegalIdentifiers(url: string): string[] {
 	const identifierRegex = /(LEGIARTI\d+|JORFART\d+|LEGITEXT\d+|JORFTEXT\d+)/g

@@ -1,13 +1,31 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import { shared } from "$lib/shared.svelte"
+	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 
 	interface Props {
 		pjlHTML: string | undefined
+		showParameterModal: boolean
+		parametersToVariables: Record<string, string[]> | null
+	}
+
+	function decodeParametersToVariables(
+		encoded: string,
+	): Record<string, string[]> | null {
+		try {
+			const binString = atob(encoded)
+			const bytes = Uint8Array.from(binString, (char) => char.codePointAt(0)!)
+			const json = new TextDecoder().decode(bytes)
+
+			return JSON.parse(json) as Record<string, string[]>
+		} catch (error) {
+			console.error("Erreur décodage:", error)
+			return null
+		}
 	}
 
 	let container: HTMLDivElement | undefined = $state()
-	let { pjlHTML }: Props = $props()
+	let { pjlHTML, showParameterModal, parametersToVariables }: Props = $props()
 	let resizeObserver: ResizeObserver
 
 	const adjustSizes = (shadowRoot: ShadowRoot) => {
@@ -560,11 +578,17 @@
 			})
 
 			shadow
-				.querySelectorAll<HTMLSpanElement>("span.highlighted")
-				.forEach((span) => {
-					span.style.setProperty("color", "red", "important")
-					span.style.setProperty("background-color", "#ccd3e7", "important")
-					span.style.setProperty("padding", "3px", "important")
+				.querySelectorAll<HTMLSpanElement>("button.highlighted")
+				.forEach((button) => {
+					button.style.setProperty("color", "red", "important")
+					button.style.setProperty("background-color", "#ccd3e7", "important")
+
+					button.addEventListener("click", (e: Event) => {
+						parametersToVariables = button.dataset.params
+							? decodeParametersToVariables(button.dataset.params)
+							: {}
+						showParameterModal = true
+					})
 				})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
@@ -572,6 +596,7 @@
 		}
 		return () => resizeObserver?.disconnect()
 	})
+	$inspect(showParameterModal)
 </script>
 
 <div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
@@ -582,3 +607,18 @@
 		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>
+
+<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+	{#if parametersToVariables !== null}
+		{#each Object.entries(parametersToVariables) as [parameter, variables]}
+			<div>
+				Paramètre {parameter} correspond aux variables
+				<ul class="list-inside">
+					{#each variables as variable}
+						<li>{variable}</li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	{/if}
+</ParameterLinkModal>

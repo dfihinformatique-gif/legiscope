@@ -8,6 +8,9 @@
 	let { data }: PageProps = $props()
 	let pjlHTML = $state(data.pjlHTML)
 
+	let showParameterModal = $state(false)
+	let parametersToVariables = $state<Record<string, string[]>>({})
+
 	let lawContainer: HTMLDivElement | undefined = $state()
 
 	$effect(() => {
@@ -40,7 +43,7 @@
 						: "pointer-events-none w-0 opacity-0"
 			}`}
 		>
-			<Bill {pjlHTML}></Bill>
+			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
 		</div>
 
 		<div
@@ -131,5 +134,10 @@
 				</div>
 			{/if}
 		</div>
+	</div>
+{/if}
+{#if showParameterModal}
+	<div>
+		{parametersToVariables}
 	</div>
 {/if}
