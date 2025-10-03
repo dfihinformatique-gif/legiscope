@@ -59,7 +59,12 @@
 				{#await data.articleInfoPromise}
 					<SkeletonArticleLoader />
 				{:then articleInfo}
-					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+					<Article
+						{articleInfo}
+						pjlDate={shared.pjlDate}
+						{showParameterModal}
+						{parametersToVariables}
+					></Article>
 				{:catch error}
 					<p>Erreur: {error.message}</p>
 				{/await}
@@ -108,7 +113,12 @@
 						<SkeletonArticleLoader />
 					</div>
 				{:then articleInfo}
-					<Article {articleInfo} pjlDate={shared.pjlDate}></Article>
+					<Article
+						{articleInfo}
+						pjlDate={shared.pjlDate}
+						{showParameterModal}
+						{parametersToVariables}
+					></Article>
 				{:catch error}
 					<p>Erreur: {error.message}</p>
 				{/await}

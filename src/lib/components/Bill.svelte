@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import {
+		decodeParametersToVariables,
 		getParameter,
 		rootParameter,
 		variablesSummaries,
@@ -12,21 +13,6 @@
 		pjlHTML: string | undefined
 		showParameterModal: boolean
 		parametersToVariables: Record<string, string[]> | null
-	}
-
-	function decodeParametersToVariables(
-		encoded: string,
-	): Record<string, string[]> | null {
-		try {
-			const binString = atob(encoded)
-			const bytes = Uint8Array.from(binString, (char) => char.codePointAt(0)!)
-			const json = new TextDecoder().decode(bytes)
-
-			return JSON.parse(json) as Record<string, string[]>
-		} catch (error) {
-			console.error("Erreur décodage:", error)
-			return null
-		}
 	}
 
 	let container: HTMLDivElement | undefined = $state()

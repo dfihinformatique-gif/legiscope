@@ -2,10 +2,10 @@ import fs from "fs/promises"
 import path from "path"
 
 import {
-	customizations,
+	encodeParametersToVariables,
+	findVariablesByParameter,
 	getSimplifiedCoordOfValuesToHighlight,
 	parameterReferences,
-	variablesSummaries,
 } from "$lib/openfisca_parameters"
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
@@ -53,54 +53,6 @@ async function getCurrentLegiIds(
 	}
 }
 
-function findVariablesByParameter(parameterName: string): string[] {
-	const result: string[] = []
-	for (const [varName, variable] of Object.entries(variablesSummaries)) {
-		if (!variable.formulas) {
-			continue
-		}
-
-		for (const formula of Object.values(variable.formulas)) {
-			if (formula?.parameters?.includes(parameterName)) {
-				result.push(varName)
-				break
-			}
-		}
-	}
-
-	const variablesToExclude = new Set<string>()
-	for (const varName of result) {
-		const variable = variablesSummaries[varName]
-		if (variable.formulas) {
-			for (const formula of Object.values(variable.formulas)) {
-				if (formula?.variables) {
-					formula.variables.forEach((v) => variablesToExclude.add(v))
-				}
-			}
-		}
-	}
-
-	return result
-		.filter((varName) => !variablesToExclude.has(varName))
-		.sort((a, b) => {
-			const aInCustomization = a in customizations
-			const bInCustomization = b in customizations
-
-			if (aInCustomization && !bInCustomization) return -1
-			if (!aInCustomization && bInCustomization) return 1
-			return 0
-		})
-}
-
-function encodeParametersToVariables(params: Record<string, string[]>): string {
-	const json = JSON.stringify(params)
-	const bytes = new TextEncoder().encode(json)
-	const binString = Array.from(bytes, (byte) =>
-		String.fromCodePoint(byte),
-	).join("")
-	return btoa(binString)
-}
-
 function injectHighlightsIntoHtml(
 	html: string,
 	coordsToHighlight: Map<
@@ -131,12 +83,10 @@ function injectHighlightsIntoHtml(
 		const parametersToVariables: Record<string, string[]> = {}
 
 		for (const parameter of parameters) {
-			// const possibleVariables = findVariablesByParameter(parameter)
 			parametersToVariables[parameter] = findVariablesByParameter(parameter)
 		}
 
 		result = `${before}${coords.outerPrefix ?? ""}<button class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
-		// result = `${before}${coords.outerPrefix ?? ""}<button onclick={() => (shared.parameterModalIsOpen = true)} class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" title="${title}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 	}
 
 	return result
