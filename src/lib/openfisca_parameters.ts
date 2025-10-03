@@ -1,6 +1,8 @@
 import customizationsUnknown from "@leximpact/socio-fiscal-openfisca-json/custom/customizations.json"
 import rootParameterUnknown from "@leximpact/socio-fiscal-openfisca-json/editable_processed_parameters.json"
 import unitsUnknown from "@leximpact/socio-fiscal-openfisca-json/units.yaml?raw"
+import YAML from "js-yaml"
+
 import variablesSummariesUnknown from "@leximpact/socio-fiscal-openfisca-json/variables_summaries.json"
 import {
 	getUnitAtDate as getUnitAtDateOriginal,
@@ -28,7 +30,7 @@ import {
 import { ToWords } from "to-words"
 
 const units = Object.values(
-	unitsUnknown as unknown as Record<string, unknown>,
+	YAML.load(unitsUnknown) as unknown as Record<string, unknown>,
 ) as Unit[]
 const unitByName = Object.fromEntries(units.map((unit) => [unit.name, unit]))
 
@@ -213,18 +215,22 @@ export function getSimplifiedCoordOfValuesToHighlight(
 						numberToWords.convert(value * 100).toLowerCase(),
 					]
 				: []),
-			numberFormatter(value).replace(" ", " "),
-			numberToWords.convert(value).toLowerCase(),
+			...(unit?.ratio !== true
+				? [
+						numberFormatter(value).replace(" ", " "),
+						numberToWords.convert(value).toLowerCase(),
+					]
+				: []),
 		]) {
 			if (stringValue === null) {
 				continue
 			}
 
 			// if (
-			// 	parameter.name === "impot_revenu.bareme_ir_depuis_1945.bareme" &&
-			// 	linkCount == 17
+			// 	parameter.name ===
+			// 	"impot_revenu.calcul_impot_revenu.plaf_qf.decote.taux"
 			// )
-			// 	console.log({ stringValue, contenu, linkCount })
+			// 	console.log({ stringValue, unit })
 
 			const stringValueToSearch = new RegExp(
 				String.raw`(^|(?<!\d)\s+|[>\(\[])${escapeRegex(
