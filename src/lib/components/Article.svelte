@@ -381,30 +381,72 @@
 <ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
+
 		{#if parameterCount > 1}
 			<p>
 				Cette valeur correspond à {parameterCount} paramètres dans le simulateur
 				LexImpact :
 			</p>
 		{/if}
+
 		{#each Object.entries(parametersToVariables) as [parameter, variables]}
 			{@const parameterLabel =
 				getParameter(rootParameter, parameter)?.short_label ?? parameter}
+			{@const variableCount = variables.length}
+
 			<div>
-				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
-				dispositifs :
-				<ul class="list-inside list-disc">
-					{#each variables as variable}
-						{@const variableLabel =
-							variablesSummaries[variable].label ?? variable}
-						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-						<li>
-							<a href={linkHref} class="lx-link-text" target="_blank"
-								>{variableLabel}</a
+				Le paramètre
+				<strong>{parameterLabel}</strong>
+				{#if variableCount > 1}
+					est utilisé dans plusieurs dispositifs.
+					<i
+						>Choisissez l'un d'entre eux pour débuter l'évaluation sur LexImpact
+						:</i
+					>
+					<ul class="mt-4 list-inside list-disc">
+						{#each variables as variable}
+							{@const variableLabel =
+								variablesSummaries[variable].label ?? variable}
+							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
+							<li class="mb-4">
+								{variableLabel}<br />
+								<a
+									href={linkHref}
+									class="lx-link-text text-le-jaune-very-dark ml-4"
+									target="_blank"
+								>
+									Amender et évaluer
+									<iconify-icon
+										class="mr-1 align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					est utilisé dans le dispositif :
+					<div>
+						{#each variables as variable}
+							{@const variableLabel =
+								variablesSummaries[variable].label ?? variable}
+							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
+							<br />
+							{variableLabel} |
+							<a
+								href={linkHref}
+								class="lx-link-text text-le-jaune-very-dark"
+								target="_blank"
 							>
-						</li>
-					{/each}
-				</ul>
+								Amender et évaluer avec LexImpact
+								<iconify-icon
+									class="mr-1 align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-line"
+								></iconify-icon>
+							</a>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/each}
 	{/if}
