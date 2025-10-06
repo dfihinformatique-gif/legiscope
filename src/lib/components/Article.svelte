@@ -36,6 +36,19 @@
 		parametersToVariables,
 	}: Props = $props()
 
+	let selectedParameter = $state<string | null>(null)
+
+	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
+	$effect(() => {
+		if (
+			parametersToVariables &&
+			selectedParameter &&
+			!(selectedParameter in parametersToVariables)
+		) {
+			selectedParameter = null
+		}
+	})
+
 	onMount(() => {
 		document
 			.querySelectorAll<HTMLSpanElement>("button.highlighted")
@@ -382,61 +395,139 @@
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
 
-		{#if parameterCount > 1}
-			<p>
-				Cette valeur correspond à {parameterCount} paramètres dans le simulateur
-				LexImpact :
-			</p>
-		{/if}
+		{#if parameterCount === 0}
+			<p>Aucun paramètre associé.</p>
+		{:else if selectedParameter === null}
+			<!-- ÉTAPE 1 : liste des paramètres -->
+			{#if parameterCount > 1}
+				<p>
+					Cette valeur correspond à {parameterCount} paramètres dans le simulateur
+					LexImpact : choisissez celui que vous souhaitez examiner.
+				</p>
+			{:else}
+				<p>
+					Cette valeur correspond à 1 paramètre dans le simulateur LexImpact :
+				</p>
+			{/if}
 
-		{#each Object.entries(parametersToVariables) as [parameter, variables]}
-			{@const parameterLabel =
-				getParameter(rootParameter, parameter)?.short_label ?? parameter}
-			{@const variableCount = variables.length}
-
-			<div>
-				Le paramètre
-				<strong>{parameterLabel}</strong>
-				{#if variableCount > 1}
-					est utilisé dans plusieurs dispositifs.
-					<i
-						>Choisissez l'un d'entre eux pour débuter l'évaluation sur LexImpact
-						:</i
+			{#each Object.entries(parametersToVariables) as [parameter, variables]}
+				{@const parameterLabel =
+					getParameter(rootParameter, parameter)?.short_label ?? parameter}
+				<div class="mb-3">
+					<button
+						class="w-full rounded-md text-left hover:underline focus:ring focus:outline-none"
+						onclick={() => (selectedParameter = parameter)}
+						aria-label={`Voir dispositifs pour ${parameterLabel}`}
 					>
-					<ul class="mt-4 list-inside list-disc">
+						<strong>{parameterLabel}</strong>
+						<span class="ml-2 text-sm text-gray-600"
+							>({variables.length} dispositif{variables.length > 1
+								? "s"
+								: ""})</span
+						>
+					</button>
+				</div>
+			{/each}
+
+			<!-- optionnel : liens directs -->
+			<div class="mt-4">
+				<p class="text-sm text-gray-700">
+					Ou ouvrir directement les simulateurs associés :
+				</p>
+				<div class="mt-2 space-y-2">
+					{#each Object.entries(parametersToVariables) as [parameter, variables]}
 						{#each variables as variable}
 							{@const variableLabel =
-								variablesSummaries[variable].label ?? variable}
-							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-							<li class="mb-4">
-								{variableLabel}<br />
-								<a
-									href={linkHref}
-									class="lx-link-text text-le-jaune-very-dark ml-4"
-									target="_blank"
-								>
-									Amender et évaluer
-									<iconify-icon
-										class="mr-1 align-[-0.3rem] text-xl"
-										icon="ri-arrow-right-line"
-									></iconify-icon>
-								</a>
-							</li>
-						{/each}
-					</ul>
-				{:else}
-					est utilisé dans le dispositif :
-					<div>
-						{#each variables as variable}
-							{@const variableLabel =
-								variablesSummaries[variable].label ?? variable}
-							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-							<br />
-							{variableLabel} |
+								variablesSummaries[variable]?.label ?? variable}
+							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
 							<a
 								href={linkHref}
-								class="lx-link-text text-le-jaune-very-dark"
 								target="_blank"
+								rel="noopener"
+								class="lx-link-text text-le-jaune-very-dark block underline"
+							>
+								{variableLabel} — {getParameter(rootParameter, parameter)
+									?.short_label ?? parameter}
+							</a>
+						{/each}
+					{/each}
+				</div>
+			</div>
+		{:else}
+			<!-- ÉTAPE 2 : détail du param sélectionné -->
+			{@const variables = parametersToVariables[selectedParameter] ?? []}
+			{@const parameterLabel =
+				getParameter(rootParameter, selectedParameter)?.short_label ??
+				selectedParameter}
+			{@const variableCount = variables.length}
+
+			<button
+				class="lx-link-uppercase"
+				onclick={() => (selectedParameter = null)}
+				aria-label="Retour à la liste des paramètres"
+			>
+				<iconify-icon
+					class="mr-1 align-[-0.3rem] text-xl"
+					icon="ri-arrow-left-line"
+				></iconify-icon> Retour
+			</button>
+
+			<h3 class="mb-2 text-lg font-semibold">Paramètre : {parameterLabel}</h3>
+
+			{#if variableCount > 1}
+				<p>
+					Ce paramètre est utilisé dans plusieurs dispositifs. Choisissez un
+					dispositif pour amender et évaluer :
+				</p>
+
+				<ul class="mt-4 list-inside list-disc">
+					{#each variables as variable}
+						{@const variableLabel =
+							variablesSummaries[variable]?.label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
+						<li class="mb-4">
+							<div class="flex items-start justify-between">
+								<div>
+									<div class="font-medium">{variableLabel}</div>
+									<div class="text-sm break-words text-gray-600">
+										{variable}
+									</div>
+								</div>
+
+								<div class="ml-4 shrink-0">
+									<a
+										href={linkHref}
+										target="_blank"
+										rel="noopener"
+										class="lx-link-text text-le-jaune-very-dark inline-flex items-center"
+										aria-label={`Amender et évaluer ${variableLabel}`}
+									>
+										Amender et évaluer
+										<iconify-icon
+											class="ml-2 text-xl"
+											icon="ri-arrow-right-line"
+										></iconify-icon>
+									</a>
+								</div>
+							</div>
+						</li>
+					{/each}
+				</ul>
+			{:else if variableCount === 1}
+				<p>Ce paramètre est utilisé dans le dispositif suivant :</p>
+				<div class="mt-4">
+					{#each variables as variable}
+						{@const variableLabel =
+							variablesSummaries[variable]?.label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
+						<div class="mb-2">
+							<span class="font-medium">{variableLabel}</span>
+							<span class="mx-2">|</span>
+							<a
+								href={linkHref}
+								target="_blank"
+								rel="noopener"
+								class="lx-link-text text-le-jaune-very-dark"
 							>
 								Amender et évaluer avec LexImpact
 								<iconify-icon
@@ -444,10 +535,12 @@
 									icon="ri-arrow-right-line"
 								></iconify-icon>
 							</a>
-						{/each}
-					</div>
-				{/if}
-			</div>
-		{/each}
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p>Aucun dispositif trouvé pour ce paramètre.</p>
+			{/if}
+		{/if}
 	{/if}
 </ParameterLinkModal>
