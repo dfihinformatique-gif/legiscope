@@ -561,25 +561,109 @@
 				table.parentNode?.insertBefore(wrapper, table)
 				wrapper.appendChild(table)
 
-				// Appliquer la bordure si plus de 2 cellules
+				/* Appliquer la bordure si plus de 2 cellules */
 				if (cellCount > 2) {
 					table.style.border = "1px solid black"
 					table.style.borderCollapse = "collapse"
 				}
 			})
 
-			shadow
-				.querySelectorAll<HTMLSpanElement>("button.highlighted")
-				.forEach((button) => {
-					button.style.setProperty("background-color", "#ccd3e7", "important")
+			// BOUTON PARAMÈTRES du simulateur ou OpenFIsca
 
-					button.addEventListener("click", (e: Event) => {
-						parametersToVariables = button.dataset.params
-							? decodeParametersToVariables(button.dataset.params)
+			const baseBg = "#ccd3e7" /* Fond bleu clair */
+			const hoverBg =
+				"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
+
+			let activeParam: string | null =
+				null /* Pour savoir quel paramètre est actif */
+
+			/* Nettoyer anciens listeners */
+			Array.from(
+				shadow.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+			).forEach((btn) => {
+				const clone = btn.cloneNode(true) as HTMLButtonElement
+				btn.replaceWith(clone)
+			})
+
+			/* Re-sélectionner les boutons */
+			const buttons = Array.from(
+				shadow.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+			)
+
+			/* Style initial + listeners */
+			buttons.forEach((button) => {
+				button.style.setProperty("appearance", "none", "important")
+				button.style.setProperty("-webkit-appearance", "none", "important")
+				button.style.setProperty("border", "none", "important")
+				button.style.setProperty("box-shadow", "none", "important")
+				button.style.setProperty("background-color", baseBg, "important")
+				button.style.setProperty("color", "#000", "important")
+				button.style.setProperty("cursor", "pointer", "important")
+				button.style.setProperty("font-family", "inherit", "important")
+				button.style.setProperty(
+					"transition",
+					"background-color 0.2s ease",
+					"important",
+				)
+
+				/* Hover : seulement si le bouton n’est pas celui du paramètre actif */
+				button.addEventListener("mouseenter", () => {
+					if (activeParam !== button.dataset.params && !showParameterModal) {
+						button.style.setProperty("background-color", hoverBg, "important")
+					}
+				})
+				button.addEventListener("mouseleave", () => {
+					if (activeParam !== button.dataset.params && !showParameterModal) {
+						button.style.setProperty("background-color", baseBg, "important")
+					}
+				})
+
+				/* Clic sur le bouton */
+				button.addEventListener("click", (e: Event) => {
+					e.stopPropagation()
+
+					const clickedParam = button.dataset.params ?? null
+
+					/* Si on clique sur le même paramètre => toggle */
+					if (showParameterModal && activeParam === clickedParam) {
+						showParameterModal = false
+						activeParam = null
+					} else {
+						/* Sinon, on ouvre le nouveau paramètre */
+						activeParam = clickedParam
+						parametersToVariables = clickedParam
+							? decodeParametersToVariables(clickedParam)
 							: {}
 						showParameterModal = true
-					})
+					}
+
+					/* Met à jour les couleurs selon l'état du modal */
+					updateButtonColors()
 				})
+			})
+
+			/* 🔹 Fonction utilitaire pour gérer les couleurs selon showParameterModal */
+			function updateButtonColors() {
+				buttons.forEach((b) => {
+					if (showParameterModal && b.dataset.params === activeParam) {
+						/* Bouton du paramètre actif -> vert */
+						b.style.setProperty("background-color", hoverBg, "important")
+					} else {
+						/* Tous les autres -> bleu */
+						b.style.setProperty("background-color", baseBg, "important")
+					}
+				})
+			}
+
+			/* 🔹 Clique à côté → ferme le modal et reset la couleur */
+			;(shadow as Document | ShadowRoot).addEventListener("click", (e) => {
+				const target = e.target as HTMLElement
+				if (!target.closest("button.highlighted")) {
+					showParameterModal = false
+					activeParam = null
+					updateButtonColors()
+				}
+			})
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
