@@ -381,7 +381,12 @@
 <ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
-		<h2>{parameterCount} paramètre(s) correspondants :</h2>
+		{#if parameterCount > 1}
+			<p>
+				Cette valeur correspond à {parameterCount} paramètres dans le simulateur
+				LexImpact :
+			</p>
+		{/if}
 		{#each Object.entries(parametersToVariables) as [parameter, variables]}
 			{@const parameterLabel =
 				getParameter(rootParameter, parameter)?.short_label ?? parameter}
@@ -393,7 +398,11 @@
 						{@const variableLabel =
 							variablesSummaries[variable].label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
+						<li>
+							<a href={linkHref} class="lx-link-text" target="_blank"
+								>{variableLabel}</a
+							>
+						</li>
 					{/each}
 				</ul>
 			</div>

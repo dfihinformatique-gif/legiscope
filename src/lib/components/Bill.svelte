@@ -684,19 +684,27 @@
 <ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
-		<h2>{parameterCount} paramètre(s) correspondants :</h2>
+		{#if parameterCount > 1}
+			<p>
+				Cette valeur correspond à {parameterCount} paramètres dans le simulateur
+				LexImpact :
+			</p>
+		{/if}
 		{#each Object.entries(parametersToVariables) as [parameter, variables]}
 			{@const parameterLabel =
 				getParameter(rootParameter, parameter)?.short_label ?? parameter}
-			<div>
-				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
-				dispositifs :
+			<div class="py-2">
+				<strong>{parameterLabel}</strong> est utilisé dans les dispositifs :
 				<ul class="list-inside list-disc">
 					{#each variables as variable}
 						{@const variableLabel =
 							variablesSummaries[variable].label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
+						<li>
+							<a class="lx-link-text" href={linkHref} target="_blank"
+								>{variableLabel}</a
+							>
+						</li>
 					{/each}
 				</ul>
 			</div>

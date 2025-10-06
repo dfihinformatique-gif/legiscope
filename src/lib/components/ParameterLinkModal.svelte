@@ -30,23 +30,32 @@
 		/>
 
 		<DialogContent
-			class="fixed top-1/2 left-1/2 z-50 flex max-h-[85%] w-full max-w-md -translate-x-1/2 -translate-y-1/2 transform flex-col overflow-hidden rounded-md bg-white p-6 text-left shadow-xl transition-all"
+			class="fixed top-1/2 left-1/2 z-50 flex max-h-[85%] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 transform flex-col overflow-hidden rounded-md bg-white text-left shadow-xl transition-all"
 		>
-			<!-- Bouton Fermer -->
-			<div class="flex justify-end">
-				<button
-					bind:this={closeButton}
-					class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg p-1.5 hover:bg-gray-200 focus:ring-2 focus:ring-gray-400 focus:outline-none active:bg-gray-200"
-					onclick={closeModal}
-				>
-					<iconify-icon class="h-6 w-6 text-2xl" icon="ri-close-line"
-					></iconify-icon>
-					<span class="sr-only">Fermer la fenêtre</span>
-				</button>
-			</div>
+			<Dialog.Title
+				class="items-centrer bg-le-jaune-very-dark mr-12 mb-8 flex w-full justify-between px-6 py-2 text-white"
+			>
+				<div class="flex">
+					<h2 class="flex items-center text-lg tracking-widest uppercase">
+						Amender et évaluer avec LexImpact
+					</h2>
+				</div>
+				<!-- Bouton Fermer -->
+				<div class="flex justify-end">
+					<button
+						bind:this={closeButton}
+						class="hover:bg-le-jaune-dark flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg p-1.5 focus:ring-2 focus:ring-gray-400 focus:outline-none active:bg-gray-200"
+						onclick={closeModal}
+					>
+						<iconify-icon class="h-6 w-6 text-2xl" icon="ri-close-line"
+						></iconify-icon>
+						<span class="sr-only">Fermer la fenêtre</span>
+					</button>
+				</div>
+			</Dialog.Title>
 
 			<!-- Contenu de la modale -->
-			<div class="overflow-y-auto">
+			<div class="overflow-y-auto px-6 pb-6">
 				{@render children?.()}
 			</div>
 		</DialogContent>
