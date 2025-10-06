@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AnchorTitle from "$lib/components/home_page/AnchorTitle.svelte"
+	let isLoadingPjl = $state(false)
 </script>
 
 <section
@@ -20,6 +21,7 @@
 						class="hover:border-le-gris-dispositif-dark hover:text-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:bg-neutral-50 active:bg-neutral-200"
 						href="/pjl/PRJLANR5L17B0324
 "
+						onclick={() => (isLoadingPjl = true)}
 						title="Vers le projet de loi interactif"
 					>
 						Projet de loi de finances pour 2026<iconify-icon
@@ -28,6 +30,9 @@
 						></iconify-icon>
 					</a>
 				</div>
+				{#if isLoadingPjl}
+					<div>Chargement en cours, merci de patienter...</div>
+				{/if}
 			</div>
 		</div>
 	</div>
