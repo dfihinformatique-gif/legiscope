@@ -28,6 +28,7 @@
 		"@types/js-yaml": "^4.0.9",
 		"@types/node": "^24.3.0",
 		"dedent-js": "^1.0.1",
+		"diff": "^8.0.2",
 		"dotenv": "^17.2.1",
 		"eslint": "^9.27.0",
 		"eslint-config-prettier": "^10.1.5",

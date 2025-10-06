@@ -18,6 +18,7 @@
 		originalMergedPositionsFromTransformed,
 		simplifyHtml,
 	} from "@tricoteuses/tisseuse"
+	import { diffWords } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -49,6 +50,86 @@
 		) {
 			selectedParameter = null
 		}
+	})
+
+	let showDiff = $state(false)
+	const diffContent = $derived.by(() => {
+		if (
+			showDiff === true &&
+			articleInfo.article?.bloc_textuel &&
+			articleInfo.articlePreviousVersion?.bloc_textuel
+		) {
+			const simplifiedArticleText = simplifyHtml({ removeAWithHref: true })(
+				articleInfo.article.bloc_textuel,
+			)
+			const simplifiedPreviousVersionText = simplifyHtml({
+				removeAWithHref: true,
+			})(articleInfo.articlePreviousVersion.bloc_textuel)
+
+			const diff = diffWords(
+				simplifiedPreviousVersionText.output,
+				simplifiedArticleText.output,
+			)
+			console.log({ diff })
+
+			let offsetInPrevious = 0
+			let offsetInCurrent = 0
+			let partialDiffContent = ""
+			// for (const part of diff) {
+			// 	if (part.removed) {
+			// 		const color = "text-red-600"
+			// 		const originalPosition = originalMergedPositionsFromTransformed(
+			// 			simplifiedPreviousVersionText,
+			// 			[
+			// 				{
+			// 					start: offsetInPrevious,
+			// 					stop: offsetInPrevious + part.value.length,
+			// 				},
+			// 			],
+			// 		)
+			// 		partialDiffContent += `<span class=${color}>${articleInfo.articlePreviousVersion.bloc_textuel.slice(offsetInPrevious, offsetInPrevious + originalPosition[0].position.stop)}</span>`
+			// 		offsetInPrevious += originalPosition[0].position.stop
+			// 	} else if (part.added) {
+			// 		const color = "text-green-600"
+			// 		const originalPosition = originalMergedPositionsFromTransformed(
+			// 			simplifiedArticleText,
+			// 			[
+			// 				{
+			// 					start: offsetInCurrent,
+			// 					stop: offsetInCurrent + part.value.length,
+			// 				},
+			// 			],
+			// 		)
+			// 		partialDiffContent += `<span class=${color}>${articleInfo.article.bloc_textuel.slice(offsetInCurrent, offsetInCurrent + originalPosition[0].position.stop)}</span>`
+			// 		offsetInCurrent += originalPosition[0].position.stop
+			// 	} else {
+			// 		const color = "text-black"
+			// 		const originalPosition = originalMergedPositionsFromTransformed(
+			// 			simplifiedPreviousVersionText,
+			// 			[
+			// 				{
+			// 					start: offsetInPrevious,
+			// 					stop: offsetInPrevious + part.value.length,
+			// 				},
+			// 			],
+			// 		)
+			// 		partialDiffContent += `<span class=${color}>${articleInfo.articlePreviousVersion.bloc_textuel.slice(offsetInPrevious, offsetInPrevious + originalPosition[0].position.stop)}</span>`
+			// 		offsetInPrevious += originalPosition[0].position.stop
+			// 		offsetInCurrent += originalPosition[0].position.stop
+			// 	}
+			// }
+			for (const part of diff) {
+				if (part.removed) {
+					partialDiffContent += `<span class="text-red-600 line-through">${part.value}</span>`
+				} else if (part.added) {
+					partialDiffContent += `<span class="text-green-600">${part.value}</span>`
+				} else {
+					partialDiffContent += `<span>${part.value}</span>`
+				}
+			}
+			return partialDiffContent
+		}
+		return ""
 	})
 
 	onMount(() => {
@@ -330,6 +411,17 @@
 				>
 			</div>
 		</div>
+		<div class="text-right">
+			<label class="inline-flex cursor-pointer items-center">
+				<input class="peer sr-only" type="checkbox" bind:checked={showDiff} />
+				<div
+					class="peer peer-checked:bg-le-bleu relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+				></div>
+				<span class="ms-3 text-sm font-medium text-gray-900">
+					Vue comparaison
+				</span>
+			</label>
+		</div>
 		<div
 			class="mb-2"
 			class:border-b={historyIsOpen}
@@ -413,7 +505,11 @@
 		</div>
 
 		<!--Article-->
-		{#if articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
+		{#if showDiff === true}
+			<span class="font-serif text-lg leading-8 md:text-left">
+				{@html diffContent}
+			</span>
+		{:else if showDiff === false && articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
 				>{@html highlightParameterValuesInArticleHTML(
 					articleParameterReferences,
