@@ -59,7 +59,7 @@ const OpenIdConnectSchema = z
 
 const ConfigSchema = z.object({
   db: DatabaseSchema,
-  jwtSecret: z.string(),
+  jwtSecret: z.string().optional(),
   openIdConnect: OpenIdConnectSchema,
   verbose: z.boolean().default(false),
 })
