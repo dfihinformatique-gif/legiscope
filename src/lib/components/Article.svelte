@@ -36,8 +36,8 @@
 		parametersToVariables,
 	}: Props = $props()
 
-	let selectedParameter = $state<string | null>(null)
 	let parameterSimulatorlinksOpen = $state(false)
+	let selectedParameter = $state<string | null>(null)
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -414,8 +414,9 @@
 					Le paramètre <span
 						class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 						>{parameterLabel}</span
-					> intervient dans plusieurs dispositifs. Choisissez en un pour débuter
-					votre évaluation :
+					>
+					intervient dans plusieurs dispositifs.
+					<strong>Choisissez en un pour débuter votre évaluation :</strong>
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
@@ -425,7 +426,6 @@
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
 						<li class="mb-4">
 							<p>
-								<span class="font-bold">{variableLabel}</span> |
 								<a
 									href={linkHref}
 									target="_blank"
@@ -433,7 +433,8 @@
 									class="lx-link-text text-le-jaune-very-dark"
 									aria-label={`Amender et évaluer ${variableLabel}`}
 								>
-									Amender et évaluer
+									<span class="font-bold">{variableLabel}</span> | Amender et
+									évaluer
 									<iconify-icon
 										class="align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
@@ -457,15 +458,14 @@
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
 						<div class="mb-2">
 							<p>
-								<span class="font-bold">{variableLabel}</span> |
 								<a
 									href={linkHref}
 									target="_blank"
 									rel="noopener"
 									class="lx-link-text text-le-jaune-very-dark"
 									aria-label={`Amender et évaluer ${variableLabel}`}
-								>
-									Amender et évaluer
+									><span class="font-bold">{variableLabel}</span> | Amender et
+									évaluer
 									<iconify-icon
 										class="align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
@@ -495,11 +495,11 @@
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
 							<button
-								class="lx-link-simple bg-le-gris-dispositif-ultralight rounded-sm px-2"
+								class="lx-link-simple bg-le-gris-dispositif-ultralight rounded-sm px-2 text-left"
 								onclick={() => (selectedParameter = parameter)}
 								aria-label={`Voir dispositifs pour ${parameterLabel}`}
 							>
-								<span class="font-serif italic">{parameterLabel}</span>
+								<span class=" font-serif italic">{parameterLabel}</span>
 							</button>
 						</li>
 					{/each}
@@ -542,8 +542,12 @@
 												rel="noopener"
 												class="lx-link-text text-le-jaune-very-dark text-sm"
 											>
-												{getParameter(rootParameter, parameter)?.short_label ??
-													parameter} | {variableLabel}<iconify-icon
+												<span
+													class=" text-le-gris-dispositif-dark rounded-sm font-serif italic"
+													>{getParameter(rootParameter, parameter)
+														?.short_label ?? parameter}</span
+												>
+												| {variableLabel}<iconify-icon
 													class="ml-1 align-[-0.3rem] text-xl"
 													icon="ri-arrow-right-line"
 												></iconify-icon>
@@ -579,8 +583,9 @@
 						Le paramètre <span
 							class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 							>{parameterLabel}</span
-						> intervient dans plusieurs dispositifs. Choisissez en un pour débuter
-						votre évaluation :
+						>
+						intervient dans plusieurs dispositifs.
+						<strong>Choisissez en un pour débuter votre évaluation :</strong>
 					</p>
 
 					<ul class="mt-4 ml-4 list-disc">
@@ -590,15 +595,14 @@
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
 							<li class="mb-4">
 								<p>
-									<span class="font-bold">{variableLabel}</span> |
 									<a
 										href={linkHref}
 										target="_blank"
 										rel="noopener"
 										class="lx-link-text text-le-jaune-very-dark"
 										aria-label={`Amender et évaluer ${variableLabel}`}
-									>
-										Amender et évaluer
+										><span class="font-bold">{variableLabel}</span> | Amender et
+										évaluer
 										<iconify-icon
 											class="align-[-0.3rem] text-xl"
 											icon="ri-arrow-right-line"
@@ -622,7 +626,6 @@
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
 							<div class="mb-2">
 								<p>
-									<span class="font-bold">{variableLabel}</span> |
 									<a
 										href={linkHref}
 										target="_blank"
@@ -630,7 +633,8 @@
 										class="lx-link-text text-le-jaune-very-dark"
 										aria-label={`Amender et évaluer ${variableLabel}`}
 									>
-										Amender et évaluer
+										<span class="font-bold">{variableLabel}</span> | Amender et
+										évaluer
 										<iconify-icon
 											class="align-[-0.3rem] text-xl"
 											icon="ri-arrow-right-line"
