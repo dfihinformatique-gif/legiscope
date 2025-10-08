@@ -44,7 +44,7 @@
 				<div class="flex justify-end">
 					<button
 						bind:this={closeButton}
-						class="hover:bg-le-jaune-dark flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg p-1.5 focus:ring-2 focus:ring-gray-400 focus:outline-none active:bg-gray-200"
+						class="hover:bg-le-jaune-dark flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg p-1.5 focus:ring-2 focus:ring-gray-400 focus:outline-none"
 						onclick={closeModal}
 					>
 						<iconify-icon class="h-6 w-6 text-2xl" icon="ri-close-line"
