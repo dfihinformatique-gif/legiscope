@@ -411,7 +411,8 @@
 
 			{#if variableCount > 1}
 				<p class="">
-					Le paramètre <span class="bg-le-vert-100 rounded-sm px-2 font-bold"
+					Le paramètre <span
+						class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 						>{parameterLabel}</span
 					> intervient dans plusieurs dispositifs. Choisissez en un pour débuter
 					votre évaluation :
@@ -424,7 +425,7 @@
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
 						<li class="mb-4">
 							<p>
-								<strong>{variableLabel}</strong> |
+								<span class="font-bold">{variableLabel}</span> |
 								<a
 									href={linkHref}
 									target="_blank"
@@ -444,7 +445,8 @@
 				</ul>
 			{:else if variableCount === 1}
 				<p class="">
-					Le paramètre <span class="bg-le-vert-100 rounded-sm px-2 font-bold"
+					Le paramètre <span
+						class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 						>{parameterLabel}</span
 					> intervient dans le dispositif suivant :
 				</p>
@@ -455,7 +457,7 @@
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
 						<div class="mb-2">
 							<p>
-								<strong>{variableLabel}</strong> |
+								<span class="font-bold">{variableLabel}</span> |
 								<a
 									href={linkHref}
 									target="_blank"
@@ -493,11 +495,11 @@
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
 							<button
-								class="lx-link-simple bg-le-vert-100 rounded-sm px-2"
+								class="lx-link-simple bg-le-gris-dispositif-ultralight rounded-sm px-2"
 								onclick={() => (selectedParameter = parameter)}
 								aria-label={`Voir dispositifs pour ${parameterLabel}`}
 							>
-								<span class="">{parameterLabel}</span>
+								<span class="font-serif italic">{parameterLabel}</span>
 							</button>
 						</li>
 					{/each}
@@ -574,7 +576,8 @@
 
 				{#if variableCount > 1}
 					<p class="">
-						Le paramètre <span class="bg-le-vert-100 rounded-sm px-2 font-bold"
+						Le paramètre <span
+							class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 							>{parameterLabel}</span
 						> intervient dans plusieurs dispositifs. Choisissez en un pour débuter
 						votre évaluation :
@@ -587,7 +590,7 @@
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
 							<li class="mb-4">
 								<p>
-									<strong>{variableLabel}</strong> |
+									<span class="font-bold">{variableLabel}</span> |
 									<a
 										href={linkHref}
 										target="_blank"
@@ -607,7 +610,8 @@
 					</ul>
 				{:else if variableCount === 1}
 					<p class="">
-						Le paramètre <span class="bg-le-vert-100 rounded-sm px-2 font-bold"
+						Le paramètre <span
+							class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
 							>{parameterLabel}</span
 						> intervient dans le dispositif suivant :
 					</p>
@@ -618,7 +622,7 @@
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
 							<div class="mb-2">
 								<p>
-									<strong>{variableLabel}</strong> |
+									<span class="font-bold">{variableLabel}</span> |
 									<a
 										href={linkHref}
 										target="_blank"
