@@ -614,6 +614,7 @@
 				button.style.setProperty("color", "#000", "important")
 				button.style.setProperty("cursor", "pointer", "important")
 				button.style.setProperty("font-family", "inherit", "important")
+				button.style.setProperty("font-size", "inherit", "important")
 				button.style.setProperty(
 					"transition",
 					"background-color 0.2s ease",
