@@ -4,14 +4,24 @@
 
 {#if !shared.isMobilePhone}
 	<div
-		class="fixed bottom-0 flex w-full flex-row flex-nowrap justify-items-center-safe overflow-hidden bg-neutral-200 py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+		class="bg-le-gris-dispositif-dark fixed bottom-0 flex h-16 w-full flex-row flex-nowrap items-center overflow-hidden py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 	>
+		<!-- Bloc gauche pour le logo AN  -->
+
+		<div class="absolute bottom-2 left-3">
+			<img
+				class="ml-2 h-14 items-start self-start pb-2"
+				src="/logo-assemblee-nationale-blanc-blanc.png"
+				alt="Logo de l'Assemblée nationale"
+			/>
+		</div>
+
 		<div class="basis-1/2">
 			<button
 				class="
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showBillDesktop
-					? 'border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-blue-200 font-bold hover:bg-blue-100'
+					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}
   "
 				onclick={() => {
@@ -34,7 +44,7 @@
 				class="
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
-					? 'border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-blue-200 font-bold hover:bg-blue-100'
+					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
 				onclick={() => {
 					shared.showLawDesktop = !shared.showLawDesktop
@@ -52,26 +62,41 @@
 			</button>
 		</div>
 	</div>
-	<div class="absolute right-3 bottom-7">
+	<div class="absolute right-3 bottom-1.5">
 		<a
-			class="cursor-pointer overflow-hidden rounded-lg px-4 py-3 text-center text-sm text-gray-600 uppercase hover:bg-neutral-300 hover:text-gray-800 focus:outline-none active:text-gray-900"
+			class="border-le-gris-dispositif-dark flex cursor-pointer overflow-hidden border-t-4 px-4 py-1.5 text-center text-sm text-neutral-200 uppercase hover:border-neutral-200"
 			href="/#caracteristiques-simulateur"
-			>Accueil
-			<iconify-icon
-				class="mr-1 align-[-0.4rem] text-2xl text-gray-500"
-				icon="ri-information-2-fill"
-			></iconify-icon>
-		</a>
+			><span>
+				<iconify-icon
+					class="mr-1 align-[-0.4rem] text-xl"
+					icon="ri-information-2-fill"
+				></iconify-icon>Accueil<br />
+				<span class="tracking-wider">Légiscope</span>
+			</span></a
+		>
 	</div>
 {:else}
-	<div class="fixed bottom-0 flex w-full justify-center">
-		<div class=" flex w-1/12"></div>
+	<div
+		class="bg-le-gris-dispositif-dark fixed bottom-0 flex w-full justify-between"
+	>
+		<!-- Bloc gauche pour le logo AN  -->
+
+		<div class="flex h-12 w-1/12 items-center pt-2 pl-2.5">
+			<div>
+				<img
+					class="w-10"
+					src="/logo-assemblee-nationale-blanc-blanc.png"
+					alt="Logo de l'Assemblée nationale"
+				/>
+			</div>
+		</div>
+
 		<div
-			class=" flex w-10/12 flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+			class="mt-2 flex h-12 w-9/12 flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 		>
-			<div class="flex w-1/2">
+			<div class="flex h-full w-1/2">
 				<button
-					class={`flex h-14 w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide uppercase sm:text-xl
+					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide uppercase sm:text-xl
     			${shared.activePanelMobile === "bill" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark font- bg-blue-100 font-bold" : ""}
     			${shared.activePanelMobile === "law" ? "bg-blue-50 text-gray-500 hover:border-blue-950 hover:bg-blue-100 hover:font-bold hover:text-blue-950" : ""}
   				`}
@@ -80,9 +105,9 @@
 					Projet de loi
 				</button>
 			</div>
-			<div class="flex w-1/2">
+			<div class="flex h-full w-1/2">
 				<button
-					class={`flex h-14 w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide text-black uppercase sm:text-xl
+					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide text-black uppercase sm:text-xl
 					${shared.activePanelMobile === "law" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
 					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-100 text-gray-600  hover:bg-white hover:font-bold" : ""}
 				`}
@@ -94,12 +119,12 @@
 		</div>
 
 		<a
-			class="flex w-1/12 cursor-pointer justify-center overflow-hidden rounded-lg px-4 py-3 text-gray-500 uppercase hover:text-gray-700 focus:outline-none active:text-gray-800"
+			class="flex w-1/12 cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white uppercase hover:text-gray-200 focus:outline-none active:text-gray-800"
 			href="/#caracteristiques-simulateur"
 			aria-label="Accueil"
 		>
 			<iconify-icon
-				class="mr-1 align-[-0.2rem] text-2xl"
+				class="mr-2 align-[-0.2rem] text-2xl"
 				icon="ri-information-2-fill"
 			></iconify-icon>
 		</a>
