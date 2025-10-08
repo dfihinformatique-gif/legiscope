@@ -70,11 +70,6 @@
 					>Déclarer une erreur / contacter l'équipe</a
 				>
 			</li>
-			<li>
-				<a class="lx-link-simple" href="#cgu"
-					>Consulter les conditions d'utilisation</a
-				>
-			</li>
 		</ul>
 	</div>
 	<AnchorTitle
@@ -178,33 +173,16 @@
 		<br />
 		<br />
 		Tricoteuses est un projet open source, auquel LexImpact contribue techniquement,
-		qui permet entre autres :
-		<ul class="ml-6 list-inside list-disc">
-			<li>
-				<span class="font-bold"
-					>d'ajouter automatiquement les milliers de liens URL manquants dans
-					les articles de loi</span
-				>, là où ces derniers référencent un autre article, afin d'établir le
-				réseau exhaustif des relations entre les articles. Cette tâche,
-				particulièrement fastidieuse à mettre en place, est indispensable pour
-				permettre à l'usager de naviguer d'un texte à l'autre. Si vous détectez
-				un lien cassé ou erroné, n'hésitez pas à nous
-				<a class="lx-link-text" href="#contact">contacter</a>.
-			</li>
-			<li>
-				<span class="font-bold"
-					>de regrouper et relier des bases de données relatives à la
-					législation</span
-				> dans un outil qui permet de structurer, organiser dans le temps et comparer
-				les versions entre elles (Git). Actuellement, Légiscope bénéficie du regroupement
-				des trois grandes bases de Légifrance effectué par Tricoteuses : la base
-				JORF contenant les textes publiés au Journal Officiel, la base LEGI contenant
-				les textes consolidés et la base DOLE accueillant les dossiers législatifs
-				de Légifrance. À terme, d'autres bases, telles que celles de l'Assemblée
-				nationale et du Sénat pourraient rejoindre l'outil dans l'objectif de retracer
-				plus finement le parcours de la loi dans son ensemble.
-			</li>
-		</ul>
+		qui permet entre autres
+		<span class="font-bold"
+			>d'ajouter automatiquement les milliers de liens URL manquants dans les
+			articles de loi</span
+		>, là où ces derniers référencent un autre article, afin d'établir le réseau
+		exhaustif des relations entre les articles. Ce réseau de lien permet à
+		l'usager de naviguer d'un texte à l'autre. Si vous détectez un lien cassé ou
+		erroné, n'hésitez pas à nous
+		<a class="lx-link-text" href="#contact">contacter</a>.
+
 		<br />
 		<br />
 		<span class="text-le-gris-dispositif-dark font-sans text-xl font-bold"
@@ -212,9 +190,12 @@
 		><br />
 		Légiscope donne ponctuellement également accès à des informations sur les paramètres
 		présents dans le projet ou les textes de loi, telles que l'historique des valeurs
-		du paramètre, une description et, lorsque cela est applicable, un lien vers les
-		simulateurs LexImpact permettant d'estimer l'effet d'une modification du paramètre
-		sur cas types ou sur le budget.
+		du paramètre, une description et,
+		<b
+			>lorsque cela est applicable, un lien vers les simulateurs LexImpact
+			permettant d'estimer l'effet d'une modification du paramètre sur cas types
+			ou sur le budget</b
+		>.
 
 		<br />
 		<br />La description ou l'historique des valeurs du paramètre sont issus du
@@ -247,15 +228,8 @@
 			class="lx-link-text-le-bleu"
 			href="mailto:leximpact@assemblee-nationale.fr"
 			>leximpact@assemblee-nationale.fr</a
-		>
+		>.
 	</div>
-	<AnchorTitle
-		id="cgu"
-		class="col-span-4 max-w-prose justify-self-center text-center text-2xl font-bold"
-		tag="h3"
-	>
-		Conditions d'utilisation
-	</AnchorTitle>
 </section>
 
 <style lang="postcss">
