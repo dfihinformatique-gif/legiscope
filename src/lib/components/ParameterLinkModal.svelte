@@ -1,6 +1,7 @@
 <script lang="ts">
 	import DialogContent from "$lib/components/ui_transverse_components/DialogContent.svelte"
 	import DialogOverlay from "$lib/components/ui_transverse_components/DialogOverlay.svelte"
+	import { simplifyHtml } from "@tricoteuses/tisseuse"
 	import { Dialog } from "bits-ui"
 	import { onMount } from "svelte"
 
@@ -36,15 +37,37 @@
 			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
 
 		for (const button of clickedParameterButtons) {
+			const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
+				button.innerHTML,
+			).output.replace(" ", "")
 			button.style.setProperty("background-color", "#ccd3e7")
 			button.addEventListener("mouseenter", () => {
 				if (!showParameterModal) {
 					button.style.setProperty("background-color", hoverBg, "important")
+					Array.from(
+						document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+					).forEach((btn) => {
+						const btnInnerText = simplifyHtml({ removeAWithHref: true })(
+							btn.innerHTML,
+						).output.replace(" ", "")
+
+						if (
+							btn.dataset.params === button.dataset.params &&
+							btnInnerText === buttonInnerText
+						)
+							btn.style.setProperty("background-color", hoverBg, "important")
+					})
 				}
 			})
 			button.addEventListener("mouseleave", () => {
 				if (!showParameterModal) {
 					button.style.setProperty("background-color", baseBg, "important")
+					Array.from(
+						document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+					).forEach((btn) => {
+						if (btn.dataset.params === button.dataset.params)
+							btn.style.setProperty("background-color", baseBg, "important")
+					})
 				}
 			})
 		}

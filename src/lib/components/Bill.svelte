@@ -8,6 +8,7 @@
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
+	import { simplifyHtml } from "@tricoteuses/tisseuse"
 
 	interface Props {
 		pjlHTML: string | undefined
@@ -621,16 +622,41 @@
 					"background-color 0.2s ease",
 					"important",
 				)
-
+				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
+					button.innerHTML,
+				).output.replace(" ", "")
 				/* Hover : seulement si le bouton n’est pas celui du paramètre actif */
 				button.addEventListener("mouseenter", () => {
-					if (activeParam !== button.dataset.params && !showParameterModal) {
+					if (!showParameterModal) {
 						button.style.setProperty("background-color", hoverBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
+								btn.innerHTML,
+							).output.replace(" ", "")
+
+							if (
+								btn.dataset.params === button.dataset.params &&
+								btnInnerText === buttonInnerText
+							)
+								btn.style.setProperty("background-color", hoverBg, "important")
+						})
 					}
 				})
 				button.addEventListener("mouseleave", () => {
-					if (activeParam !== button.dataset.params && !showParameterModal) {
+					if (!showParameterModal) {
 						button.style.setProperty("background-color", baseBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							if (btn.dataset.params === button.dataset.params)
+								btn.style.setProperty("background-color", baseBg, "important")
+						})
 					}
 				})
 
