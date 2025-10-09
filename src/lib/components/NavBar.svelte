@@ -65,7 +65,7 @@
 	<div class="absolute right-3 bottom-1.5">
 		<a
 			class="border-le-gris-dispositif-dark flex cursor-pointer overflow-hidden border-t-4 px-4 py-1.5 text-center text-sm text-neutral-200 uppercase hover:border-neutral-200"
-			href="/#caracteristiques-simulateur"
+			href="/"
 			><span>
 				<iconify-icon
 					class="mr-1 align-[-0.4rem] text-xl"
@@ -120,7 +120,7 @@
 
 		<a
 			class="flex w-1/12 cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white uppercase hover:text-gray-200 focus:outline-none active:text-gray-800"
-			href="/#caracteristiques-simulateur"
+			href="/"
 			aria-label="Accueil"
 		>
 			<iconify-icon

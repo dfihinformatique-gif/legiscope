@@ -73,19 +73,8 @@
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
 				>
 					<iconify-icon
-						class="text-8xl text-gray-500"
+						class="text-8xl text-gray-400"
 						icon="ri:book-marked-fill"
-					></iconify-icon>
-					<p class="text-center font-medium text-gray-500 uppercase">
-						Cliquez sur une loi
-					</p>
-					<p class="text-center font-medium text-gray-500 uppercase">
-						dans le PLF
-					</p>
-					<p class="text-center font-medium text-gray-500 uppercase">
-						pour l'afficher
-					</p>
-					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
 					></iconify-icon>
 				</div>
 			{/if}
@@ -131,13 +120,13 @@
 						icon="ri:book-marked-fill"
 					></iconify-icon>
 					<p class="flex items-center font-medium text-gray-500 uppercase">
-						Cliquez sur une loi
+						Cliquez sur un lien
 					</p>
 					<p class="flex items-center font-medium text-gray-500 uppercase">
-						dans le PLF
+						du projet de loi
 					</p>
 					<p class="flex items-center font-medium text-gray-500 uppercase">
-						pour l'afficher
+						pour afficher l'article ici
 					</p>
 					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
 					></iconify-icon>

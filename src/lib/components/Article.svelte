@@ -36,17 +36,72 @@
 		parametersToVariables,
 	}: Props = $props()
 
+	let parameterSimulatorlinksOpen = $state(false)
+	let selectedParameter = $state<string | null>(null)
+	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+
+	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
+	$effect(() => {
+		if (
+			parametersToVariables &&
+			selectedParameter &&
+			!(selectedParameter in parametersToVariables)
+		) {
+			selectedParameter = null
+		}
+	})
+
 	onMount(() => {
+		const baseBg = "#ccd3e7" /* Fond bleu clair */
+		const hoverBg =
+			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
 		document
-			.querySelectorAll<HTMLSpanElement>("button.highlighted")
+			.querySelectorAll<HTMLButtonElement>("button.highlighted")
 			.forEach((button) => {
-				button.style.setProperty("background-color", "#ccd3e7", "important")
+				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
+					button.innerHTML,
+				).output.replace(" ", "")
+				button.addEventListener("mouseenter", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", hoverBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
+								btn.innerHTML,
+							).output.replace(" ", "")
+
+							if (
+								btn.dataset.params === button.dataset.params &&
+								btnInnerText === buttonInnerText
+							)
+								btn.style.setProperty("background-color", hoverBg, "important")
+						})
+					}
+				})
+				button.addEventListener("mouseleave", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", baseBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							if (btn.dataset.params === button.dataset.params)
+								btn.style.setProperty("background-color", baseBg, "important")
+						})
+					}
+				})
 
 				button.addEventListener("click", (e: Event) => {
+					button.classList.add("bg-le-vert-500/50")
 					parametersToVariables = button.dataset.params
 						? decodeParametersToVariables(button.dataset.params)
 						: {}
 					showParameterModal = true
+					clickedParameterButtons.push(button)
 				})
 			})
 	})
@@ -97,7 +152,7 @@
 				parametersToVariables[parameter] = findVariablesByParameter(parameter)
 			}
 
-			result = `${before}${coords.outerPrefix ?? ""}<button class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
+			result = `${before}${coords.outerPrefix ?? ""}<button class="px-1 hover:bg-le-vert-500/50 highlighted cursor-pointer bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 		}
 
 		return result
@@ -246,7 +301,7 @@
 
 		<!--En-tête-->
 		<div
-			class="mt-2 mb-5 flex flex-col items-start justify-between gap-x-5 md:flex-row"
+			class="mt-2 flex flex-col items-start justify-between gap-x-5 md:flex-row"
 		>
 			<!--Titre-->
 			<div
@@ -275,7 +330,35 @@
 				>
 			</div>
 		</div>
-		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
+		<div
+			class="mb-2"
+			class:border-b={historyIsOpen}
+			class:shadow-bottom-extralight={historyIsOpen}
+			class:border-gray-200={historyIsOpen}
+		>
+			<button
+				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				onclick={() => {
+					historyIsOpen = !historyIsOpen
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.3rem] text-xl"
+					icon={historyIsOpen
+						? "ri:arrow-down-s-line"
+						: "ri:arrow-right-s-line"}
+				>
+				</iconify-icon>
+				Historique
+			</button>
+
+			{#if historyIsOpen}
+				<div class=" bg-white p-4">
+					<ArticleHistory {articleInfo}></ArticleHistory>
+				</div>
+			{/if}
+		</div>
+		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
 			{#if articleInfo.versions}
 				<select
 					name="versions"
@@ -328,32 +411,6 @@
 				>
 			</div> -->
 		</div>
-		<div
-			class:mb-10={historyIsOpen}
-			class:border-b={historyIsOpen}
-			class:shadow-bottom-extralight={historyIsOpen}
-			class:border-gray-200={historyIsOpen}
-		>
-			<button
-				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
-				onclick={() => {
-					historyIsOpen = !historyIsOpen
-				}}
-			>
-				<iconify-icon
-					class="align-[-0.3rem] text-xl"
-					icon={historyIsOpen
-						? "ri:arrow-down-s-line"
-						: "ri:arrow-right-s-line"}
-				>
-				</iconify-icon>
-				Historique de l'article
-			</button>
-
-			{#if historyIsOpen}
-				<ArticleHistory {articleInfo}></ArticleHistory>
-			{/if}
-		</div>
 
 		<!--Article-->
 		{#if articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
@@ -378,25 +435,266 @@
 	{/if}
 </div>
 
-<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+<ParameterLinkModal
+	bind:showParameterModal
+	{clickedParameterButtons}
+	bind:parametersToVariables
+>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
-		<h2>{parameterCount} paramètre(s) correspondants :</h2>
-		{#each Object.entries(parametersToVariables) as [parameter, variables]}
+
+		{#if parameterCount === 0}
+			<p>Aucun paramètre associé.</p>
+		{:else if parameterCount === 1}
+			<!-- Cas 1 : un seul paramètre → afficher directement les dispositifs -->
+			{@const onlyEntry = Object.entries(parametersToVariables)[0]}
+			{@const onlyParameter = onlyEntry[0]}
+			{@const variables = onlyEntry[1] ?? []}
 			{@const parameterLabel =
-				getParameter(rootParameter, parameter)?.short_label ?? parameter}
-			<div>
-				Le paramètre <strong>{parameterLabel}</strong> est utilisé dans les
-				dispositifs :
-				<ul class="list-inside list-disc">
+				getParameter(rootParameter, onlyParameter)?.short_label ??
+				onlyParameter}
+
+			{@const variableCount = variables.length}
+
+			{#if variableCount > 1}
+				<p class="">
+					Le paramètre <span
+						class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
+						>{parameterLabel}</span
+					>
+					intervient dans plusieurs dispositifs.
+					<strong>Choisissez en un pour débuter votre évaluation :</strong>
+				</p>
+
+				<ul class="mt-4 ml-4 list-disc">
 					{#each variables as variable}
 						{@const variableLabel =
-							variablesSummaries[variable].label ?? variable}
-						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${variable}#${parameter}`}
-						<li><a href={linkHref} target="_blank">{variableLabel}</a></li>
+							variablesSummaries[variable]?.label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
+						<li class="mb-4">
+							<p>
+								<a
+									href={linkHref}
+									target="_blank"
+									rel="noopener"
+									class="lx-link-text text-le-jaune-very-dark"
+									aria-label={`Amender et évaluer ${variableLabel}`}
+								>
+									<span class="font-bold">{variableLabel}</span> | Amender et
+									évaluer
+									<iconify-icon
+										class="align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon>
+								</a>
+							</p>
+						</li>
 					{/each}
 				</ul>
-			</div>
-		{/each}
+			{:else if variableCount === 1}
+				<p class="">
+					Le paramètre <span
+						class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
+						>{parameterLabel}</span
+					> intervient dans le dispositif suivant :
+				</p>
+				<div class="mt-4">
+					{#each variables as variable}
+						{@const variableLabel =
+							variablesSummaries[variable]?.label ?? variable}
+						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
+						<div class="mb-2">
+							<p>
+								<a
+									href={linkHref}
+									target="_blank"
+									rel="noopener"
+									class="lx-link-text text-le-jaune-very-dark"
+									aria-label={`Amender et évaluer ${variableLabel}`}
+									><span class="font-bold">{variableLabel}</span> | Amender et
+									évaluer
+									<iconify-icon
+										class="align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon>
+								</a>
+							</p>
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p>Aucun dispositif trouvé pour ce paramètre.</p>
+			{/if}
+		{:else}
+			<!-- Cas 2 : plusieurs paramètres → deux étapes (liste des paramètres → choix du dispositif) -->
+			{#if selectedParameter === null}
+				<!-- Étape 1 : liste des paramètres -->
+
+				<p>
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le
+					simulateur LexImpact.
+					<strong>Choisissez celui que vous souhaitez examiner :</strong>
+				</p>
+
+				<ul class="mt-4 ml-4 list-disc">
+					{#each Object.entries(parametersToVariables) as [parameter, variables]}
+						{@const parameterLabel =
+							getParameter(rootParameter, parameter)?.short_label ?? parameter}
+						<li class="mb-3">
+							<button
+								class="lx-link-simple bg-le-gris-dispositif-ultralight rounded-sm px-2 text-left"
+								onclick={() => (selectedParameter = parameter)}
+								aria-label={`Voir dispositifs pour ${parameterLabel}`}
+							>
+								<span class=" font-serif italic">{parameterLabel}</span>
+							</button>
+						</li>
+					{/each}
+				</ul>
+
+				<!-- Liens directs optionnels -->
+				<div class="mt-4 rounded-md bg-neutral-100">
+					<button
+						type="button"
+						class="flex h-10 w-full items-center justify-between gap-3 px-4 text-sm"
+						class:bg-neutral-50={parameterSimulatorlinksOpen}
+						onclick={() =>
+							(parameterSimulatorlinksOpen = !parameterSimulatorlinksOpen)}
+						aria-expanded={parameterSimulatorlinksOpen}
+					>
+						<span class:font-bold={parameterSimulatorlinksOpen}
+							>Voir directement tous les liens vers le simulateur</span
+						>
+
+						<iconify-icon
+							class="text-lg transition-transform duration-150"
+							class:rotate-180={parameterSimulatorlinksOpen}
+							icon="ri:arrow-down-s-line"
+							aria-hidden="true"
+						></iconify-icon>
+					</button>
+
+					{#if parameterSimulatorlinksOpen}
+						<div class="space-y-2 p-4">
+							<ul class="ml-4 list-disc">
+								{#each Object.entries(parametersToVariables) as [parameter, variables]}
+									{#each variables as variable}
+										{@const variableLabel =
+											variablesSummaries[variable]?.label ?? variable}
+										{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
+										<li class="mb-2">
+											<a
+												href={linkHref}
+												target="_blank"
+												rel="noopener"
+												class="lx-link-text text-le-jaune-very-dark text-sm"
+											>
+												<span
+													class=" text-le-gris-dispositif-dark rounded-sm font-serif italic"
+													>{getParameter(rootParameter, parameter)
+														?.short_label ?? parameter}</span
+												>
+												| {variableLabel}<iconify-icon
+													class="ml-1 align-[-0.3rem] text-xl"
+													icon="ri-arrow-right-line"
+												></iconify-icon>
+											</a>
+										</li>
+									{/each}
+								{/each}
+							</ul>
+						</div>
+					{/if}
+				</div>
+			{:else}
+				<!-- Étape 2 : détails du paramètre sélectionné -->
+				{@const variables = parametersToVariables[selectedParameter] ?? []}
+				{@const parameterLabel =
+					getParameter(rootParameter, selectedParameter)?.short_label ??
+					selectedParameter}
+				{@const variableCount = variables.length}
+
+				<button
+					class="lx-link-uppercase mb-4"
+					onclick={() => (selectedParameter = null)}
+					aria-label="Retour à la liste des paramètres"
+				>
+					<iconify-icon
+						class="mr-1 align-[-0.3rem] text-xl"
+						icon="ri-arrow-left-line"
+					></iconify-icon> Retour
+				</button>
+
+				{#if variableCount > 1}
+					<p class="">
+						Le paramètre <span
+							class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
+							>{parameterLabel}</span
+						>
+						intervient dans plusieurs dispositifs.
+						<strong>Choisissez en un pour débuter votre évaluation :</strong>
+					</p>
+
+					<ul class="mt-4 ml-4 list-disc">
+						{#each variables as variable}
+							{@const variableLabel =
+								variablesSummaries[variable]?.label ?? variable}
+							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
+							<li class="mb-4">
+								<p>
+									<a
+										href={linkHref}
+										target="_blank"
+										rel="noopener"
+										class="lx-link-text text-le-jaune-very-dark"
+										aria-label={`Amender et évaluer ${variableLabel}`}
+										><span class="font-bold">{variableLabel}</span> | Amender et
+										évaluer
+										<iconify-icon
+											class="align-[-0.3rem] text-xl"
+											icon="ri-arrow-right-line"
+										></iconify-icon>
+									</a>
+								</p>
+							</li>
+						{/each}
+					</ul>
+				{:else if variableCount === 1}
+					<p class="">
+						Le paramètre <span
+							class="bg-le-gris-dispositif-ultralight text-le-gris-dispositif-dark rounded-sm px-2 font-serif italic"
+							>{parameterLabel}</span
+						> intervient dans le dispositif suivant :
+					</p>
+					<div class="mt-4">
+						{#each variables as variable}
+							{@const variableLabel =
+								variablesSummaries[variable]?.label ?? variable}
+							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
+							<div class="mb-2">
+								<p>
+									<a
+										href={linkHref}
+										target="_blank"
+										rel="noopener"
+										class="lx-link-text text-le-jaune-very-dark"
+										aria-label={`Amender et évaluer ${variableLabel}`}
+									>
+										<span class="font-bold">{variableLabel}</span> | Amender et
+										évaluer
+										<iconify-icon
+											class="align-[-0.3rem] text-xl"
+											icon="ri-arrow-right-line"
+										></iconify-icon>
+									</a>
+								</p>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p>Aucun dispositif trouvé pour ce paramètre.</p>
+				{/if}
+			{/if}
+		{/if}
 	{/if}
 </ParameterLinkModal>

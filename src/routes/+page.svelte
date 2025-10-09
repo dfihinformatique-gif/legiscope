@@ -17,8 +17,18 @@
 					Consulter un projet de loi&nbsp;:
 				</h1>
 				{#if isLoadingPjl}
-					<div class="flex justify-center">
-						Chargement en cours, merci de patienter...
+					<div class="mt-6 flex flex-col justify-center">
+						<div
+							class="flex animate-pulse justify-center text-center text-base italic"
+						>
+							Chargement du projet de loi en cours, <br />Création du réseau de
+							liens vers la loi et les simulateurs...
+						</div>
+						<iconify-icon
+							class="animate-spin align-[-0.2rem] text-2xl text-neutral-800"
+							icon="ri:guide-fill"
+						>
+						</iconify-icon>
 					</div>
 				{:else}
 					<div class="flex justify-center">

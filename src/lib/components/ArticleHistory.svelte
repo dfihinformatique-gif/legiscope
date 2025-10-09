@@ -55,34 +55,113 @@
 			}
 		})
 		.catch(() => (historyData = undefined))
+
+	// REGROUPEMENT des Modifications/Codifications par année
+
+	/* Récupère l'année */
+	function getYear(publicationDate: HistoryByTextRow["date_publi"]) {
+		if (!publicationDate) return "Inconnue"
+		const date =
+			typeof publicationDate === "string"
+				? new Date(publicationDate)
+				: publicationDate
+		return Number.isNaN(date.getTime())
+			? "Inconnue"
+			: date.getFullYear().toString()
+	}
+
+	/* fonction de groupement par année (ne modifie rien d'autre)*/
+	function groupHistoryByYear(historyList?: HistoryByText) {
+		const map = new Map<string, HistoryByTextRow[]>()
+		if (!Array.isArray(historyList)) return []
+
+		for (const text of historyList) {
+			const year = getYear(text.date_publi)
+			if (!map.has(year)) map.set(year, [])
+			map.get(year)!.push(text)
+		}
+
+		const historyByYear = Array.from(map.entries()).map(([year, items]) => ({
+			year,
+			items,
+		}))
+
+		/* tri décroissant par année, 'Inconnue' en fin */
+		historyByYear.sort((a, b) => {
+			if (a.year === "Inconnue") return 1
+			if (b.year === "Inconnue") return -1
+			return Number(b.year) - Number(a.year)
+		})
+
+		return historyByYear
+	}
+
+	/* transforme le type de lien en version accentuée si nécessaire */
+	function formatTypeLien(typeLien: string) {
+		switch (typeLien) {
+			case "MODIFIE":
+				return "MODIFIÉ"
+			case "CODIFIE":
+				return "CODIFIÉ"
+			case "ABROGE":
+				return "ABROGÉ"
+			case "CREE":
+				return "CRÉÉ"
+			case "ANNULE":
+				return "ANNULÉ"
+			case "PERIME":
+				return "PERIMÉ"
+			case "TRANSFERE":
+				return "TRANSFERÉ"
+			default:
+				return typeLien
+		}
+	}
 </script>
 
 {#if historyByText !== undefined}
-	<ul>
-		{#each historyByText as text}
-			{@const urlToNavigate = new URL(page.url)}
-			{urlToNavigate.searchParams.set("article", text.cidtexte)}
-			<li>
-				{text.typelien} par <a href={urlToNavigate.href}>{text.titre_texte}</a>
-				{#if text.articles_jorf.filter((article) => {
-					article.id !== ""
-				}).length > 0}
-					(
-					{#each text.articles_jorf as article, i}
-						{urlToNavigate.searchParams.set("article", article.id)}
-						{#if article.id !== ""}
-							<a href={urlToNavigate.href}
-								>art. n°{article.num !== ""
-									? article.num
-									: `non identifié ${i + 1}`}</a
+	{#each groupHistoryByYear(historyByText) as group}
+		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
+			<div>
+				<span class="text-le-gris-dispositif">{group.year}</span>
+			</div>
+			<div>
+				<ul class="list-disc">
+					{#each group.items as text}
+						{@const urlToNavigate = new URL(page.url)}
+						{urlToNavigate.searchParams.set("article", text.cidtexte)}
+						<li class="text-sm">
+							<span
+								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
+								>{formatTypeLien(text.typelien)} par</span
 							>
-						{:else}
-							art. {article.num !== "" ? article.num : `non identifié ${i + 1}`}
-						{/if}
+							<a class="lx-link-text" href={urlToNavigate.href}
+								>{text.titre_texte}</a
+							>
+							{#if text.articles_jorf.filter((article) => {
+								article.id !== ""
+							}).length > 0}
+								(
+								{#each text.articles_jorf as article, i}
+									{urlToNavigate.searchParams.set("article", article.id)}
+									{#if article.id !== ""}
+										<a class="text-sm leading-4" href={urlToNavigate.href}
+											>art. n°{article.num !== ""
+												? article.num
+												: `non identifié ${i + 1}`}</a
+										>
+									{:else}
+										art. {article.num !== ""
+											? article.num
+											: `non identifié ${i + 1}`}
+									{/if}
+								{/each}
+								)
+							{/if}
+						</li>
 					{/each}
-					)
-				{/if}
-			</li>
-		{/each}
-	</ul>
+				</ul>
+			</div>
+		</section>
+	{/each}
 {/if}
