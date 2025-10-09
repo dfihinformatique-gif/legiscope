@@ -55,9 +55,8 @@
 		document
 			.querySelectorAll<HTMLButtonElement>("button.highlighted")
 			.forEach((button) => {
-				// button.style.setProperty("background-color", "#ccd3e7", "important")
 				button.addEventListener("click", (e: Event) => {
-					button.style.setProperty("background-color", "rgba(127, 122, 9, 0.5)")
+					button.classList.add("bg-le-vert-500/50")
 					parametersToVariables = button.dataset.params
 						? decodeParametersToVariables(button.dataset.params)
 						: {}
@@ -113,7 +112,7 @@
 				parametersToVariables[parameter] = findVariablesByParameter(parameter)
 			}
 
-			result = `${before}${coords.outerPrefix ?? ""}<button class="hover:bg-le-vert-500/50 highlighted bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
+			result = `${before}${coords.outerPrefix ?? ""}<button class="hover:bg-le-vert-500/50 highlighted cursor-pointer bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 		}
 
 		return result

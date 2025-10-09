@@ -31,12 +31,22 @@
 	})
 
 	function closeModal() {
-		// ;(clickedParameterButton as HTMLButtonElement).style.setProperty(
-		// 	"background-color",
-		// 	"#ccd3e7",
-		// )
+		const baseBg = "#ccd3e7" /* Fond bleu clair */
+		const hoverBg =
+			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
+
 		for (const button of clickedParameterButtons) {
 			button.style.setProperty("background-color", "#ccd3e7")
+			button.addEventListener("mouseenter", () => {
+				if (!showParameterModal) {
+					button.style.setProperty("background-color", hoverBg, "important")
+				}
+			})
+			button.addEventListener("mouseleave", () => {
+				if (!showParameterModal) {
+					button.style.setProperty("background-color", baseBg, "important")
+				}
+			})
 		}
 
 		showParameterModal = false
