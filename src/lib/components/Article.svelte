@@ -301,7 +301,7 @@
 
 		<!--En-tête-->
 		<div
-			class="mt-2 mb-5 flex flex-col items-start justify-between gap-x-5 md:flex-row"
+			class="mt-2 flex flex-col items-start justify-between gap-x-5 md:flex-row"
 		>
 			<!--Titre-->
 			<div
@@ -330,7 +330,35 @@
 				>
 			</div>
 		</div>
-		<div class="flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
+		<div
+			class="mb-2"
+			class:border-b={historyIsOpen}
+			class:shadow-bottom-extralight={historyIsOpen}
+			class:border-gray-200={historyIsOpen}
+		>
+			<button
+				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				onclick={() => {
+					historyIsOpen = !historyIsOpen
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.3rem] text-xl"
+					icon={historyIsOpen
+						? "ri:arrow-down-s-line"
+						: "ri:arrow-right-s-line"}
+				>
+				</iconify-icon>
+				Historique
+			</button>
+
+			{#if historyIsOpen}
+				<div class=" bg-white p-4">
+					<ArticleHistory {articleInfo}></ArticleHistory>
+				</div>
+			{/if}
+		</div>
+		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
 			{#if articleInfo.versions}
 				<select
 					name="versions"
@@ -382,34 +410,6 @@
 					>Jurisprudence</a
 				>
 			</div> -->
-		</div>
-		<div
-			class="mb-6"
-			class:border-b={historyIsOpen}
-			class:shadow-bottom-extralight={historyIsOpen}
-			class:border-gray-200={historyIsOpen}
-		>
-			<button
-				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
-				onclick={() => {
-					historyIsOpen = !historyIsOpen
-				}}
-			>
-				<iconify-icon
-					class="align-[-0.3rem] text-xl"
-					icon={historyIsOpen
-						? "ri:arrow-down-s-line"
-						: "ri:arrow-right-s-line"}
-				>
-				</iconify-icon>
-				Historique
-			</button>
-
-			{#if historyIsOpen}
-				<div class=" bg-white p-4">
-					<ArticleHistory {articleInfo}></ArticleHistory>
-				</div>
-			{/if}
 		</div>
 
 		<!--Article-->
