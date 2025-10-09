@@ -5,7 +5,20 @@
 	import { onMount } from "svelte"
 
 	// Props
-	let { showParameterModal = $bindable(false), children, onClose } = $props()
+
+	interface Props {
+		showParameterModal: boolean
+		clickedParameterButtons: HTMLButtonElement[]
+		parametersToVariables: Record<string, string[]> | null
+		children: any
+	}
+
+	let {
+		showParameterModal = $bindable(false),
+		clickedParameterButtons,
+		parametersToVariables = $bindable(),
+		children,
+	}: Props = $props()
 
 	// Référence au bouton fermer
 	let closeButton: HTMLButtonElement
@@ -18,8 +31,15 @@
 	})
 
 	function closeModal() {
+		// ;(clickedParameterButton as HTMLButtonElement).style.setProperty(
+		// 	"background-color",
+		// 	"#ccd3e7",
+		// )
+		for (const button of clickedParameterButtons) {
+			button.style.setProperty("background-color", "#ccd3e7")
+		}
+
 		showParameterModal = false
-		onClose?.()
 	}
 </script>
 

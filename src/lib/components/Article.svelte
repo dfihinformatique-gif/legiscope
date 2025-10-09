@@ -38,6 +38,7 @@
 
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
+	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -52,15 +53,16 @@
 
 	onMount(() => {
 		document
-			.querySelectorAll<HTMLSpanElement>("button.highlighted")
+			.querySelectorAll<HTMLButtonElement>("button.highlighted")
 			.forEach((button) => {
-				button.style.setProperty("background-color", "#ccd3e7", "important")
-
+				// button.style.setProperty("background-color", "#ccd3e7", "important")
 				button.addEventListener("click", (e: Event) => {
+					button.style.setProperty("background-color", "rgba(127, 122, 9, 0.5)")
 					parametersToVariables = button.dataset.params
 						? decodeParametersToVariables(button.dataset.params)
 						: {}
 					showParameterModal = true
+					clickedParameterButtons.push(button)
 				})
 			})
 	})
@@ -111,7 +113,7 @@
 				parametersToVariables[parameter] = findVariablesByParameter(parameter)
 			}
 
-			result = `${before}${coords.outerPrefix ?? ""}<button class="highlighted !bg-le-gris-dispositif-light [&_*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
+			result = `${before}${coords.outerPrefix ?? ""}<button class="hover:bg-le-vert-500/50 highlighted bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 		}
 
 		return result
@@ -392,7 +394,11 @@
 	{/if}
 </div>
 
-<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+<ParameterLinkModal
+	bind:showParameterModal
+	{clickedParameterButtons}
+	bind:parametersToVariables
+>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
 

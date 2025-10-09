@@ -17,6 +17,7 @@
 
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
+	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -636,7 +637,7 @@
 				/* Clic sur le bouton */
 				button.addEventListener("click", (e: Event) => {
 					e.stopPropagation()
-
+					clickedParameterButtons = buttons
 					const clickedParam = button.dataset.params ?? null
 
 					/* Si on clique sur le même paramètre => toggle */
@@ -696,7 +697,11 @@
 	></div>
 </div>
 
-<ParameterLinkModal bind:showParameterModal bind:parametersToVariables>
+<ParameterLinkModal
+	bind:showParameterModal
+	{clickedParameterButtons}
+	bind:parametersToVariables
+>
 	{#if parametersToVariables !== null}
 		{@const parameterCount = Object.keys(parametersToVariables).length}
 
