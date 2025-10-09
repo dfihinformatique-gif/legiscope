@@ -103,6 +103,16 @@
 				return "MODIFIÉ"
 			case "CODIFIE":
 				return "CODIFIÉ"
+			case "ABROGE":
+				return "ABROGÉ"
+			case "CREE":
+				return "CRÉÉ"
+			case "ANNULE":
+				return "ANNULÉ"
+			case "PERIME":
+				return "PERIMÉ"
+			case "TRANSFERE":
+				return "TRANSFERÉ"
 			default:
 				return typeLien
 		}
