@@ -31,54 +31,61 @@
 		}
 	})
 
-	function closeModal() {
-		const baseBg = "#ccd3e7" /* Fond bleu clair */
-		const hoverBg =
-			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
+	$effect(() => {
+		// Effet pour fermer la modal en supprimant les highlights
+		if (showParameterModal === false) {
+			const baseBg = "#ccd3e7" /* Fond bleu clair */
+			const hoverBg =
+				"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
 
-		for (const button of clickedParameterButtons) {
-			const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
-				button.innerHTML,
-			).output.replace(" ", "")
-			button.style.setProperty("background-color", baseBg)
-			Array.from(
-				document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
-			).forEach((btn) => {
-				btn.style.setProperty("background-color", baseBg, "important")
-			})
+			for (const button of clickedParameterButtons) {
+				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
+					button.innerHTML,
+				).output.replace(" ", "")
+				button.style.setProperty("background-color", baseBg)
+				Array.from(
+					document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+				).forEach((btn) => {
+					btn.style.setProperty("background-color", baseBg, "important")
+				})
 
-			button.addEventListener("mouseenter", () => {
-				if (!showParameterModal) {
-					button.style.setProperty("background-color", hoverBg, "important")
-					Array.from(
-						document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
-					).forEach((btn) => {
-						const btnInnerText = simplifyHtml({ removeAWithHref: true })(
-							btn.innerHTML,
-						).output.replace(" ", "")
+				button.addEventListener("mouseenter", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", hoverBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
+								btn.innerHTML,
+							).output.replace(" ", "")
 
-						if (
-							btn.dataset.params === button.dataset.params &&
-							btnInnerText === buttonInnerText
-						)
-							btn.style.setProperty("background-color", hoverBg, "important")
-					})
-				}
-			})
-			button.addEventListener("mouseleave", () => {
-				if (!showParameterModal) {
-					button.style.setProperty("background-color", baseBg, "important")
-					Array.from(
-						document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
-					).forEach((btn) => {
-						btn.style.setProperty("background-color", baseBg, "important")
-					})
-				}
-			})
+							if (
+								btn.dataset.params === button.dataset.params &&
+								btnInnerText === buttonInnerText
+							)
+								btn.style.setProperty("background-color", hoverBg, "important")
+						})
+					}
+				})
+				button.addEventListener("mouseleave", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", baseBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							btn.style.setProperty("background-color", baseBg, "important")
+						})
+					}
+				})
+			}
+
+			showParameterModal = false
 		}
-
-		showParameterModal = false
-	}
+	})
 </script>
 
 <Dialog.Root bind:open={showParameterModal}>
@@ -103,7 +110,7 @@
 					<button
 						bind:this={closeButton}
 						class="hover:bg-le-jaune-dark flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg p-1.5 focus:ring-2 focus:ring-gray-400 focus:outline-none"
-						onclick={closeModal}
+						onclick={() => (showParameterModal = false)}
 					>
 						<iconify-icon class="h-6 w-6 text-2xl" icon="ri-close-line"
 						></iconify-icon>
