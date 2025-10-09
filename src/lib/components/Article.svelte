@@ -290,7 +290,7 @@
 				>
 			</div>
 		</div>
-		<div class="mb-8 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
+		<div class="flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
 			{#if articleInfo.versions}
 				<select
 					name="versions"
@@ -344,7 +344,7 @@
 			</div> -->
 		</div>
 		<div
-			class:mb-10={historyIsOpen}
+			class="mb-6"
 			class:border-b={historyIsOpen}
 			class:shadow-bottom-extralight={historyIsOpen}
 			class:border-gray-200={historyIsOpen}
@@ -362,11 +362,13 @@
 						: "ri:arrow-right-s-line"}
 				>
 				</iconify-icon>
-				Historique de l'article
+				Historique
 			</button>
 
 			{#if historyIsOpen}
-				<ArticleHistory {articleInfo}></ArticleHistory>
+				<div class=" bg-white p-4">
+					<ArticleHistory {articleInfo}></ArticleHistory>
+				</div>
 			{/if}
 		</div>
 
