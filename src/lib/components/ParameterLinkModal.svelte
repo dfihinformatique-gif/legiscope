@@ -40,7 +40,13 @@
 			const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
 				button.innerHTML,
 			).output.replace(" ", "")
-			button.style.setProperty("background-color", "#ccd3e7")
+			button.style.setProperty("background-color", baseBg)
+			Array.from(
+				document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
+			).forEach((btn) => {
+				btn.style.setProperty("background-color", baseBg, "important")
+			})
+
 			button.addEventListener("mouseenter", () => {
 				if (!showParameterModal) {
 					button.style.setProperty("background-color", hoverBg, "important")
@@ -65,8 +71,7 @@
 					Array.from(
 						document.querySelectorAll<HTMLButtonElement>("button.highlighted"),
 					).forEach((btn) => {
-						if (btn.dataset.params === button.dataset.params)
-							btn.style.setProperty("background-color", baseBg, "important")
+						btn.style.setProperty("background-color", baseBg, "important")
 					})
 				}
 			})
