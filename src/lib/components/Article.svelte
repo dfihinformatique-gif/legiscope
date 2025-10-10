@@ -767,7 +767,7 @@
 					class="peer peer-checked:bg-le-bleu relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 				></div>
 				<span class="ms-3 text-sm font-medium text-gray-900">
-					Vue comparaison
+					Suivi des modifications
 				</span>
 			</label>
 		</div>
