@@ -23,7 +23,7 @@
 		type TransformationLeaf,
 		type TransformationNode,
 	} from "@tricoteuses/tisseuse"
-	import { diffWords } from "diff"
+	import { diffArrays } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -45,6 +45,96 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+
+	class LegiSegmenter {
+		private segmenter: Intl.Segmenter
+
+		constructor() {
+			this.segmenter = new Intl.Segmenter("fr", { granularity: "word" })
+		}
+
+		*segment(text: string): Iterable<Intl.SegmentData> {
+			const segments = Array.from(this.segmenter.segment(text))
+			const result = []
+
+			let i = 0
+			while (i < segments.length) {
+				const current = segments[i]
+
+				// Vérifier si c'est un segment qui commence une séquence numérique avec espaces
+				if (this.isStartOfNumberSequence(segments, i)) {
+					const merged = this.mergeNumberSequence(segments, i)
+					result.push(merged.segment)
+					i = merged.newIndex
+				} else {
+					result.push(current)
+					i++
+				}
+			}
+
+			for (const seg of result) {
+				yield seg
+			}
+		}
+
+		segmentToArray(text: string): string[] {
+			return Array.from(this.segment(text)).map((seg) => seg.segment)
+		}
+
+		private isStartOfNumberSequence(
+			segments: Intl.SegmentData[],
+			index: number,
+		): boolean {
+			const current = segments[index]
+			// Doit être un segment word-like contenant uniquement des chiffres
+			return (current.isWordLike && /^\d+$/.test(current.segment)) ?? false
+		}
+
+		private mergeNumberSequence(
+			segments: Intl.SegmentData[],
+			startIndex: number,
+		): { segment: Intl.SegmentData; newIndex: number } {
+			let i = startIndex
+			const numberParts = [segments[i].segment]
+
+			// Continuer tant qu'on a un pattern: nombre + espace + nombre
+			while (i + 2 < segments.length) {
+				const spaceSegment = segments[i + 1]
+				const nextSegment = segments[i + 2]
+
+				// Vérifier les conditions strictes pour la fusion
+				const isSpace = spaceSegment.segment === " " && !spaceSegment.isWordLike
+				const isNextNumber =
+					nextSegment.isWordLike && /^\d+$/.test(nextSegment.segment)
+
+				if (isSpace && isNextNumber) {
+					numberParts.push(nextSegment.segment)
+					i += 2 // Avancer de 2 (espace + nombre)
+				} else {
+					break
+				}
+			}
+
+			if (numberParts.length > 1) {
+				// Fusionner avec des espaces
+				const mergedSegment = {
+					segment: numberParts.join(" "),
+					index: segments[startIndex].index,
+					isWordLike: true,
+					input: segments[startIndex].input,
+				}
+				return { segment: mergedSegment, newIndex: i + 1 }
+			} else {
+				// Pas de fusion nécessaire
+				return { segment: segments[startIndex], newIndex: startIndex + 1 }
+			}
+		}
+
+		resolvedOptions(): Intl.ResolvedSegmenterOptions {
+			return this.segmenter.resolvedOptions()
+		}
+	}
+	const segmenter = new LegiSegmenter()
 
 	function* iterTransformationLeafs(
 		transformation: Transformation,
@@ -261,11 +351,18 @@
 				removeAWithHref: true,
 			})(articleInfo.articlePreviousVersion.bloc_textuel)
 
-			const diff = diffWords(
+			const previousSegments = segmenter.segmentToArray(
 				simplifiedPreviousVersionText.output,
+			)
+
+			const currentSegments = segmenter.segmentToArray(
 				simplifiedArticleText.output,
 			)
-			console.log({ diff })
+			// const diff = diffWords(
+			// 	simplifiedPreviousVersionText.output,
+			// 	simplifiedArticleText.output,
+			// )
+			const diff = diffArrays(previousSegments, currentSegments)
 
 			function extractHtmlBetweenOriginalPositions(
 				html: string,
@@ -287,13 +384,15 @@
 
 			for (const part of diff) {
 				if (part.removed) {
+					const string = part.value.join("")
+
 					const originalPositionsArray =
 						originalSplitPositionsArrayFromTransformed(
 							simplifiedPreviousVersionText,
 							[
 								{
 									start: offsetInPrevious,
-									stop: offsetInPrevious + part.value.length,
+									stop: offsetInPrevious + string.length,
 								},
 							],
 						)
@@ -309,13 +408,15 @@
 					if (positions.length > 0) {
 						lastPreviousPos = positions[positions.length - 1].stop
 					}
-					offsetInPrevious += part.value.length
+					offsetInPrevious += string.length
 				} else if (part.added) {
+					const string = part.value.join("")
+
 					const originalPositionsArray =
 						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
 							{
 								start: offsetInCurrent,
-								stop: offsetInCurrent + part.value.length,
+								stop: offsetInCurrent + string.length,
 							},
 						])
 
@@ -330,14 +431,16 @@
 					if (positions.length > 0) {
 						lastCurrentPos = positions[positions.length - 1].stop
 					}
-					offsetInCurrent += part.value.length
+					offsetInCurrent += string.length
 				} else {
 					// Partie inchangée : prendre le HTML actuel
+					const string = part.value.join("")
+
 					const originalPositionsArray =
 						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
 							{
 								start: offsetInCurrent,
-								stop: offsetInCurrent + part.value.length,
+								stop: offsetInCurrent + string.length,
 							},
 						])
 
@@ -359,7 +462,7 @@
 							[
 								{
 									start: offsetInPrevious,
-									stop: offsetInPrevious + part.value.length,
+									stop: offsetInPrevious + string.length,
 								},
 							],
 						)
@@ -368,8 +471,8 @@
 						lastPreviousPos = positionsPrev[positionsPrev.length - 1].stop
 					}
 
-					offsetInPrevious += part.value.length
-					offsetInCurrent += part.value.length
+					offsetInPrevious += string.length
+					offsetInCurrent += string.length
 				}
 			}
 
