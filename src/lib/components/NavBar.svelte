@@ -22,7 +22,7 @@
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showBillDesktop
 					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
-					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}
+					: 'border-neutral-500 bg-neutral-50  text-neutral-700 hover:bg-neutral-100'}
   "
 				onclick={() => {
 					shared.showBillDesktop = !shared.showBillDesktop
@@ -96,9 +96,9 @@
 		>
 			<div class="flex h-full w-1/2">
 				<button
-					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide uppercase sm:text-xl
-    			${shared.activePanelMobile === "bill" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark font- bg-blue-100 font-bold" : ""}
-    			${shared.activePanelMobile === "law" ? "bg-blue-50 text-gray-500 hover:border-blue-950 hover:bg-blue-100 hover:font-bold hover:text-blue-950" : ""}
+					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide uppercase sm:text-xl md:text-lg
+    			${shared.activePanelMobile === "bill" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
+    			${shared.activePanelMobile === "law" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-300 text-gray-600  hover:bg-white hover:font-bold" : ""}
   				`}
 					onclick={() => (shared.activePanelMobile = "bill")}
 				>
@@ -107,9 +107,9 @@
 			</div>
 			<div class="flex h-full w-1/2">
 				<button
-					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-lg tracking-wide text-black uppercase sm:text-xl
+					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
 					${shared.activePanelMobile === "law" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
-					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-100 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-300 text-gray-600  hover:bg-white hover:font-bold" : ""}
 				`}
 					onclick={() => (shared.activePanelMobile = "law")}
 				>

@@ -17,7 +17,13 @@
 	import {
 		originalMergedPositionsFromTransformed,
 		simplifyHtml,
+		type SourceMapSegment,
+		type TextPosition,
+		type Transformation,
+		type TransformationLeaf,
+		type TransformationNode,
 	} from "@tricoteuses/tisseuse"
+	import { diffArrays } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -40,6 +46,286 @@
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
 
+	class LegiSegmenter {
+		private segmenter: Intl.Segmenter
+
+		constructor() {
+			this.segmenter = new Intl.Segmenter("fr", { granularity: "word" })
+		}
+
+		*segment(text: string): Iterable<Intl.SegmentData> {
+			const segments = Array.from(this.segmenter.segment(text))
+			const result = []
+
+			let i = 0
+			while (i < segments.length) {
+				const current = segments[i]
+
+				// Vérifier si c'est un segment qui commence une séquence numérique avec espaces
+				if (this.isStartOfNumberSequence(segments, i)) {
+					const merged = this.mergeNumberSequence(segments, i)
+					result.push(merged.segment)
+					i = merged.newIndex
+				} else {
+					result.push(current)
+					i++
+				}
+			}
+
+			for (const seg of result) {
+				yield seg
+			}
+		}
+
+		segmentToArray(text: string): string[] {
+			return Array.from(this.segment(text)).map((seg) => seg.segment)
+		}
+
+		private isStartOfNumberSequence(
+			segments: Intl.SegmentData[],
+			index: number,
+		): boolean {
+			const current = segments[index]
+			// Doit être un segment word-like contenant uniquement des chiffres
+			return (current.isWordLike && /^\d+$/.test(current.segment)) ?? false
+		}
+
+		private mergeNumberSequence(
+			segments: Intl.SegmentData[],
+			startIndex: number,
+		): { segment: Intl.SegmentData; newIndex: number } {
+			let i = startIndex
+			const numberParts = [segments[i].segment]
+
+			// Continuer tant qu'on a un pattern: nombre + espace + nombre
+			while (i + 2 < segments.length) {
+				const spaceSegment = segments[i + 1]
+				const nextSegment = segments[i + 2]
+
+				// Vérifier les conditions strictes pour la fusion
+				const isSpace = spaceSegment.segment === " " && !spaceSegment.isWordLike
+				const isNextNumber =
+					nextSegment.isWordLike && /^\d+$/.test(nextSegment.segment)
+
+				if (isSpace && isNextNumber) {
+					numberParts.push(nextSegment.segment)
+					i += 2 // Avancer de 2 (espace + nombre)
+				} else {
+					break
+				}
+			}
+
+			if (numberParts.length > 1) {
+				// Fusionner avec des espaces
+				const mergedSegment = {
+					segment: numberParts.join(" "),
+					index: segments[startIndex].index,
+					isWordLike: true,
+					input: segments[startIndex].input,
+				}
+				return { segment: mergedSegment, newIndex: i + 1 }
+			} else {
+				// Pas de fusion nécessaire
+				return { segment: segments[startIndex], newIndex: startIndex + 1 }
+			}
+		}
+
+		resolvedOptions(): Intl.ResolvedSegmenterOptions {
+			return this.segmenter.resolvedOptions()
+		}
+	}
+	const segmenter = new LegiSegmenter()
+
+	function* iterTransformationLeafs(
+		transformation: Transformation,
+	): Generator<TransformationLeaf, void> {
+		if ((transformation as TransformationNode).transformations === undefined) {
+			yield transformation as TransformationLeaf
+		} else {
+			for (const subTransformation of (transformation as TransformationNode)
+				.transformations) {
+				yield* iterTransformationLeafs(subTransformation)
+			}
+		}
+	}
+
+	/**
+	 * Représente le mapping entre une position transformée et ses positions originales correspondantes.
+	 */
+	export interface PositionMapping {
+		transformedPosition: TextPosition
+		originalPositions: TextPosition[]
+	}
+
+	/**
+	 * Note: Les positions originales sont divisées lorsqu'elles chevauchent plusieurs segments.
+	 * Le résultat associe chaque position transformée à ses positions originales correspondantes.
+	 */
+	export function originalSplitPositionsArrayFromTransformed(
+		transformation: Transformation,
+		positions: TextPosition[],
+	): PositionMapping[] {
+		// Initialiser les mappings avec les positions d'entrée
+		let mappings: PositionMapping[] = positions.map((pos) => ({
+			transformedPosition: pos,
+			originalPositions: [pos],
+		}))
+
+		// Appliquer les transformations en ordre inverse
+		for (const { sourceMap } of [
+			...iterTransformationLeafs(transformation),
+		].reverse()) {
+			mappings = mappings.map((mapping) => ({
+				transformedPosition: mapping.transformedPosition,
+				originalPositions:
+					originalSplitPositionsArrayFromTransformedUsingSourceMap(
+						sourceMap,
+						mapping.originalPositions,
+					),
+			}))
+		}
+
+		return mappings
+	}
+
+	/**
+	 * Note: Les positions originales sont divisées lorsqu'elles chevauchent plusieurs segments.
+	 * Donc, il peut y avoir plus de positions originales que de positions transformées.
+	 */
+	function originalSplitPositionsArrayFromTransformedUsingSourceMap(
+		sourceMap: SourceMapSegment[],
+		transformedPositions: TextPosition[],
+	): TextPosition[] {
+		const originalPositions: TextPosition[] = []
+		// Insert empty segment at start & end.
+		sourceMap = [
+			{ inputIndex: 0, inputLength: 0, outputIndex: 0, outputLength: 0 },
+			...sourceMap,
+			{
+				inputIndex: Number.MAX_SAFE_INTEGER,
+				inputLength: 0,
+				outputIndex: Number.MAX_SAFE_INTEGER,
+				outputLength: 0,
+			},
+		]
+		let segmentIndex = 0
+		let segment = sourceMap[segmentIndex]
+		for (const transformedPosition of transformedPositions) {
+			let { start: transformedStart } = transformedPosition
+			const { stop: transformedStop } = transformedPosition
+
+			transformPosition: for (
+				let positionReverseTransformed = false;
+				!positionReverseTransformed;
+
+			) {
+				for (
+					;
+					segment.outputIndex + segment.outputLength <= transformedStart;
+					segmentIndex++, segment = sourceMap[segmentIndex]
+				);
+				let firstIncludedSegmentIndex = segmentIndex
+				const segmentBefore = sourceMap[firstIncludedSegmentIndex - 1]
+				let originalStart =
+					segmentBefore.inputIndex +
+					segmentBefore.inputLength +
+					transformedStart -
+					(segmentBefore.outputIndex + segmentBefore.outputLength)
+
+				let lastIncludedSegmentIndex: number
+				for (
+					lastIncludedSegmentIndex = firstIncludedSegmentIndex - 1;
+					sourceMap[lastIncludedSegmentIndex + 1].outputIndex < transformedStop;
+					lastIncludedSegmentIndex++
+				);
+				const lastIncludedSegment = sourceMap[lastIncludedSegmentIndex]
+				let originalStop =
+					lastIncludedSegment.inputIndex +
+					lastIncludedSegment.inputLength +
+					transformedStop -
+					(lastIncludedSegment.outputIndex + lastIncludedSegment.outputLength)
+
+				for (
+					let includedSegmentIndex = firstIncludedSegmentIndex;
+					includedSegmentIndex <= lastIncludedSegmentIndex;
+					includedSegmentIndex++
+				) {
+					const includedSegment = sourceMap[includedSegmentIndex]
+					const matchingSegmentIndex = includedSegment.matchingSegmentIndex
+					if (matchingSegmentIndex !== undefined) {
+						// Note: Add 1 to matchingSegmentIndex, because of empty segment
+						// inserted at start of source map.
+						if (matchingSegmentIndex + 1 < firstIncludedSegmentIndex) {
+							const matchingSegment = sourceMap[matchingSegmentIndex + 1]
+							if (matchingSegment.outputIndex < transformedStart) {
+								// Split transformed position.
+								if (includedSegment.inputIndex > originalStart) {
+									originalPositions.push({
+										start: originalStart,
+										stop: includedSegment.inputIndex,
+									})
+								}
+								transformedStart =
+									includedSegment.outputIndex + includedSegment.outputLength
+								// Ignore following segments whose output are empty.
+								for (
+									let nextSegmentIndex = includedSegmentIndex,
+										nextSegment = includedSegment;
+									nextSegment.outputIndex + nextSegment.outputLength ===
+									transformedStart;
+									nextSegmentIndex++, nextSegment = sourceMap[nextSegmentIndex]
+								) {
+									segmentIndex = nextSegmentIndex
+								}
+								// Handle remaining split position.
+								continue transformPosition
+							}
+							firstIncludedSegmentIndex = matchingSegmentIndex + 1
+							originalStart = matchingSegment.inputIndex
+						} else if (matchingSegmentIndex + 1 > lastIncludedSegmentIndex) {
+							const matchingSegment = sourceMap[matchingSegmentIndex + 1]
+							if (
+								matchingSegment.outputIndex + matchingSegment.outputLength >
+								transformedStop
+							) {
+								// Split transformed position.
+								if (includedSegment.inputIndex > originalStart) {
+									originalPositions.push({
+										start: originalStart,
+										stop: includedSegment.inputIndex,
+									})
+								}
+								transformedStart =
+									includedSegment.outputIndex + includedSegment.outputLength
+								// Ignore following segments whose output are empty.
+								for (
+									let nextSegmentIndex = includedSegmentIndex,
+										nextSegment = includedSegment;
+									nextSegment.outputIndex + nextSegment.outputLength ===
+									transformedStart;
+									nextSegmentIndex++, nextSegment = sourceMap[nextSegmentIndex]
+								) {
+									segmentIndex = nextSegmentIndex
+								}
+								// Handle remaining split position.
+								continue transformPosition
+							}
+							lastIncludedSegmentIndex = matchingSegmentIndex + 1
+							originalStop =
+								matchingSegment.inputIndex + matchingSegment.inputLength
+						}
+					}
+				}
+				originalPositions.push({
+					start: originalStart,
+					stop: originalStop,
+				})
+				positionReverseTransformed = true
+			}
+		}
+		return originalPositions
+	}
+
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
 		if (
@@ -49,6 +335,150 @@
 		) {
 			selectedParameter = null
 		}
+	})
+
+	let showDiff = $state(false)
+	const diffContent = $derived.by(() => {
+		if (
+			showDiff === true &&
+			articleInfo.article?.bloc_textuel &&
+			articleInfo.articlePreviousVersion?.bloc_textuel
+		) {
+			const simplifiedArticleText = simplifyHtml({ removeAWithHref: true })(
+				articleInfo.article.bloc_textuel,
+			)
+			const simplifiedPreviousVersionText = simplifyHtml({
+				removeAWithHref: true,
+			})(articleInfo.articlePreviousVersion.bloc_textuel)
+
+			const previousSegments = segmenter.segmentToArray(
+				simplifiedPreviousVersionText.output,
+			)
+
+			const currentSegments = segmenter.segmentToArray(
+				simplifiedArticleText.output,
+			)
+			// const diff = diffWords(
+			// 	simplifiedPreviousVersionText.output,
+			// 	simplifiedArticleText.output,
+			// )
+			const diff = diffArrays(previousSegments, currentSegments)
+
+			function extractHtmlBetweenOriginalPositions(
+				html: string,
+				positions: TextPosition[],
+			): string {
+				if (positions.length === 0) return ""
+
+				const startPos = positions[0].start
+				const endPos = positions[positions.length - 1].stop
+
+				return html.slice(startPos, endPos)
+			}
+
+			let partialDiffContent = ""
+			let offsetInPrevious = 0
+			let offsetInCurrent = 0
+			let lastPreviousPos = 0 // Pour suivre où on en est dans le HTML précédent
+			let lastCurrentPos = 0 // Pour suivre où on en est dans le HTML actuel
+
+			for (const part of diff) {
+				if (part.removed) {
+					const string = part.value.join("")
+
+					const originalPositionsArray =
+						originalSplitPositionsArrayFromTransformed(
+							simplifiedPreviousVersionText,
+							[
+								{
+									start: offsetInPrevious,
+									stop: offsetInPrevious + string.length,
+								},
+							],
+						)
+
+					const positions = originalPositionsArray[0].originalPositions
+					const htmlContent = extractHtmlBetweenOriginalPositions(
+						articleInfo.articlePreviousVersion.bloc_textuel,
+						positions,
+					)
+
+					partialDiffContent += `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${htmlContent}</span>`
+
+					if (positions.length > 0) {
+						lastPreviousPos = positions[positions.length - 1].stop
+					}
+					offsetInPrevious += string.length
+				} else if (part.added) {
+					const string = part.value.join("")
+
+					const originalPositionsArray =
+						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
+							{
+								start: offsetInCurrent,
+								stop: offsetInCurrent + string.length,
+							},
+						])
+
+					const positions = originalPositionsArray[0].originalPositions
+					const htmlContent = extractHtmlBetweenOriginalPositions(
+						articleInfo.article.bloc_textuel,
+						positions,
+					)
+
+					partialDiffContent += `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${htmlContent}</span>`
+
+					if (positions.length > 0) {
+						lastCurrentPos = positions[positions.length - 1].stop
+					}
+					offsetInCurrent += string.length
+				} else {
+					// Partie inchangée : prendre le HTML actuel
+					const string = part.value.join("")
+
+					const originalPositionsArray =
+						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
+							{
+								start: offsetInCurrent,
+								stop: offsetInCurrent + string.length,
+							},
+						])
+
+					const positions = originalPositionsArray[0].originalPositions
+					const htmlContent = extractHtmlBetweenOriginalPositions(
+						articleInfo.article.bloc_textuel,
+						positions,
+					)
+
+					partialDiffContent += htmlContent
+
+					if (positions.length > 0) {
+						lastCurrentPos = positions[positions.length - 1].stop
+					}
+
+					const originalPositionsArrayPrev =
+						originalSplitPositionsArrayFromTransformed(
+							simplifiedPreviousVersionText,
+							[
+								{
+									start: offsetInPrevious,
+									stop: offsetInPrevious + string.length,
+								},
+							],
+						)
+					const positionsPrev = originalPositionsArrayPrev[0].originalPositions
+					if (positionsPrev.length > 0) {
+						lastPreviousPos = positionsPrev[positionsPrev.length - 1].stop
+					}
+
+					offsetInPrevious += string.length
+					offsetInCurrent += string.length
+				}
+			}
+
+			return partialDiffContent
+		}
+		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
 	})
 
 	onMount(() => {
@@ -330,6 +760,7 @@
 				>
 			</div>
 		</div>
+
 		<div
 			class="mb-2"
 			class:border-b={historyIsOpen}
@@ -358,11 +789,11 @@
 				</div>
 			{/if}
 		</div>
-		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
+		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
 			{#if articleInfo.versions}
 				<select
 					name="versions"
-					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
+					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
 					onchange={() => {
 						const urlToNavigate = new URL(page.url)
 						urlToNavigate.searchParams.set(
@@ -398,6 +829,21 @@
 						</option>
 					{/each}
 				</select>
+				<div class="text-left">
+					<label class="inline-flex cursor-pointer items-center">
+						<input
+							class="peer sr-only"
+							type="checkbox"
+							bind:checked={showDiff}
+						/>
+						<div
+							class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+						></div>
+						<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+							Voir les changements apportés <br /> à la version précédente
+						</span>
+					</label>
+				</div>
 			{/if}
 			<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
@@ -413,7 +859,13 @@
 		</div>
 
 		<!--Article-->
-		{#if articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
+		{#if showDiff === true}
+			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+				<span class="font-serif text-lg leading-8 md:text-left">
+					{@html diffContent}
+				</span>
+			</div>
+		{:else if showDiff === false && articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
 				>{@html highlightParameterValuesInArticleHTML(
 					articleParameterReferences,

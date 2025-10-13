@@ -4,12 +4,33 @@ import { shared } from "$lib/shared.svelte"
 import { error } from "@sveltejs/kit"
 import type { PageServerLoad } from "./$types"
 
+function getPreviousLegiIdLien(
+	versionsResult: Array<{
+		legi_id_lien: string
+		debut: string
+		fin: string
+	}>,
+	targetDebut: string,
+): string | undefined {
+	const previousVersions = versionsResult.filter(
+		(version) => version.debut < targetDebut,
+	)
+
+	if (previousVersions.length === 0) {
+		return undefined
+	}
+	const previousVersion = previousVersions[0]
+
+	return previousVersion.legi_id_lien
+}
+
 async function getArticle(
 	requestedArticle: string,
 	requestedDate: string,
 ): Promise<ArticleInfo> {
 	const output: ArticleInfo = {
 		article: undefined,
+		articlePreviousVersion: undefined,
 		text: undefined,
 		textTitle: undefined,
 		jorfTextDatePubli: undefined,
@@ -21,6 +42,7 @@ async function getArticle(
 
 	try {
 		let articleFromDb: Legiarti[] = []
+		let previousVersionArticleFromDb: Legiarti[] = []
 
 		if (requestedArticle.startsWith("LEGITEXT")) {
 			output.text = requestedArticle
@@ -239,6 +261,33 @@ async function getArticle(
 			order by debut desc`
 		output.versions = versionsResult
 
+		const previousVersionId = getPreviousLegiIdLien(
+			versionsResult,
+			new Date(articleFromDb[0].date_debut).toISOString().split("T")[0],
+		)
+
+		if (
+			previousVersionId !== undefined &&
+			previousVersionId.startsWith("LEGIARTI") &&
+			articleFromDb[0].legi_id.startsWith("LEGIARTI")
+		) {
+			previousVersionArticleFromDb = await dbConnection`
+			select *
+			from legiarti
+			where legi_id = ${previousVersionId}::text
+			`
+		} else if (
+			previousVersionId !== undefined &&
+			previousVersionId.startsWith("JORFARTI") &&
+			articleFromDb[0].legi_id.startsWith("JORFARTI")
+		) {
+			previousVersionArticleFromDb = await dbConnection`
+			select *
+			from jorfarti
+			where legi_id = ${previousVersionId}::text
+			`
+		}
+
 		// Récupération du titre du texte et de la date de publication JO le cas échéant
 		if (output.text) {
 			const textTitle = await dbConnection`
@@ -292,6 +341,22 @@ async function getArticle(
 				.split("T")[0]
 			article.date_fin = new Date(article.date_fin).toISOString().split("T")[0]
 			output.article = article
+
+			if (previousVersionArticleFromDb.length === 1) {
+				const articlePreviousVersion = previousVersionArticleFromDb[0]
+				articlePreviousVersion.date_debut = new Date(
+					articlePreviousVersion.date_debut,
+				)
+					.toISOString()
+					.split("T")[0]
+				articlePreviousVersion.date_fin = new Date(
+					articlePreviousVersion.date_fin,
+				)
+					.toISOString()
+					.split("T")[0]
+				output.articlePreviousVersion = articlePreviousVersion
+			}
+
 			return output
 		} else if (articleFromDb.length === 0) {
 			throw error(404, "Article not found")
