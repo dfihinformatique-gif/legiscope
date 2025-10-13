@@ -793,7 +793,7 @@
 			{#if articleInfo.versions}
 				<select
 					name="versions"
-					class="text-le-gris-dispositif-dark grow rounded-sm bg-white p-0.5 px-2 text-left font-serif text-base italic"
+					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
 					onchange={() => {
 						const urlToNavigate = new URL(page.url)
 						urlToNavigate.searchParams.set(
