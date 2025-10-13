@@ -403,7 +403,7 @@
 						positions,
 					)
 
-					partialDiffContent += `<span class="text-red-600 line-through">${htmlContent}</span>`
+					partialDiffContent += `<span class="rounded-md px-0.5 bg-red-50 text-red-600 line-through">${htmlContent}</span>`
 
 					if (positions.length > 0) {
 						lastPreviousPos = positions[positions.length - 1].stop
@@ -426,7 +426,7 @@
 						positions,
 					)
 
-					partialDiffContent += `<span class="text-green-600">${htmlContent}</span>`
+					partialDiffContent += `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${htmlContent}</span>`
 
 					if (positions.length > 0) {
 						lastCurrentPos = positions[positions.length - 1].stop
@@ -478,7 +478,7 @@
 
 			return partialDiffContent
 		}
-		return ""
+		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
 	})
 
 	onMount(() => {
@@ -789,7 +789,7 @@
 				</div>
 			{/if}
 		</div>
-		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-2">
+		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
 			{#if articleInfo.versions}
 				<select
 					name="versions"
@@ -860,9 +860,11 @@
 
 		<!--Article-->
 		{#if showDiff === true}
-			<span class="font-serif text-lg leading-8 md:text-left">
-				{@html diffContent}
-			</span>
+			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+				<span class="font-serif text-lg leading-8 md:text-left">
+					{@html diffContent}
+				</span>
+			</div>
 		{:else if showDiff === false && articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
 				>{@html highlightParameterValuesInArticleHTML(
