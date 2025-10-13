@@ -326,6 +326,61 @@
 		return originalPositions
 	}
 
+	function addEventListenersOnHighlighted() {
+		const baseBg = "#ccd3e7" /* Fond bleu clair */
+		const hoverBg =
+			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
+		document
+			.querySelectorAll<HTMLButtonElement>("button.highlighted")
+			.forEach((button) => {
+				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
+					button.innerHTML,
+				).output.replace(" ", "")
+				button.addEventListener("mouseenter", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", hoverBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
+								btn.innerHTML,
+							).output.replace(" ", "")
+
+							if (
+								btn.dataset.params === button.dataset.params &&
+								btnInnerText === buttonInnerText
+							)
+								btn.style.setProperty("background-color", hoverBg, "important")
+						})
+					}
+				})
+				button.addEventListener("mouseleave", () => {
+					if (!showParameterModal) {
+						button.style.setProperty("background-color", baseBg, "important")
+						Array.from(
+							document.querySelectorAll<HTMLButtonElement>(
+								"button.highlighted",
+							),
+						).forEach((btn) => {
+							if (btn.dataset.params === button.dataset.params)
+								btn.style.setProperty("background-color", baseBg, "important")
+						})
+					}
+				})
+
+				button.addEventListener("click", (e: Event) => {
+					button.classList.add("bg-le-vert-500/50")
+					parametersToVariables = button.dataset.params
+						? decodeParametersToVariables(button.dataset.params)
+						: {}
+					showParameterModal = true
+					clickedParameterButtons.push(button)
+				})
+			})
+	}
+
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
 		if (
@@ -335,6 +390,10 @@
 		) {
 			selectedParameter = null
 		}
+	})
+
+	$effect(() => {
+		if (showDiff === false) addEventListenersOnHighlighted()
 	})
 
 	let showDiff = $state(false)
@@ -482,58 +541,7 @@
 	})
 
 	onMount(() => {
-		const baseBg = "#ccd3e7" /* Fond bleu clair */
-		const hoverBg =
-			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
-		document
-			.querySelectorAll<HTMLButtonElement>("button.highlighted")
-			.forEach((button) => {
-				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
-					button.innerHTML,
-				).output.replace(" ", "")
-				button.addEventListener("mouseenter", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", hoverBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
-								btn.innerHTML,
-							).output.replace(" ", "")
-
-							if (
-								btn.dataset.params === button.dataset.params &&
-								btnInnerText === buttonInnerText
-							)
-								btn.style.setProperty("background-color", hoverBg, "important")
-						})
-					}
-				})
-				button.addEventListener("mouseleave", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", baseBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							if (btn.dataset.params === button.dataset.params)
-								btn.style.setProperty("background-color", baseBg, "important")
-						})
-					}
-				})
-
-				button.addEventListener("click", (e: Event) => {
-					button.classList.add("bg-le-vert-500/50")
-					parametersToVariables = button.dataset.params
-						? decodeParametersToVariables(button.dataset.params)
-						: {}
-					showParameterModal = true
-					clickedParameterButtons.push(button)
-				})
-			})
+		addEventListenersOnHighlighted()
 	})
 
 	function formatDateFr(dateStr: string): string {
