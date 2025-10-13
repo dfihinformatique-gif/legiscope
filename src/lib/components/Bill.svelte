@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from "$app/navigation"
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
 	import {
@@ -274,6 +275,32 @@
 				el.style.setProperty(prop, targetColor, "important")
 			}
 		})
+	}
+
+	function findFirstLinkAbove(
+		button: HTMLButtonElement,
+	): HTMLAnchorElement | null {
+		let current: HTMLElement | null = button
+
+		while (current) {
+			let sibling = current.previousElementSibling
+			while (sibling) {
+				if (sibling instanceof HTMLAnchorElement) {
+					return sibling
+				}
+
+				const links = sibling.querySelectorAll("a")
+				if (links.length > 0) {
+					return links[links.length - 1] as HTMLAnchorElement
+				}
+
+				sibling = sibling.previousElementSibling
+			}
+
+			current = current.parentElement
+		}
+
+		return null
 	}
 
 	$effect(() => {
@@ -673,6 +700,11 @@
 					} else {
 						/* Sinon, on ouvre le nouveau paramètre */
 						activeParam = clickedParam
+						const linkAbove = findFirstLinkAbove(button)
+						if (linkAbove && linkAbove.href) {
+							const url = new URL(linkAbove.href)
+							goto(url.pathname + url.search + url.hash)
+						}
 						parametersToVariables = clickedParam
 							? decodeParametersToVariables(clickedParam)
 							: {}
