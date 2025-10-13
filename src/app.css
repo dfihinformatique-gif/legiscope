@@ -34,6 +34,36 @@
   --color-le-vert-950: #161501;
 }
 
+@layer utilities {
+  /* soulignements personnalisés */
+  .underline-le-bleu {
+    text-decoration: underline;
+    text-decoration-color: rgba(52, 59, 255, 0.7);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .underline-le-jaune {
+    text-decoration: underline;
+    text-decoration-color: rgba(222, 213, 0, 0.7);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .underline-le-rouge {
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 107, 107, 0.7);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+
+  .line-through-diff {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 16, 16, 0.4);
+    text-decoration-thickness: 2px;
+  }
+}
+
 @layer components {
   /* *******--- LIENS ---******* */
 

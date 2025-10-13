@@ -403,7 +403,7 @@
 						positions,
 					)
 
-					partialDiffContent += `<span class="rounded-md px-0.5 bg-red-50 text-red-600 line-through">${htmlContent}</span>`
+					partialDiffContent += `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${htmlContent}</span>`
 
 					if (positions.length > 0) {
 						lastPreviousPos = positions[positions.length - 1].stop
