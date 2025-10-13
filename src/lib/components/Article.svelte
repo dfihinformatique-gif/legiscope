@@ -23,7 +23,7 @@
 		type TransformationLeaf,
 		type TransformationNode,
 	} from "@tricoteuses/tisseuse"
-	import { diffArrays } from "diff"
+	import { diffArrays, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -45,6 +45,10 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+
+	interface MergeOptions {
+		countThreshold?: number
+	}
 
 	class LegiSegmenter {
 		private segmenter: Intl.Segmenter
@@ -396,6 +400,122 @@
 		if (showDiff === false) addEventListenersOnHighlighted()
 	})
 
+	function isSmallChange(
+		change: ChangeObject<string[]>,
+		threshold: number,
+	): boolean {
+		return (change.count ?? change.value.length) < threshold
+	}
+
+	export function mergeSmallChanges(
+		diff: ChangeObject<string[]>[],
+		options: MergeOptions = {},
+	): ChangeObject<string[]>[] {
+		const { countThreshold = 7 } = options
+
+		if (diff.length === 0) return diff
+
+		const result: ChangeObject<string[]>[] = []
+		let i = 0
+
+		while (i < diff.length) {
+			// Chercher une séquence de petits éléments consécutifs
+			const sequenceEnd = findSmallSequenceEnd(diff, i, countThreshold)
+
+			if (sequenceEnd === i) {
+				// Pas de petite séquence, on garde l'élément tel quel
+				result.push(diff[i])
+				i++
+			} else {
+				// On a une séquence de petits éléments, on les fusionne
+				const merged = mergeSequence(diff, i, sequenceEnd)
+				result.push(...merged)
+				i = sequenceEnd
+			}
+		}
+
+		return result
+	}
+
+	function findSmallSequenceEnd(
+		diff: ChangeObject<string[]>[],
+		start: number,
+		threshold: number,
+	): number {
+		let i = start
+		while (i < diff.length && isSmallChange(diff[i], threshold)) {
+			i++
+		}
+		return i
+	}
+
+	function mergeSequence(
+		diff: ChangeObject<string[]>[],
+		start: number,
+		end: number,
+	): ChangeObject<string[]>[] {
+		const sequence = diff.slice(start, end)
+		const result: ChangeObject<string[]>[] = []
+
+		// Collecter tous les removed et unchanged
+		const removedTokens: string[] = []
+		let hasRemoved = false
+
+		for (const item of sequence) {
+			if (item.removed) {
+				removedTokens.push(...item.value)
+				hasRemoved = true
+			} else if (!item.added && !item.removed) {
+				// Les unchanged sont intercalés dans les removed
+				removedTokens.push(...item.value)
+			}
+		}
+		const addedTokens: string[] = []
+		let hasAdded = false
+
+		for (const item of sequence) {
+			if (item.added) {
+				addedTokens.push(...item.value)
+				hasAdded = true
+			} else if (!item.added && !item.removed) {
+				// Les unchanged sont intercalés dans les added
+				addedTokens.push(...item.value)
+			}
+		}
+
+		// Ajouter le bloc removed fusionné s'il existe
+		if (hasRemoved) {
+			result.push({
+				added: false,
+				removed: true,
+				value: removedTokens,
+				count: removedTokens.length,
+			})
+		}
+
+		// Ajouter le bloc added fusionné s'il existe
+		if (hasAdded) {
+			result.push({
+				added: true,
+				removed: false,
+				value: addedTokens,
+				count: addedTokens.length,
+			})
+		}
+
+		// Si la séquence ne contient que des unchanged, on les garde tels quels
+		if (!hasRemoved && !hasAdded) {
+			result.push({
+				added: false,
+				removed: false,
+				value: addedTokens, // ou removedTokens, c'est la même chose
+				count: addedTokens.length,
+			})
+		}
+
+		return result
+	}
+
 	let showDiff = $state(false)
 	const diffContent = $derived.by(() => {
 		if (
@@ -421,7 +541,9 @@
 			// 	simplifiedPreviousVersionText.output,
 			// 	simplifiedArticleText.output,
 			// )
-			const diff = diffArrays(previousSegments, currentSegments)
+			const diff = mergeSmallChanges(
+				diffArrays(previousSegments, currentSegments),
+			)
 
 			function extractHtmlBetweenOriginalPositions(
 				html: string,
