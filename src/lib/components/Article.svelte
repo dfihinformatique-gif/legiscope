@@ -760,17 +760,7 @@
 				>
 			</div>
 		</div>
-		<div class="text-right">
-			<label class="inline-flex cursor-pointer items-center">
-				<input class="peer sr-only" type="checkbox" bind:checked={showDiff} />
-				<div
-					class="peer peer-checked:bg-le-bleu relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-				></div>
-				<span class="ms-3 text-sm font-medium text-gray-900">
-					Suivi des modifications
-				</span>
-			</label>
-		</div>
+
 		<div
 			class="mb-2"
 			class:border-b={historyIsOpen}
@@ -839,6 +829,21 @@
 						</option>
 					{/each}
 				</select>
+				<div class="text-left">
+					<label class="inline-flex cursor-pointer items-center">
+						<input
+							class="peer sr-only"
+							type="checkbox"
+							bind:checked={showDiff}
+						/>
+						<div
+							class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+						></div>
+						<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+							Voir les changements apportés <br /> à la version précédente
+						</span>
+					</label>
+				</div>
 			{/if}
 			<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
