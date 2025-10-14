@@ -516,19 +516,35 @@
 		return result
 	}
 
+	const currentBlocTextuel = articleInfo.article?.bloc_textuel
+		? articleInfo.article.bloc_textuel.replace(
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				(_match, p1, p2) => {
+					const lawArticle = p1.replace(".md", "")
+					return `<a href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+				},
+			)
+		: undefined
+
+	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
+		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				(_match, p1, p2) => {
+					const lawArticle = p1.replace(".md", "")
+					return `<a href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+				},
+			)
+		: undefined
+
 	let showDiff = $state(false)
 	const diffContent = $derived.by(() => {
-		if (
-			showDiff === true &&
-			articleInfo.article?.bloc_textuel &&
-			articleInfo.articlePreviousVersion?.bloc_textuel
-		) {
+		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
 			const simplifiedArticleText = simplifyHtml({ removeAWithHref: true })(
-				articleInfo.article.bloc_textuel,
+				currentBlocTextuel,
 			)
 			const simplifiedPreviousVersionText = simplifyHtml({
 				removeAWithHref: true,
-			})(articleInfo.articlePreviousVersion.bloc_textuel)
+			})(previousBlocTextuel)
 
 			const previousSegments = segmenter.segmentToArray(
 				simplifiedPreviousVersionText.output,
@@ -580,7 +596,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.articlePreviousVersion.bloc_textuel,
+						previousBlocTextuel,
 						positions,
 					)
 
@@ -603,7 +619,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.article.bloc_textuel,
+						currentBlocTextuel,
 						positions,
 					)
 
@@ -627,7 +643,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.article.bloc_textuel,
+						currentBlocTextuel,
 						positions,
 					)
 
@@ -733,7 +749,7 @@
 	function highlightParameterValuesInArticleHTML(
 		articleParameterReferences: Array<ValueParameter | ScaleParameter>,
 	): string {
-		const articleText = articleInfo.article?.bloc_textuel ?? ""
+		const articleText = currentBlocTextuel ?? ""
 
 		const simplified = simplifyHtml({ removeAWithHref: true })(articleText)
 		const textPlain = simplified.output
@@ -995,7 +1011,7 @@
 					{@html diffContent}
 				</span>
 			</div>
-		{:else if showDiff === false && articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
+		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
 				>{@html highlightParameterValuesInArticleHTML(
 					articleParameterReferences,
