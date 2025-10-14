@@ -245,7 +245,7 @@ export const load: LayoutServerLoad = async ({
 	try {
 		const html = await fs.readFile(filePath, "utf-8")
 		const pjlDate =
-			pjl === "plf-2026-Cplt_avec_liens"
+			pjl === "plf-2026-Cplt_avec_liens" || pjl === "pre-plfss_2026"
 				? new Date("2025-10-14").toISOString().split("T")[0]
 				: new Date("2024-10-10").toISOString().split("T")[0]
 		shared.pjlDate = pjlDate
@@ -263,7 +263,7 @@ export const load: LayoutServerLoad = async ({
 				const referredParametersLabels = []
 				if (
 					referredParameters !== undefined &&
-					pjl === "plf-2026-Cplt_avec_liens"
+					(pjl === "plf-2026-Cplt_avec_liens" || pjl === "pre-plfss_2026")
 				) {
 					for (const parameter of referredParameters) {
 						referredParametersLabels.push(
