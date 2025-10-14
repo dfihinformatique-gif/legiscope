@@ -244,7 +244,10 @@ export const load: LayoutServerLoad = async ({
 
 	try {
 		const html = await fs.readFile(filePath, "utf-8")
-		const pjlDate = new Date("2024-10-10").toISOString().split("T")[0]
+		const pjlDate =
+			pjl === "plf-2026-Cplt_avec_liens"
+				? new Date("2025-10-14").toISOString().split("T")[0]
+				: new Date("2024-10-10").toISOString().split("T")[0]
 		shared.pjlDate = pjlDate
 
 		const currentParameterReferences = await getCurrentLegiIds(
