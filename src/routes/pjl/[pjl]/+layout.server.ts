@@ -232,6 +232,7 @@ function highlightParameterValuesInHTML(
 
 export const load: LayoutServerLoad = async ({
 	params,
+	request,
 }): Promise<{
 	pjlHTML: string | undefined
 	pjlDate: string | undefined
@@ -239,6 +240,19 @@ export const load: LayoutServerLoad = async ({
 		| Map<string, Array<ValueParameter | ScaleParameter>>
 		| undefined
 }> => {
+	const authHeader = request.headers.get("authorization")
+	let user: string | null = null
+
+	if (authHeader && authHeader.startsWith("Basic ")) {
+		// Extraire et décoder les credentials
+		const base64Credentials = authHeader.split(" ")[1]
+		const credentials = Buffer.from(base64Credentials, "base64").toString(
+			"utf8",
+		)
+		const [username, password] = credentials.split(":")
+		user = username
+	}
+
 	const pjl = params.pjl
 	const filePath = path.resolve(`static/${pjl}.html`)
 
@@ -265,7 +279,9 @@ export const load: LayoutServerLoad = async ({
 				const referredParametersLabels = []
 				if (
 					referredParameters !== undefined &&
-					(pjl === "plf-2026-Cplt_avec_liens" || pjl === "pre-plfss_2026")
+					(pjl === "plf-2026-Cplt_avec_liens" ||
+						pjl === "pre-plfss_2026" ||
+						(pjl === "PRJLANR5L17B1906" && user === "leximpact"))
 				) {
 					for (const parameter of referredParameters) {
 						referredParametersLabels.push(
