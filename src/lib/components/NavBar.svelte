@@ -4,7 +4,7 @@
 
 {#if !shared.isMobilePhone}
 	<div
-		class="bg-le-gris-dispositif-dark fixed bottom-0 flex h-16 w-full flex-row flex-nowrap items-center overflow-hidden py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+		class="bg-le-gris-dispositif-dark fixed bottom-8 flex h-16 w-full flex-row flex-nowrap items-center overflow-hidden py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 	>
 		<!-- Bloc gauche pour le logo AN  -->
 
@@ -62,7 +62,7 @@
 			</button>
 		</div>
 	</div>
-	<div class="absolute right-3 bottom-1.5">
+	<div class="absolute right-3 bottom-9.5">
 		<a
 			class="border-le-gris-dispositif-dark flex cursor-pointer overflow-hidden border-t-4 px-4 py-1.5 text-center text-sm text-neutral-200 uppercase hover:border-neutral-200"
 			href="/"
@@ -77,7 +77,7 @@
 	</div>
 {:else}
 	<div
-		class="bg-le-gris-dispositif-dark fixed bottom-0 flex w-full justify-between"
+		class="bg-le-gris-dispositif-dark fixed bottom-8 flex w-full justify-between"
 	>
 		<!-- Bloc gauche pour le logo AN  -->
 
@@ -130,3 +130,19 @@
 		</a>
 	</div>
 {/if}
+<div
+	class="fixed bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
+>
+	<p class="pb-1 pl-5 text-sm">
+		Ce produit est en développement :
+		<a
+			href="https://limesurvey.leximpact.dev/index.php/767415?lang=fr"
+			target="_blank"
+			class="lx-link-text"
+			>💬 Donnez-nous votre avis<iconify-icon
+				class="ml-0.5 align-[-0.15rem] text-sm"
+				icon="ri-external-link-line"
+			></iconify-icon>
+		</a>
+	</p>
+</div>
