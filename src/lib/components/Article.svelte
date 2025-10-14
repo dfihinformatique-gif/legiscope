@@ -517,7 +517,7 @@
 	}
 
 	// !!! ATTENTION !!!
-	// Il faut impérativement que la chaine générée pour currentBlockTextuelle soit *exactement* la même que pour previousBlocTextuel
+	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const currentBlocTextuel = articleInfo.article?.bloc_textuel
 		? articleInfo.article.bloc_textuel.replace(
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
@@ -528,7 +528,7 @@
 			)
 		: undefined
 	// !!! ATTENTION !!!
-	// Il faut impérativement que la chaine générée pour currentBlockTextuelle soit *exactement* la même que pour previousBlocTextuel
+	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
 		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
