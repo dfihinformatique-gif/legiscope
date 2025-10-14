@@ -516,19 +516,38 @@
 		return result
 	}
 
+	// !!! ATTENTION !!!
+	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
+	const currentBlocTextuel = articleInfo.article?.bloc_textuel
+		? articleInfo.article.bloc_textuel.replace(
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				(_match, p1, p2) => {
+					const lawArticle = p1.replace(".md", "")
+					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+				},
+			)
+		: undefined
+	// !!! ATTENTION !!!
+	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
+	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
+		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				(_match, p1, p2) => {
+					const lawArticle = p1.replace(".md", "")
+					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+				},
+			)
+		: undefined
+
 	let showDiff = $state(false)
 	const diffContent = $derived.by(() => {
-		if (
-			showDiff === true &&
-			articleInfo.article?.bloc_textuel &&
-			articleInfo.articlePreviousVersion?.bloc_textuel
-		) {
+		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
 			const simplifiedArticleText = simplifyHtml({ removeAWithHref: true })(
-				articleInfo.article.bloc_textuel,
+				currentBlocTextuel,
 			)
 			const simplifiedPreviousVersionText = simplifyHtml({
 				removeAWithHref: true,
-			})(articleInfo.articlePreviousVersion.bloc_textuel)
+			})(previousBlocTextuel)
 
 			const previousSegments = segmenter.segmentToArray(
 				simplifiedPreviousVersionText.output,
@@ -580,7 +599,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.articlePreviousVersion.bloc_textuel,
+						previousBlocTextuel,
 						positions,
 					)
 
@@ -603,7 +622,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.article.bloc_textuel,
+						currentBlocTextuel,
 						positions,
 					)
 
@@ -627,7 +646,7 @@
 
 					const positions = originalPositionsArray[0].originalPositions
 					const htmlContent = extractHtmlBetweenOriginalPositions(
-						articleInfo.article.bloc_textuel,
+						currentBlocTextuel,
 						positions,
 					)
 
@@ -733,7 +752,7 @@
 	function highlightParameterValuesInArticleHTML(
 		articleParameterReferences: Array<ValueParameter | ScaleParameter>,
 	): string {
-		const articleText = articleInfo.article?.bloc_textuel ?? ""
+		const articleText = currentBlocTextuel ?? ""
 
 		const simplified = simplifyHtml({ removeAWithHref: true })(articleText)
 		const textPlain = simplified.output
@@ -966,12 +985,14 @@
 							type="checkbox"
 							bind:checked={showDiff}
 						/>
-						<div
-							class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-						></div>
-						<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
-							Voir les changements apportés <br /> à la version précédente
-						</span>
+						{#if articleInfo.versions.length > 1}
+							<div
+								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+							></div>
+							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+								Voir les changements apportés <br /> à la version précédente
+							</span>
+						{/if}
 					</label>
 				</div>
 			{/if}
@@ -995,7 +1016,7 @@
 					{@html diffContent}
 				</span>
 			</div>
-		{:else if showDiff === false && articleInfo.article.bloc_textuel !== undefined && articleInfo.article.bloc_textuel !== null}
+		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
 				>{@html highlightParameterValuesInArticleHTML(
 					articleParameterReferences,

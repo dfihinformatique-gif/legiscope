@@ -81,9 +81,11 @@ async function getArticle(
 
 			if (firstArticle?.premier_article_id?.startsWith("LEGIARTI")) {
 				articleFromDb = await dbConnection`
-					select *
-					from legiarti
-					where legi_id = ${firstArticle.premier_article_id}::text`
+					select l.id, coalesce(acal.bloc_textuel, l.bloc_textuel) bloc_textuel, l.legi_id, l.date_debut, l.date_fin, l.num, l.article_type, l.url, l.nota, l.etat
+					from legiarti l
+					left join article_contenu_avec_liens acal on (l.legi_id = acal.legi_id)
+					where l.legi_id = ${firstArticle.premier_article_id}::text
+					`
 			} else {
 				throw error(
 					404,
@@ -103,9 +105,11 @@ async function getArticle(
 
 			if (firstArticle?.premier_article_id?.startsWith("JORFARTI")) {
 				articleFromDb = await dbConnection`
-					select *
-					from jorfarti
-					where legi_id = ${firstArticle.premier_article_id}::text`
+				select j.id, coalesce(acal.bloc_textuel, j.bloc_textuel) bloc_textuel, j.legi_id, j.date_debut, j.date_fin, j.num, j.article_type, j.url
+				from jorfarti j
+				left join article_contenu_avec_liens acal on (j.legi_id = acal.legi_id)
+				where j.legi_id = ${firstArticle.premier_article_id}::text
+				`
 			} else {
 				throw error(
 					404,
@@ -148,9 +152,11 @@ async function getArticle(
 			}
 
 			articleFromDb = await dbConnection`
-				select *
-				from legiarti
-				where legi_id = ${requestedArticle}`
+				select l.id, coalesce(acal.bloc_textuel, l.bloc_textuel) bloc_textuel, l.legi_id, l.date_debut, l.date_fin, l.num, l.article_type, l.url, l.nota, l.etat
+				from legiarti l
+				left join article_contenu_avec_liens acal on (l.legi_id = acal.legi_id)
+				where l.legi_id = ${requestedArticle}::text
+				`
 		} else if (requestedArticle.startsWith("JORFARTI")) {
 			const associatedText = await dbConnection`
 				select distinct subltree(s.chemin, 0, 1) as associated_text
@@ -172,9 +178,11 @@ async function getArticle(
 			}
 
 			articleFromDb = await dbConnection`
-				select *
-				from jorfarti
-				where legi_id = ${requestedArticle}`
+				select j.id, coalesce(acal.bloc_textuel, j.bloc_textuel) bloc_textuel, j.legi_id, j.date_debut, j.date_fin, j.num, j.article_type, j.url
+				from jorfarti j
+				left join article_contenu_avec_liens acal on (j.legi_id = acal.legi_id)
+				where j.legi_id = ${requestedArticle}::text
+				`
 		} else if (requestedArticle.startsWith("LEGISCTA")) {
 			const associatedText = await dbConnection`
 				select distinct subltree(s.chemin, 0, 1) as associated_text
@@ -237,9 +245,11 @@ async function getArticle(
 
 			if (firstArticle?.premier_article_id?.startsWith("LEGIARTI")) {
 				articleFromDb = await dbConnection`
-					select *
-					from legiarti
-					where legi_id = ${firstArticle.premier_article_id}::text`
+				select l.id, coalesce(acal.bloc_textuel, l.bloc_textuel) bloc_textuel, l.legi_id, l.date_debut, l.date_fin, l.num, l.article_type, l.url, l.nota, l.etat
+				from legiarti l
+				left join article_contenu_avec_liens acal on (l.legi_id = acal.legi_id)
+				where l.legi_id = ${firstArticle.premier_article_id}::text
+				`
 			} else {
 				throw error(
 					404,
@@ -272,9 +282,10 @@ async function getArticle(
 			articleFromDb[0].legi_id.startsWith("LEGIARTI")
 		) {
 			previousVersionArticleFromDb = await dbConnection`
-			select *
-			from legiarti
-			where legi_id = ${previousVersionId}::text
+			select l.id, coalesce(acal.bloc_textuel, l.bloc_textuel) bloc_textuel, l.legi_id, l.date_debut, l.date_fin, l.num, l.article_type, l.url, l.nota, l.etat
+			from legiarti l
+			left join article_contenu_avec_liens acal on (l.legi_id = acal.legi_id)
+			where l.legi_id = ${previousVersionId}::text
 			`
 		} else if (
 			previousVersionId !== undefined &&
@@ -282,9 +293,10 @@ async function getArticle(
 			articleFromDb[0].legi_id.startsWith("JORFARTI")
 		) {
 			previousVersionArticleFromDb = await dbConnection`
-			select *
-			from jorfarti
-			where legi_id = ${previousVersionId}::text
+			select j.id, coalesce(acal.bloc_textuel, j.bloc_textuel) bloc_textuel, j.legi_id, j.date_debut, j.date_fin, j.num, j.article_type, j.url
+			from jorfarti j
+			left join article_contenu_avec_liens acal on (j.legi_id = acal.legi_id)
+			where j.legi_id = ${previousVersionId}::text
 			`
 		}
 
@@ -311,8 +323,8 @@ async function getArticle(
 				if (jorfArti !== undefined) {
 					const jorfTextResults = await dbConnection`
 					select distinct subltree(s.chemin, 0, 1) as associated_text
-				from scta s
-				where dernier_segment = ${jorfArti.legi_id_lien}`
+					from scta s
+					where dernier_segment = ${jorfArti.legi_id_lien}`
 
 					if (jorfTextResults.length > 0) {
 						jorfText = jorfTextResults[0].associated_text
