@@ -256,7 +256,21 @@ export const load: LayoutServerLoad = async ({
 			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
 			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
-				return `<a href='/pjl/${pjl}?article=${lawArticle}'>${p2}</a>`
+				const referredParameters = currentParameterReferences.get(lawArticle)
+				const referredParametersLabels = []
+				if (
+					referredParameters !== undefined &&
+					pjl === "plf-2026-Cplt_avec_liens"
+				) {
+					for (const parameter of referredParameters) {
+						referredParametersLabels.push(
+							parameter.short_label?.replace("'", " "),
+						)
+					}
+					return `<a title='${referredParametersLabels.join("|")}' href='/pjl/${pjl}?article=${lawArticle}'>${p2}*</a>`
+				} else {
+					return `<a href='/pjl/${pjl}?article=${lawArticle}'>${p2}</a>`
+				}
 			},
 		)
 		const HTMLToReturn = highlightParameterValuesInHTML(
