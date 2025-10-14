@@ -134,7 +134,9 @@
 	class="fixed bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
 >
 	<p class="pb-1 pl-5 text-sm">
-		Ce produit est en développement :
+		<span class="hidden md:inline-flex"
+			>Ce produit est en développement :
+		</span>
 		<a
 			href="https://limesurvey.leximpact.dev/index.php/767415?lang=fr"
 			target="_blank"
