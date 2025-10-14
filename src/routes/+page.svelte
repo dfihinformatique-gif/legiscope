@@ -34,7 +34,7 @@
 					<div class="flex justify-center">
 						<a
 							class="hover:border-le-gris-dispositif-dark hover:text-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:bg-neutral-50 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B0324
+							href="/pjl/PRJLANR5L17B1906
 "
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi interactif"

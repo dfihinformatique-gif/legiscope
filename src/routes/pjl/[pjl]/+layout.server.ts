@@ -265,9 +265,7 @@ export const load: LayoutServerLoad = async ({
 				const referredParametersLabels = []
 				if (
 					referredParameters !== undefined &&
-					(pjl === "plf-2026-Cplt_avec_liens" ||
-						pjl === "pre-plfss_2026" ||
-						pjl === "PRJLANR5L17B1906")
+					(pjl === "plf-2026-Cplt_avec_liens" || pjl === "pre-plfss_2026")
 				) {
 					for (const parameter of referredParameters) {
 						referredParametersLabels.push(
