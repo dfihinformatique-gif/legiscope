@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { page } from "$app/state"
+
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
 	import {
@@ -20,6 +22,7 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+	const pjl = page.params.pjl
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -524,6 +527,55 @@
 				<div class="content-wrapper">${cleanedHTML}</div>
       `
 
+			/* Si on est sur le PJL ciblé, injecte un style dédié pour les paragraphes assnat9ArticleNum */
+			if (pjl === "PRJLANR5L17B1907") {
+				const styleTag = document.createElement("style")
+				styleTag.textContent = `
+					/* Agrandir et colorer les numéros d'alinéas du PJL PRJLANR5L17B1907 */
+					p.assnat9ArticleNum {
+						font-size: 2rem !important;
+						color: #2f406a !important;
+						margin-top: 2rem !important;
+						padding-left: 1rem !important;
+						text-align: left !important;
+						border-bottom: 1px solid #2f406a !important;
+						border-left: 1px solid #2f406a !important;
+						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
+					}
+
+					/* Titre Niveau 2 */
+
+					.assnat2PartieNum,
+					.assnat2PartieIntit,
+					p.assnat2PartieNum,
+					p.assnat2PartieIntit,
+					p.assnat2PartieNum span,
+					p.assnat2PartieIntit span {
+						margin-top: 1rem !important;
+						font-size: 2rem !important; /* taille spécifique au niveau 2 */
+						color: #2f406a !important;
+						line-height: 1.4 !important;
+					}
+
+
+					/* Titre Niveau 4 */
+
+					.assnat4TitreNum,
+					.assnat4TitreIntit,
+					p.assnat4TitreNum,
+					p.assnat4TitreIntit,
+					p.assnat4TitreNum span,
+					p.assnat4TitreIntit span {
+						margin-top: 0.8rem !important; /* par exemple un peu moins que niveau 2 */
+						font-size: 1.5rem !important; /* taille spécifique au niveau 4 */
+						color: #2f406a !important;
+						line-height: 1.3 !important;
+					}
+
+				`
+				shadow.appendChild(styleTag)
+			}
+
 			// Style les liens qui ouvrent la vue Article
 			cleanAndStyleLienTexteExterne(shadow)
 
@@ -568,11 +620,21 @@
 			removeSpecificFontFamilies(shadow)
 
 			// Applique la formule qui augmente la taille des typos
-			scaleFontSizesWithRemConversion(
-				shadow,
-				1.4,
-				16,
-			) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+
+			if (pjl === "PRJLANR5L17B1907") {
+				scaleFontSizesWithRemConversion(
+					shadow,
+					0.85,
+					16,
+				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			} else if (pjl === "PRJLANR5L17B1906") {
+				scaleFontSizesWithRemConversion(
+					shadow,
+					1.4,
+					16,
+				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			}
+
 			disableJustify(shadow)
 
 			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
@@ -750,7 +812,7 @@
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1 overflow-auto"
+		class="w-full flex-1 overflow-auto pb-52"
 		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>
