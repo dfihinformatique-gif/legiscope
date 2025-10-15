@@ -33,13 +33,30 @@
 				{:else}
 					<div class="flex justify-center">
 						<a
-							class="hover:border-le-gris-dispositif-dark hover:text-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-white bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black uppercase shadow-lg hover:bg-neutral-50 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B1906
+							class="hover:border-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B1906"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							PLF | <span class="font-normal"
+								>Projet de loi de finances pour 2026</span
+							><iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<div class="flex justify-center">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B1907
 "
 							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi interactif"
+							title="Vers le projet de loi"
 						>
-							Projet de loi de finances pour 2026<iconify-icon
+							PLFSS | <span class="font-normal"
+								>Projet de loi de financement de la sécurité sociale pour 2026</span
+							><iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
 								icon="ri-arrow-right-line"
 							></iconify-icon>
