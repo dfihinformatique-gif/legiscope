@@ -812,7 +812,7 @@
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1 overflow-auto"
+		class="w-full flex-1 overflow-auto pb-52"
 		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>
