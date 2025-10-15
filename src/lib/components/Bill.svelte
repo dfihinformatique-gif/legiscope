@@ -528,7 +528,7 @@
       `
 
 			/* Si on est sur le PJL ciblé, injecte un style dédié pour les paragraphes assnat9ArticleNum */
-			if (page.params?.pjl === "PRJLANR5L17B1907") {
+			if (pjl === "PRJLANR5L17B1907") {
 				const styleTag = document.createElement("style")
 				styleTag.textContent = `
 					/* Agrandir et colorer les numéros d'alinéas du PJL PRJLANR5L17B1907 */
