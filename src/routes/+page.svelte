@@ -46,7 +46,7 @@
 							></iconify-icon>
 						</a>
 					</div>
-					<!-- <div class="flex justify-center">
+					<div class="flex justify-center">
 						<a
 							class="hover:border-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
 							href="/pjl/PRJLANR5L17B1907
@@ -61,7 +61,7 @@
 								icon="ri-arrow-right-line"
 							></iconify-icon>
 						</a>
-					</div> -->
+					</div>
 				{/if}
 			</div>
 		</div>
