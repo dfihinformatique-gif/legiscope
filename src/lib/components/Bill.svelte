@@ -22,6 +22,7 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+	const pjl = page.params.pjl
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -571,13 +572,13 @@
 
 			// Applique la formule qui augmente la taille des typos
 
-			if (page.params.pjl === "PRJLANR5L17B1907") {
+			if (pjl === "PRJLANR5L17B1907") {
 				scaleFontSizesWithRemConversion(
 					shadow,
 					0.85,
 					16,
 				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
-			} else if (page.params.pjl === "PRJLANR5L17B1906") {
+			} else if (pjl === "PRJLANR5L17B1906") {
 				scaleFontSizesWithRemConversion(
 					shadow,
 					1.4,
