@@ -294,11 +294,67 @@ export const load: LayoutServerLoad = async ({
 				}
 			},
 		)
-		const HTMLToReturn = highlightParameterValuesInHTML(
-			htmlWithLinks,
-			currentParameterReferences!,
-			pjlDate,
-		)
+
+		let HTMLToReturn: string = ""
+
+		if (pjl === "PRJLANR5L17B1907") {
+			// const htmlWithLinksAndSummary = htmlWithLinks.replace(
+			// 	/(<p class="assnat9ArticleNum">[\s\n\t]*)Article\s+(\w+)([\s\n\t]*<\/p>)/g,
+			// 	"$1Article $2$3".replace(
+			// 		/<p class="assnat9ArticleNum">/,
+			// 		'<p class="assnat9ArticleNum" id="#_TocArt$2">',
+			// 	),
+			// )
+			const htmlWithLinksAndSummary = htmlWithLinks.replace(
+				/<p class="assnat9ArticleNum">/g,
+				(match, offset, string) => {
+					const articleMatch = string.slice(offset).match(/Article\s+(\w+)/)
+					return articleMatch
+						? `<p class="assnat9ArticleNum" id="_TocArt${articleMatch[1]}">`
+						: match
+				},
+			)
+
+			const articles: Array<{ num: string; id: string }> = []
+			const articleRegex =
+				/<p class="assnat9ArticleNum" id="(_TocArt\w+)">\s*Article\s+(\w+)\s*<\/p>/g
+			let match
+
+			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
+				articles.push({
+					id: match[1],
+					num: match[2],
+				})
+			}
+
+			const sommaire = `
+\t\t<div style="display: none;">
+${articles
+	.map(
+		(article) => `\t\t\t<p class="assnatTOC6">
+\t\t\t\t<a href="#${article.id}"><span class="assnatHyperlink" style="font-weight:bold; text-decoration:none; color:#000000">ARTICLE ${article.num.toUpperCase()}</span></a>
+\t\t\t</p>`,
+	)
+	.join("\n")}
+\t\t</div>
+\t\t`
+			const htmlWithLinksAndSummaryFinal = htmlWithLinksAndSummary.replace(
+				/(<div class="assnatSection3">)/,
+				`${sommaire}$1`,
+			)
+
+			HTMLToReturn = highlightParameterValuesInHTML(
+				htmlWithLinksAndSummaryFinal,
+				currentParameterReferences!,
+				pjlDate,
+			)
+		} else {
+			HTMLToReturn = highlightParameterValuesInHTML(
+				htmlWithLinks,
+				currentParameterReferences!,
+				pjlDate,
+			)
+		}
 		return {
 			pjlHTML: HTMLToReturn,
 			pjlDate,
