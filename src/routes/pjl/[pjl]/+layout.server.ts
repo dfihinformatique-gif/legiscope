@@ -249,6 +249,7 @@ export const load: LayoutServerLoad = async ({
 		const credentials = Buffer.from(base64Credentials, "base64").toString(
 			"utf8",
 		)
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const [username, password] = credentials.split(":")
 		user = username
 	}
