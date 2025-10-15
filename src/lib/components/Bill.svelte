@@ -527,11 +527,11 @@
 				<div class="content-wrapper">${cleanedHTML}</div>
       `
 
-			/* Si on est sur le PJL ciblé, injecte un style dédié pour les paragraphes assnat9ArticleNum */
-			if (pjl === "PRJLANR5L17B1907") {
+			/* Si on est pas sur le texte initial des PLF2025 ou 2026, injecte un style dédié pour les paragraphes assnat9ArticleNum */
+			if (!(pjl === "PRJLANR5L17B1906" || "PRJLANR5L17B0324")) {
 				const styleTag = document.createElement("style")
 				styleTag.textContent = `
-					/* Agrandir et colorer les numéros d'alinéas du PJL PRJLANR5L17B1907 */
+					/* Agrandir et colorer les numéros d'alinéas */
 					p.assnat9ArticleNum {
 						font-size: 2rem !important;
 						color: #2f406a !important;
@@ -621,18 +621,14 @@
 
 			// Applique la formule qui augmente la taille des typos
 
-			if (pjl === "PRJLANR5L17B1907") {
-				scaleFontSizesWithRemConversion(
-					shadow,
-					0.85,
-					16,
-				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
-			} else if (pjl === "PRJLANR5L17B1906") {
+			if (pjl === "PRJLANR5L17B1906" || pjl === "PRJLANR5L17B0324") {
 				scaleFontSizesWithRemConversion(
 					shadow,
 					1.4,
 					16,
 				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			} else {
+				scaleFontSizesWithRemConversion(shadow, 0.85, 16)
 			}
 
 			disableJustify(shadow)
