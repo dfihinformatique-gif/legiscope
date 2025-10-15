@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { page } from "$app/state"
+
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
 	import {
@@ -568,11 +570,21 @@
 			removeSpecificFontFamilies(shadow)
 
 			// Applique la formule qui augmente la taille des typos
-			scaleFontSizesWithRemConversion(
-				shadow,
-				1.4,
-				16,
-			) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+
+			if (page.params.pjl === "PRJLANR5L17B1907") {
+				scaleFontSizesWithRemConversion(
+					shadow,
+					0.85,
+					16,
+				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			} else if (page.params.pjl === "PRJLANR5L17B1906") {
+				scaleFontSizesWithRemConversion(
+					shadow,
+					1.4,
+					16,
+				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
+			}
+
 			disableJustify(shadow)
 
 			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
