@@ -24,6 +24,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import ArticleCitations from "./ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
@@ -853,6 +854,7 @@
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 	let historyIsOpen = $state(false)
+	let citationsIsOpen = $state(false)
 
 	const allVersions =
 		articleInfo.versions !== undefined && articleInfo.versions.length > 1
@@ -929,6 +931,28 @@
 				</iconify-icon>
 				Historique
 			</button>
+
+			<button
+				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				onclick={() => {
+					citationsIsOpen = !citationsIsOpen
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.3rem] text-xl"
+					icon={citationsIsOpen
+						? "ri:arrow-down-s-line"
+						: "ri:arrow-right-s-line"}
+				>
+				</iconify-icon>
+				Citations
+			</button>
+			{#if citationsIsOpen}
+				<div class="p-4² bg-white">
+					<ArticleCitations {articleInfo} date={dateForSelect}
+					></ArticleCitations>
+				</div>
+			{/if}
 
 			{#if historyIsOpen}
 				<div class=" bg-white p-4">
