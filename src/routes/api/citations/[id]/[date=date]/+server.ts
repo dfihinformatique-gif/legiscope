@@ -33,7 +33,15 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	with articles_liens_at_date as
 		(
 		select al.* from articles_liens al
-		join legiarti on (legiarti.id = cast(substring(al.legi_id from 9) as integer) and to_date(${date}, 'YYYY-MM-DD') between legiarti.date_debut and legiarti.date_fin)
+		join legiarti on
+			(
+			legiarti.id = cast(substring(al.legi_id from 9) as integer)
+			and
+				(
+				to_date(${date}, 'YYYY-MM-DD') between legiarti.date_debut and legiarti.date_fin
+				or legiarti.etat = (select id from etats where etat = 'VIGUEUR_DIFF')
+				)
+			)
 		where al.legi_id like 'LEGIARTI%'
 		union all
 		select al.* from articles_liens al
