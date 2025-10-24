@@ -56,8 +56,6 @@
 		})
 		.catch(() => (historyData = undefined))
 
-	// REGROUPEMENT des Modifications/Codifications par année
-
 	/* Récupère l'année */
 	function getYear(publicationDate: HistoryByTextRow["date_publi"]) {
 		if (!publicationDate) return "Inconnue"
@@ -69,6 +67,9 @@
 			? "Inconnue"
 			: date.getFullYear().toString()
 	}
+
+	// REGROUPEMENT des Modifications/Codifications par année
+	let historyByYear = $derived(groupHistoryByYear(historyByText))
 
 	/* fonction de groupement par année (ne modifie rien d'autre)*/
 	function groupHistoryByYear(historyList?: HistoryByText) {
@@ -117,7 +118,6 @@
 				return typeLien
 		}
 	}
-	let historyByYear = $derived(groupHistoryByYear(historyByText))
 </script>
 
 {#if historyByText !== undefined}
