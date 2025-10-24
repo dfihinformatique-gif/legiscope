@@ -117,10 +117,11 @@
 				return typeLien
 		}
 	}
+	let historyByYear = $derived(groupHistoryByYear(historyByText))
 </script>
 
 {#if historyByText !== undefined}
-	{#each groupHistoryByYear(historyByText) as group}
+	{#each historyByYear as group}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
 			<div>
 				<span class="text-le-gris-dispositif">{group.year}</span>
@@ -139,13 +140,17 @@
 								>{text.titre_texte}</a
 							>
 							{#if text.articles_jorf.filter((article) => {
-								article.id !== ""
+								return article.id !== ""
 							}).length > 0}
 								(
 								{#each text.articles_jorf as article, i}
-									{urlToNavigate.searchParams.set("article", article.id)}
+									{@const articleUrl = (() => {
+										const url = new URL(page.url)
+										url.searchParams.set("article", article.id)
+										return url.href
+									})()}
 									{#if article.id !== ""}
-										<a class="text-sm leading-4" href={urlToNavigate.href}
+										<a class="text-sm leading-4" href={articleUrl}
 											>art. n°{article.num !== ""
 												? article.num
 												: `non identifié ${i + 1}`}</a
