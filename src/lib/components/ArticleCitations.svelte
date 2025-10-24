@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state"
 	import type { ArticleInfo, CitationsData } from "$lib/db_data_types"
 
 	interface Props {
@@ -24,11 +25,15 @@
 {#if citationsData !== undefined && citationsData.length > 0}
 	Au {date}, cité par :
 	{#each citationsData as citation}
+		{@const urlToNavigate = new URL(page.url)}
+		{urlToNavigate.searchParams.set("article", citation.legi_id_lien)}
 		<section class="flex border-b border-neutral-200 pt-2">
-			{citation.titre}
-			{#if citation.num !== null}art. {citation.num}{/if}
-			{#if citation.etat !== null}
-				({citation.etat}){/if}
+			<a class="lx-link-text" href={urlToNavigate.href}>
+				{citation.titre}
+				{#if citation.num !== null}art. {citation.num}{/if}
+				{#if citation.etat !== null}
+					({citation.etat}){/if}
+			</a>
 		</section>
 	{/each}
 {:else if citationsData === undefined}
