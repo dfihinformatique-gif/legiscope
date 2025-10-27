@@ -32,7 +32,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	const citationsData = await dbConnection`
 	with articles_liens_at_date as
 		(
-		select al.* from articles_liens al
+		select al.*, legiarti.date_debut, legiarti.date_fin from articles_liens al
 		join legiarti on
 			(
 			legiarti.id = cast(substring(al.legi_id from 9) as integer)
@@ -44,11 +44,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			)
 		where al.legi_id like 'LEGIARTI%'
 		union all
-		select al.* from articles_liens al
+		select al.*, null as date_debut, null as date_fin from articles_liens al
 		join jorfarti on (jorfarti.id = cast(substring(al.legi_id from 9) as integer))
 		where al.legi_id like 'JORFARTI%'
 		)
-	select al.cidtexte, al.legi_id_lien, coalesce(jorftext.titre, legitext.titre) titre, legiarti.num, legiarti.date_debut, legiarti.date_fin, e.etat, t.article_type
+	select al.cidtexte, al.legi_id_lien, to_char(al.date_debut, 'YYYY-MM-DD') cite_date_debut, to_char(al.date_fin, 'YYYY-MM-DD') cite_date_fin,
+	coalesce(jorftext.titre, legitext.titre) titre, legiarti.num,
+	to_char(legiarti.date_debut, 'YYYY-MM-DD') cite_par_date_debut, to_char(legiarti.date_fin, 'YYYY-MM-DD') cite_par_date_fin, e.etat, t.article_type
 	from articles_liens_at_date al
 	left join legiarti on (legiarti.legi_id = al.legi_id_lien)
 	left join jorftext on (jorftext.legi_id = al.cidtexte)
@@ -60,7 +62,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		(
 			('CITATION', true),
 			('CITE', false)
-		)`
+		)
+	order by substring(cidtexte from 0 for 8) desc, cite_par_date_debut desc`
 
 	await dbConnection.release()
 
