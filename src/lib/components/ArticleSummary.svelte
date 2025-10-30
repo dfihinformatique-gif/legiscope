@@ -13,7 +13,10 @@
 
 	let tocIsOpen = $state(
 		requestedId !== null &&
-			(requestedId.startsWith("LEGITEXT") || requestedId.startsWith("JORFTEXT"))
+			(requestedId.startsWith("LEGITEXT") ||
+				requestedId.startsWith("JORFTEXT") ||
+				requestedId.startsWith("LEGISCTA") ||
+				requestedId.startsWith("JORFSCTA"))
 			? true
 			: false,
 	)
