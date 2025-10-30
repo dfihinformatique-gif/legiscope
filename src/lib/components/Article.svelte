@@ -520,7 +520,7 @@
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const currentBlocTextuel = articleInfo.article?.bloc_textuel
 		? articleInfo.article.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
 					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
@@ -531,7 +531,7 @@
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
 		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
 					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`

@@ -273,7 +273,7 @@ export const load: LayoutServerLoad = async ({
 		)
 
 		const htmlWithLinks = html.replace(
-			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/git\.tricoteuses\.fr[^"]*\/([^/]+\.md)"[^>]*>(.*?)<\/a>/g,
+			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
 				const referredParameters = currentParameterReferences.get(lawArticle)
