@@ -879,6 +879,11 @@
 		<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 
 		<!--En-tête-->
+		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+			Premier article :
+		{/if}
+		<div></div>
 		<div
 			class="mt-2 flex flex-col items-start justify-between gap-x-5 md:flex-row"
 		>
