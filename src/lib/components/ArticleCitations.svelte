@@ -36,16 +36,25 @@
 			error = true
 		})
 
-	let grouping = $state<string[]>([])
+	let grouping = $state<string[]>(["article_citant"])
 	let expanded = $state<ExpandedState>({})
 
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
-			id: "version_article_citant",
+			id: "article_citant",
 			header: "Cité par",
 			cell: ({ row }) => {
 				const titre = row.original.titre_text_citant || ""
 				const num = row.original.num_citant || ""
+				return `${titre} ${num ? "art. " + num : ""}`
+			},
+			enableGrouping: true,
+			getGroupingValue: (row) => `${row.titre_text_citant}-${row.num_citant}`,
+		},
+		{
+			id: "version_citante",
+			header: "Version citante",
+			cell: ({ row }) => {
 				const dateDebut = row.original.date_debut_citant
 					? new Date(row.original.date_debut_citant).toISOString().split("T")[0]
 					: ""
@@ -53,10 +62,11 @@
 					? new Date(row.original.date_fin_citant).toISOString().split("T")[0]
 					: ""
 
-				return `${titre} ${num ? "art. " + num : ""} (v${dateDebut} → ${dateFin})`
+				return `v${dateDebut} → ${dateFin}`
 			},
-			enableGrouping: true,
-			getGroupingValue: (row) => `${row.titre_text_citant}-${row.num_citant}`,
+			// enableGrouping: true,
+			// getGroupingValue: (row) =>
+			// 	`${row.date_debut_citant}-${row.date_fin_citant}`,
 		},
 		{
 			accessorKey: "article_type_citant",
@@ -204,11 +214,21 @@
 			})
 		}
 	})
-	$inspect({ grouping, expanded: table?.getState().expanded })
 </script>
 
 {#if table !== undefined}
 	<div class="mb-4 flex gap-2">
+		<button
+			class="rounded border px-4 py-2"
+			onclick={() =>
+				(grouping = grouping.includes("article_citant")
+					? []
+					: ["article_citant"])}
+		>
+			{grouping.includes("article_citant")
+				? "Dégrouper"
+				: "Grouper par article citant"}
+		</button>
 		<button
 			class="rounded border px-4 py-2"
 			onclick={() =>
@@ -219,17 +239,6 @@
 			{grouping.includes("version_citee")
 				? "Dégrouper"
 				: "Grouper par version citée"}
-		</button>
-		<button
-			class="rounded border px-4 py-2"
-			onclick={() =>
-				(grouping = grouping.includes("version_article_citant")
-					? []
-					: ["version_article_citant"])}
-		>
-			{grouping.includes("version_article_citant")
-				? "Dégrouper"
-				: "Grouper par article citant"}
 		</button>
 	</div>
 	<div class="rounded-md border">
