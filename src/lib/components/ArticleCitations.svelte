@@ -11,9 +11,11 @@
 	} from "$lib/db_data_types"
 	import {
 		type ColumnDef,
+		type ColumnFiltersState,
 		type ExpandedState,
 		getCoreRowModel,
 		getExpandedRowModel,
+		getFilteredRowModel,
 		getGroupedRowModel,
 		type Table,
 	} from "@tanstack/table-core"
@@ -38,6 +40,7 @@
 
 	let grouping = $state<string[]>(["article_citant"])
 	let expanded = $state<ExpandedState>({})
+	let columnFilters = $state<ColumnFiltersState>([])
 
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
@@ -183,10 +186,12 @@
 				getCoreRowModel: getCoreRowModel(),
 				getGroupedRowModel: getGroupedRowModel(),
 				getExpandedRowModel: getExpandedRowModel(),
+				getFilteredRowModel: getFilteredRowModel(),
 				get state() {
 					return {
 						grouping,
 						expanded,
+						columnFilters,
 					}
 				},
 				onGroupingChange: (updater) => {
@@ -194,6 +199,13 @@
 				},
 				onExpandedChange: (updater) => {
 					expanded = typeof updater === "function" ? updater(expanded) : updater
+				},
+				onColumnFiltersChange: (updater) => {
+					if (typeof updater === "function") {
+						columnFilters = updater(columnFilters)
+					} else {
+						columnFilters = updater
+					}
 				},
 				initialState: {
 					columnVisibility: {
@@ -214,6 +226,7 @@
 			})
 		}
 	})
+	let inEffectOnly = $state(false)
 </script>
 
 {#if table !== undefined}
@@ -240,6 +253,16 @@
 				? "Dégrouper"
 				: "Grouper par version citée"}
 		</button>
+		En vigueur seulement
+		<input
+			bind:checked={inEffectOnly}
+			type="checkbox"
+			onchange={() => {
+				table!
+					.getColumn("etat_citant")
+					?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
+			}}
+		/>
 	</div>
 	<div class="rounded-md border">
 		<TableUI.Root>
@@ -268,8 +291,6 @@
 									<button
 										class="flex items-center gap-2 rounded px-2 py-1 font-semibold hover:bg-gray-100"
 										onclick={(e) => {
-											e.preventDefault()
-											console.log("Click détecté", row.id, row.getIsExpanded())
 											row.toggleExpanded()
 										}}
 									>
