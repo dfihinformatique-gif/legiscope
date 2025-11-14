@@ -12,6 +12,8 @@
 	import {
 		type ColumnDef,
 		getCoreRowModel,
+		getExpandedRowModel,
+		getGroupedRowModel,
 		type Table,
 	} from "@tanstack/table-core"
 
@@ -32,47 +34,26 @@
 			citationsData = undefined
 			error = true
 		})
-	$inspect(citationsData)
+
+	let grouping = $state<string[]>([])
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
-			accessorKey: "legi_id_cite",
-			header: "legi_id_cite",
-		},
-		{
-			accessorKey: "date_debut_cite",
-			header: "date_debut_cite",
-		},
-		{
-			accessorKey: "date_fin_cite",
-			header: "date_fin_cite",
-		},
-		{
-			accessorKey: "num_cite",
-			header: "num_cite",
-		},
-		{
-			accessorKey: "article_type_cite",
-			header: "article_type_cite",
-		},
-		{
-			accessorKey: "etat_cite",
-			header: "etat_cite",
-		},
-		{
-			accessorKey: "legi_id_citant",
-			header: "legi_id_citant",
-		},
-		{
-			accessorKey: "date_debut_citant",
-			header: "date_debut_citant",
-		},
-		{
-			accessorKey: "date_fin_citant",
-			header: "date_fin_citant",
-		},
-		{
-			accessorKey: "num_citant",
-			header: "num_citant",
+			id: "version_article_citant",
+			header: "Cité par",
+			cell: ({ row }) => {
+				const titre = row.original.titre_text_citant || ""
+				const num = row.original.num_citant || ""
+				const dateDebut = row.original.date_debut_citant
+					? new Date(row.original.date_debut_citant).toISOString().split("T")[0]
+					: ""
+				const dateFin = row.original.date_fin_citant
+					? new Date(row.original.date_fin_citant).toISOString().split("T")[0]
+					: ""
+
+				return `${titre} ${num ? "art. " + num : ""} (v${dateDebut} → ${dateFin})`
+			},
+			enableGrouping: true,
+			getGroupingValue: (row) => `${row.titre_text_citant}-${row.num_citant}`,
 		},
 		{
 			accessorKey: "article_type_citant",
@@ -83,12 +64,99 @@
 			header: "etat_citant",
 		},
 		{
-			accessorKey: "legitext_id_citant",
-			header: "legitext_id_citant",
-		},
-		{
 			accessorKey: "titre_text_citant",
 			header: "titre_text_citant",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "num_citant",
+			header: "num_citant",
+			enableHiding: true,
+		},
+		{
+			id: "version_citee",
+			header: "Version citée",
+			cell: ({ row }) => {
+				const dateDebut = row.original.date_debut_cite
+					? new Date(row.original.date_debut_cite).toISOString().split("T")[0]
+					: ""
+				const dateFin = row.original.date_fin_cite
+					? new Date(row.original.date_fin_cite).toISOString().split("T")[0]
+					: ""
+
+				return `v${dateDebut} → ${dateFin}`
+			},
+			enableGrouping: true,
+			getGroupingValue: (row) => `${row.date_debut_cite}-${row.date_fin_cite}`,
+		},
+		{
+			accessorKey: "legi_id_cite",
+			header: "legi_id_cite",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "date_debut_cite",
+			header: "date_debut_cite",
+			cell: ({ getValue }) => {
+				const date = getValue() as string | null
+				return date ? new Date(date).toISOString().split("T")[0] : ""
+			},
+			enableHiding: true,
+		},
+		{
+			accessorKey: "date_fin_cite",
+			header: "date_fin_cite",
+			cell: ({ getValue }) => {
+				const date = getValue() as string | null
+				return date ? new Date(date).toISOString().split("T")[0] : ""
+			},
+			enableHiding: true,
+		},
+		{
+			accessorKey: "num_cite",
+			header: "num_cite",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "article_type_cite",
+			header: "article_type_cite",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "etat_cite",
+			header: "etat_cite",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "legi_id_citant",
+			header: "legi_id_citant",
+			enableHiding: true,
+		},
+		{
+			accessorKey: "date_debut_citant",
+			header: "date_debut_citant",
+			enableHiding: true,
+
+			cell: ({ getValue }) => {
+				const date = getValue() as string | null
+				return date ? new Date(date).toISOString().split("T")[0] : ""
+			},
+		},
+		{
+			accessorKey: "date_fin_citant",
+			header: "date_fin_citant",
+			enableHiding: true,
+
+			cell: ({ getValue }) => {
+				const date = getValue() as string | null
+				return date ? new Date(date).toISOString().split("T")[0] : ""
+			},
+		},
+
+		{
+			accessorKey: "legitext_id_citant",
+			header: "legitext_id_citant",
+			enableHiding: true,
 		},
 	]
 	let table: Table<CitationsDataRow> | undefined = $state()
@@ -100,17 +168,60 @@
 				},
 				columns,
 				getCoreRowModel: getCoreRowModel(),
+				getGroupedRowModel: getGroupedRowModel(),
+				getExpandedRowModel: getExpandedRowModel(),
+				state: {
+					grouping,
+				},
+				onGroupingChange: (updater) => {
+					grouping = typeof updater === "function" ? updater(grouping) : updater
+				},
+				initialState: {
+					columnVisibility: {
+						legi_id_cite: false,
+						legi_id_citant: false,
+						legitext_id_citant: false,
+						titre_text_citant: false,
+						num_citant: false,
+						date_debut_citant: false,
+						date_fin_citant: false,
+						num_cite: false,
+						date_debut_cite: false,
+						date_fin_cite: false,
+						article_type_cite: false,
+						etat_cite: false,
+					},
+				},
 			})
-			// for (const row in table.getRowModel().rows) {
-			// 	console.log(row)
-			// }
 		}
 	})
-	$inspect({ table })
 </script>
 
 {#if table !== undefined}
-	Cité par :
+	<div class="mb-4 flex gap-2">
+		<button
+			class="rounded border px-4 py-2"
+			onclick={() =>
+				(grouping = grouping.includes("version_citee")
+					? []
+					: ["version_citee"])}
+		>
+			{grouping.includes("version_citee")
+				? "Dégrouper"
+				: "Grouper par version citée"}
+		</button>
+		<button
+			class="rounded border px-4 py-2"
+			onclick={() =>
+				(grouping = grouping.includes("version_article_citant")
+					? []
+					: ["version_article_citant"])}
+		>
+			{grouping.includes("version_article_citant")
+				? "Dégrouper"
+				: "Grouper par article citant"}
+		</button>
+	</div>
 	<div class="rounded-md border">
 		<TableUI.Root>
 			<TableUI.Header>
@@ -134,17 +245,32 @@
 					<TableUI.Row data-state={row.getIsSelected() && "selected"}>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<TableUI.Cell>
-								<FlexRender
-									content={cell.column.columnDef.cell}
-									context={cell.getContext()}
-								/>
+								{#if cell.getIsGrouped()}
+									<button onclick={() => row.toggleExpanded()}>
+										{row.getIsExpanded() ? "👇" : "👉"}
+										<FlexRender
+											content={cell.column.columnDef.cell}
+											context={cell.getContext()}
+										/>
+										({row.subRows.length})
+									</button>
+								{:else if cell.getIsAggregated()}
+									<!-- Cellule agrégée -->
+								{:else if cell.getIsPlaceholder()}
+									<!-- Placeholder pour les lignes groupées -->
+								{:else}
+									<FlexRender
+										content={cell.column.columnDef.cell}
+										context={cell.getContext()}
+									/>
+								{/if}
 							</TableUI.Cell>
 						{/each}
 					</TableUI.Row>
 				{:else}
 					<TableUI.Row>
 						<TableUI.Cell colspan={columns.length} class="h-24 text-center">
-							No results.
+							Pas de citations
 						</TableUI.Cell>
 					</TableUI.Row>
 				{/each}
