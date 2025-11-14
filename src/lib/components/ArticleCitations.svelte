@@ -2,6 +2,7 @@
 	import {
 		createSvelteTable,
 		FlexRender,
+		renderComponent,
 	} from "$lib/components/ui/data-table/index.js"
 	import * as TableUI from "$lib/components/ui/table/index.js"
 	import type {
@@ -17,8 +18,11 @@
 		getExpandedRowModel,
 		getFilteredRowModel,
 		getGroupedRowModel,
+		getSortedRowModel,
+		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
+	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -39,18 +43,23 @@
 		})
 
 	let grouping = $state<string[]>(["article_citant"])
+	let sorting = $state<SortingState>([])
 	let expanded = $state<ExpandedState>({})
 	let columnFilters = $state<ColumnFiltersState>([])
 
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			id: "article_citant",
-			header: "Cité par",
-			cell: ({ row }) => {
-				const titre = row.original.titre_text_citant || ""
-				const num = row.original.num_citant || ""
+			header: ({ column }) =>
+				renderComponent(DataTableVersionCitanteButton, {
+					onclick: column.getToggleSortingHandler(),
+				}),
+			accessorFn: (row) => {
+				const titre = row.titre_text_citant || ""
+				const num = row.num_citant || ""
 				return `${titre} ${num ? "art. " + num : ""}`
 			},
+			cell: ({ getValue }) => getValue() as string,
 			enableGrouping: true,
 			getGroupingValue: (row) => `${row.titre_text_citant}-${row.num_citant}`,
 		},
@@ -184,18 +193,28 @@
 				},
 				columns,
 				getCoreRowModel: getCoreRowModel(),
+				getSortedRowModel: getSortedRowModel(),
 				getGroupedRowModel: getGroupedRowModel(),
 				getExpandedRowModel: getExpandedRowModel(),
 				getFilteredRowModel: getFilteredRowModel(),
 				get state() {
 					return {
 						grouping,
+						sorting,
 						expanded,
 						columnFilters,
 					}
 				},
 				onGroupingChange: (updater) => {
 					grouping = typeof updater === "function" ? updater(grouping) : updater
+				},
+				onSortingChange: (updater) => {
+					console.log("coucou")
+					if (typeof updater === "function") {
+						sorting = updater(sorting)
+					} else {
+						sorting = updater
+					}
 				},
 				onExpandedChange: (updater) => {
 					expanded = typeof updater === "function" ? updater(expanded) : updater
