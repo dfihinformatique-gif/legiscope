@@ -953,8 +953,7 @@
 			</button>
 			{#if citationsIsOpen}
 				<div class="p-4² bg-white">
-					<ArticleCitations {articleInfo} date={dateForSelect}
-					></ArticleCitations>
+					<ArticleCitations {articleInfo}></ArticleCitations>
 				</div>
 			{/if}
 

@@ -60,16 +60,20 @@ export interface TocDataRow {
 export type TocData = TocDataRow[]
 
 export interface CitationsDataRow {
-	cidtexte: string
-	legi_id_lien: string
-	cite_date_debut: string | null
-	cite_date_fin: string | null
-	titre: string | null
-	num: string | null
-	cite_par_date_debut: string | null
-	cite_par_date_fin: string | null
-	etat: string | null
-	article_type: string | null
+	legi_id_cite: string
+	date_debut_cite: string | null
+	date_fin_cite: string | null
+	num_cite: string | null
+	article_type_cite: string | null
+	etat_cite: string | null
+	legi_id_citant: string
+	date_debut_citant: string | null
+	date_fin_citant: string | null
+	num_citant: string | null
+	article_type_citant: string | null
+	etat_citant: string | null
+	legitext_id_citant: string | null
+	titre_text_citant: string | null
 }
 export type CitationsData = CitationsDataRow[]
 
