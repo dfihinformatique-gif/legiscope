@@ -11,6 +11,7 @@
 	} from "$lib/db_data_types"
 	import {
 		type ColumnDef,
+		type ExpandedState,
 		getCoreRowModel,
 		getExpandedRowModel,
 		getGroupedRowModel,
@@ -36,6 +37,8 @@
 		})
 
 	let grouping = $state<string[]>([])
+	let expanded = $state<ExpandedState>({})
+
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			id: "version_article_citant",
@@ -170,11 +173,17 @@
 				getCoreRowModel: getCoreRowModel(),
 				getGroupedRowModel: getGroupedRowModel(),
 				getExpandedRowModel: getExpandedRowModel(),
-				state: {
-					grouping,
+				get state() {
+					return {
+						grouping,
+						expanded,
+					}
 				},
 				onGroupingChange: (updater) => {
 					grouping = typeof updater === "function" ? updater(grouping) : updater
+				},
+				onExpandedChange: (updater) => {
+					expanded = typeof updater === "function" ? updater(expanded) : updater
 				},
 				initialState: {
 					columnVisibility: {
@@ -195,6 +204,7 @@
 			})
 		}
 	})
+	$inspect({ grouping, expanded: table?.getState().expanded })
 </script>
 
 {#if table !== undefined}
@@ -246,13 +256,25 @@
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<TableUI.Cell>
 								{#if cell.getIsGrouped()}
-									<button onclick={() => row.toggleExpanded()}>
-										{row.getIsExpanded() ? "👇" : "👉"}
+									<button
+										class="flex items-center gap-2 rounded px-2 py-1 font-semibold hover:bg-gray-100"
+										onclick={(e) => {
+											e.preventDefault()
+											console.log("Click détecté", row.id, row.getIsExpanded())
+											row.toggleExpanded()
+										}}
+									>
+										<span class="text-lg">
+											{row.getIsExpanded() ? "▼" : "▶"}
+										</span>
 										<FlexRender
 											content={cell.column.columnDef.cell}
 											context={cell.getContext()}
 										/>
-										({row.subRows.length})
+										<span class="text-sm text-gray-600">
+											({row.subRows.length}
+											{row.subRows.length > 1 ? "lignes" : "ligne"})
+										</span>
 									</button>
 								{:else if cell.getIsAggregated()}
 									<!-- Cellule agrégée -->
