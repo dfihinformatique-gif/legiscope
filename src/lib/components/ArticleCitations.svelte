@@ -23,6 +23,7 @@
 		type Table,
 	} from "@tanstack/table-core"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
+	import SkeletonArticleCitationsLoader from "./SkeletonArticleCitationsLoader.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -282,7 +283,7 @@
 			}}
 		/>
 	</div>
-	<div class="rounded-md border">
+	<div class="rounded-md border bg-white">
 		<TableUI.Root>
 			<TableUI.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
@@ -348,7 +349,7 @@
 		</TableUI.Root>
 	</div>
 {:else if citationsData === undefined}
-	Récupération des citations
+	<SkeletonArticleCitationsLoader />
 {:else if error}
 	Une erreur est survenue lors de la récupération des citations
 {:else}
