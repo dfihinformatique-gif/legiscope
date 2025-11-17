@@ -209,7 +209,6 @@
 					grouping = typeof updater === "function" ? updater(grouping) : updater
 				},
 				onSortingChange: (updater) => {
-					console.log("coucou")
 					if (typeof updater === "function") {
 						sorting = updater(sorting)
 					} else {
