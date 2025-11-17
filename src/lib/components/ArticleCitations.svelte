@@ -351,7 +351,12 @@
 {:else if citationsData === undefined}
 	<SkeletonArticleCitationsLoader />
 {:else if error}
-	Une erreur est survenue lors de la récupération des citations
+	<div class="border bg-white p-4">
+		⚠️ Une erreur est survenue lors de la récupération des citations
+	</div>
 {:else}
-	Pas de citations
+	<div class="border bg-white p-4">
+		Cet article ne semble pas être cité par un autre article. Aucun lien de
+		citation par un autre texte n'est référencé dans la base de données source.
+	</div>
 {/if}
