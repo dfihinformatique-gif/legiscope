@@ -526,14 +526,6 @@
 							font-family: sans-serif;
 					}
 
-				</style>
-				<div class="content-wrapper">${cleanedHTML}</div>
-      `
-
-			/* Si on est pas sur le texte initial des PLF2025 ou 2026, injecte un style dédié pour les paragraphes assnat9ArticleNum */
-			if (!(pjl === "PRJLANR5L17B1906" || "PRJLANR5L17B0324")) {
-				const styleTag = document.createElement("style")
-				styleTag.textContent = `
 					/* Agrandir et colorer les numéros d'alinéas */
 					p.assnat9ArticleNum {
 						font-size: 2rem !important;
@@ -575,9 +567,9 @@
 						line-height: 1.3 !important;
 					}
 
-				`
-				shadow.appendChild(styleTag)
-			}
+				</style>
+				<div class="content-wrapper">${cleanedHTML}</div>
+      `
 
 			// Style les liens qui ouvrent la vue Article
 			cleanAndStyleLienTexteExterne(shadow)
@@ -627,7 +619,7 @@
 			if (pjl === "PRJLANR5L17B1906" || pjl === "PRJLANR5L17B0324") {
 				scaleFontSizesWithRemConversion(
 					shadow,
-					1.4,
+					1.4, //1,4
 					16,
 				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
 			} else {
