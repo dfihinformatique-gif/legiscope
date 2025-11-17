@@ -344,6 +344,9 @@
 					return match
 				})
 
+			if (pjl === "pjl25-122")
+				cleanedHTML = cleanedHTML.split(`<body>`)[1].split("</html>")[0]
+
 			// Nettoie et applique les styles aux liens vers les textes de loi
 			const cleanAndStyleLienTexteExterne = (
 				root: ShadowRoot | HTMLElement,
@@ -521,7 +524,7 @@
 							border-radius: 40%;
 							font-size: 0.7em;
 							font-family: sans-serif;
-						}
+					}
 
 				</style>
 				<div class="content-wrapper">${cleanedHTML}</div>
