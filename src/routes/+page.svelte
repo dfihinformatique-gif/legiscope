@@ -31,32 +31,57 @@
 						</iconify-icon>
 					</div>
 				{:else}
-					<div class="flex justify-center">
+					<h2 class="mt-8 font-serif">Projet de loi de finances :</h2>
+					<div class="flex justify-start">
 						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
 							href="/pjl/PRJLANR5L17B1906"
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi"
 						>
-							PLF | <span class="font-normal"
-								>Projet de loi de finances pour 2026</span
+							PLF 2026 <span
+								class="rounded-md border bg-neutral-200 p-1 text-sm font-normal tracking-normal"
+								>Version initiale du 14/10/2025</span
 							><iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
 								icon="ri-arrow-right-line"
 							></iconify-icon>
 						</a>
 					</div>
-					<div class="flex justify-center">
+					<h2 class="mt-8 font-serif">
+						Projet de loi de financement de la sécurité sociale :
+					</h2>
+					<div class="flex justify-start">
 						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 flex items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
 							href="/pjl/PRJLANR5L17B1907
 "
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi"
 						>
-							PLFSS | <span class="font-normal"
-								>Projet de loi de financement de la sécurité sociale pour 2026</span
-							><iconify-icon
+							PLFSS 2026 <span
+								class="rounded-md border bg-neutral-200 p-1 text-sm font-normal tracking-normal"
+								>Version initiale du 14/10/2025</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/pjl25-122
+"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							PLFSS 2026 <span
+								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
+								>Version déposée au Sénat le 13/11/2025</span
+							>
+							<iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
 								icon="ri-arrow-right-line"
 							></iconify-icon>
