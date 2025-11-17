@@ -7,7 +7,14 @@
 		$props()
 </script>
 
-<Button {variant} {...restProps}>
-	Cité par
-	<ArrowUpDownIcon class="ml-2" />
-</Button>
+<div class="flex items-center gap-1">
+	<Button
+		class="-ml-1"
+		title="Inverse l'ordre de tri des citations"
+		{variant}
+		{...restProps}
+	>
+		<ArrowUpDownIcon class="" />
+	</Button>
+	<div>Cet article est cité par :</div>
+</div>
