@@ -313,9 +313,13 @@
 											row.toggleExpanded()
 										}}
 									>
-										<span class="text-lg">
-											{row.getIsExpanded() ? "▼" : "▶"}
-										</span>
+										<iconify-icon
+											class="align-[-0.3rem] text-xl"
+											icon={row.getIsExpanded()
+												? "ri:arrow-down-s-line"
+												: "ri:arrow-right-s-line"}
+										>
+										</iconify-icon>
 										<FlexRender
 											content={cell.column.columnDef.cell}
 											context={cell.getContext()}
