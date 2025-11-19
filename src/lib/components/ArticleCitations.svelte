@@ -289,14 +289,16 @@
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<TableUI.Row>
 						{#each headerGroup.headers as header (header.id)}
-							<TableUI.Head colspan={header.colSpan}>
-								{#if !header.isPlaceholder}
-									<FlexRender
-										content={header.column.columnDef.header}
-										context={header.getContext()}
-									/>
-								{/if}
-							</TableUI.Head>
+							{#if !header.isPlaceholder && header.column.id !== "version_citante"}
+								<TableUI.Head colspan={header.colSpan}>
+									{#if !header.isPlaceholder}
+										<FlexRender
+											content={header.column.columnDef.header}
+											context={header.getContext()}
+										/>
+									{/if}
+								</TableUI.Head>
+							{/if}
 						{/each}
 					</TableUI.Row>
 				{/each}
