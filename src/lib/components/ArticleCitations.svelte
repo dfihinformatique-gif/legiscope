@@ -83,6 +83,8 @@
 						year: "numeric",
 					})
 
+				let versionText = ""
+
 				// Cas : date fin ouverte (2999-01-01)
 				if (
 					dateFin &&
@@ -90,38 +92,44 @@
 					dateFin.getMonth() === 0 &&
 					dateFin.getDate() === 1
 				) {
-					return `Version depuis ${formatDate(dateDebut!)}`
+					versionText = `Version depuis ${formatDate(dateDebut!)}`
 				}
-
 				// Cas : date début ouverte (2999-01-01)
-				if (
+				else if (
 					dateDebut &&
 					dateDebut.getFullYear() === 2999 &&
 					dateDebut.getMonth() === 0 &&
 					dateDebut.getDate() === 1
 				) {
-					return `Jusqu'au ${formatDate(dateFin!)}`
+					versionText = `Jusqu'au ${formatDate(dateFin!)}`
+				}
+				// Cas normal : afficher version du X au Y
+				else if (dateDebut && dateFin) {
+					versionText = `Version du ${formatDate(dateDebut)} au ${formatDate(dateFin)}`
+				} else if (dateDebut) {
+					versionText = `Version depuis ${formatDate(dateDebut)}`
+				} else if (dateFin) {
+					versionText = `Jusqu'au ${formatDate(dateFin)}`
 				}
 
-				// Cas normal : afficher version de X à Y
-				if (dateDebut && dateFin) {
-					return `Version du ${formatDate(dateDebut)} au ${formatDate(dateFin)}`
-				}
+				// Ajouter le type et l'état
+				const typeCitant = row.original.article_type_citant
+				const etatCitant = row.original.etat_citant
 
-				// Cas où une seule date est présente
-				if (dateDebut) return `Version depuis ${formatDate(dateDebut)}`
-				if (dateFin) return `Jusqu'au ${formatDate(dateFin)}`
+				if (typeCitant) versionText += ` de type "${typeCitant}"`
+				if (etatCitant) versionText += ` et d'état "${etatCitant}"`
 
-				return ""
+				return versionText
 			},
 		},
 		{
 			accessorKey: "article_type_citant",
-			header: "article_type_citant",
+			header: "Type de la version de l'article citant",
+			enableHiding: true,
 		},
 		{
 			accessorKey: "etat_citant",
-			header: "etat_citant",
+			header: "État de la version citant",
 		},
 		{
 			accessorKey: "titre_text_citant",
@@ -135,7 +143,7 @@
 		},
 		{
 			id: "version_citee",
-			header: "Version citée",
+			header: "Version de cet article qui est citée",
 			cell: ({ row }) => {
 				const dateDebut = row.original.date_debut_cite
 					? new Date(row.original.date_debut_cite).toISOString().split("T")[0]
@@ -262,6 +270,8 @@
 				},
 				initialState: {
 					columnVisibility: {
+						article_type_citant: false,
+						etat_citant: false,
 						legi_id_cite: false,
 						legi_id_citant: false,
 						legitext_id_citant: false,
