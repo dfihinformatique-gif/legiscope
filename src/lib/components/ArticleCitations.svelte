@@ -305,7 +305,11 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<TableUI.Row data-state={row.getIsSelected() && "selected"}>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<TableUI.Cell>
+							<TableUI.Cell
+								isSubrow={row.depth > 0}
+								isFirstColumn={cell.column.id === "article_citant" ||
+									cell.column.columnDef.id === "article_citant"}
+							>
 								{#if cell.getIsGrouped()}
 									<button
 										class="flex items-center gap-2 rounded px-2 py-1 font-semibold hover:bg-gray-100"
