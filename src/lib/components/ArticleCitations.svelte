@@ -68,18 +68,52 @@
 			id: "version_citante",
 			header: "Version citante",
 			cell: ({ row }) => {
-				const dateDebut = row.original.date_debut_citant
-					? new Date(row.original.date_debut_citant).toISOString().split("T")[0]
-					: ""
-				const dateFin = row.original.date_fin_citant
-					? new Date(row.original.date_fin_citant).toISOString().split("T")[0]
-					: ""
+				const dateDebutRaw = row.original.date_debut_citant
+				const dateFinRaw = row.original.date_fin_citant
 
-				return `v${dateDebut} → ${dateFin}`
+				if (!dateDebutRaw && !dateFinRaw) return ""
+
+				const dateDebut = dateDebutRaw ? new Date(dateDebutRaw) : null
+				const dateFin = dateFinRaw ? new Date(dateFinRaw) : null
+
+				const formatDate = (date: Date) =>
+					date.toLocaleDateString("fr-FR", {
+						day: "numeric",
+						month: "long",
+						year: "numeric",
+					})
+
+				// Cas : date fin ouverte (2999-01-01)
+				if (
+					dateFin &&
+					dateFin.getFullYear() === 2999 &&
+					dateFin.getMonth() === 0 &&
+					dateFin.getDate() === 1
+				) {
+					return `Version depuis ${formatDate(dateDebut!)}`
+				}
+
+				// Cas : date début ouverte (2999-01-01)
+				if (
+					dateDebut &&
+					dateDebut.getFullYear() === 2999 &&
+					dateDebut.getMonth() === 0 &&
+					dateDebut.getDate() === 1
+				) {
+					return `Jusqu'au ${formatDate(dateFin!)}`
+				}
+
+				// Cas normal : afficher version de X à Y
+				if (dateDebut && dateFin) {
+					return `Version du ${formatDate(dateDebut)} au ${formatDate(dateFin)}`
+				}
+
+				// Cas où une seule date est présente
+				if (dateDebut) return `Version depuis ${formatDate(dateDebut)}`
+				if (dateFin) return `Jusqu'au ${formatDate(dateFin)}`
+
+				return ""
 			},
-			// enableGrouping: true,
-			// getGroupingValue: (row) =>
-			// 	`${row.date_debut_citant}-${row.date_fin_citant}`,
 		},
 		{
 			accessorKey: "article_type_citant",
