@@ -292,7 +292,7 @@
 </script>
 
 {#if table !== undefined}
-	<div class="flex w-full flex-col justify-end pb-2">
+	<div class="flex w-full flex-col justify-end gap-y-2 pb-2">
 		<div class="flex justify-end">
 			<button
 				class="cursor-pointer rounded border px-2 py-1 text-sm text-neutral-700"
@@ -318,20 +318,28 @@
 					: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
-		<div class="flex justify-end">
-			En vigueur seulement
-			<input
-				bind:checked={inEffectOnly}
-				type="checkbox"
-				onchange={() => {
-					table!
-						.getColumn("etat_citant")
-						?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
-				}}
-			/>
+		<div class="flex items-center justify-end">
+			<label class="inline-flex cursor-pointer items-center">
+				<input
+					class="peer sr-only"
+					type="checkbox"
+					bind:checked={inEffectOnly}
+					onchange={() => {
+						table!
+							.getColumn("etat_citant")
+							?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
+					}}
+				/>
+				<div
+					class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+				></div>
+				<span class="ms-3 text-sm font-medium text-gray-900 sm:text-sm">
+					En vigueur seulement
+				</span>
+			</label>
 		</div>
 	</div>
-	<div class="rounded-md border bg-white">
+	<div class="w-full rounded-md border bg-white">
 		<TableUI.Root>
 			<TableUI.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
