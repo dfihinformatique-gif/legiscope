@@ -126,14 +126,20 @@
 			id: "version_citee",
 			header: "Version de cet article qui est citée",
 			cell: ({ row }) => {
-				const dateDebut = row.original.date_debut_cite
-					? new Date(row.original.date_debut_cite).toISOString().split("T")[0]
-					: ""
-				const dateFin = row.original.date_fin_cite
-					? new Date(row.original.date_fin_cite).toISOString().split("T")[0]
-					: ""
+				const dataRow = row.getIsGrouped()
+					? row.getLeafRows()[0]?.original
+					: row.original
 
-				return `v${dateDebut} → ${dateFin}`
+				if (!dataRow) return ""
+
+				return renderComponent(CellVersionCitante, {
+					data: {
+						date_debut_citant: dataRow.date_debut_cite,
+						date_fin_citant: dataRow.date_fin_cite,
+						etat_citant: dataRow.etat_cite,
+						article_type_citant: dataRow.article_type_cite,
+					},
+				})
 			},
 			enableGrouping: true,
 			getGroupingValue: (row) => `${row.date_debut_cite}-${row.date_fin_cite}`,
@@ -407,10 +413,12 @@
 											/>
 										</div>
 									{:else}
-										<FlexRender
-											content={cell.column.columnDef.cell}
-											context={cell.getContext()}
-										/>
+										<div class="ml-12 flex">
+											cite l'article {articleInfo.article?.num ?? "étudié"} - <FlexRender
+												content={cell.column.columnDef.cell}
+												context={cell.getContext()}
+											/>
+										</div>
 									{/if}
 								</TableUI.Cell>
 							{/if}
