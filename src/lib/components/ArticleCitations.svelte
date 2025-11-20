@@ -22,7 +22,7 @@
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
-	import CellVersionCitante from "./CellVersionCitante.svelte"
+	import CellVersionArticle from "./CellVersionArticle.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
 	import SkeletonArticleCitationsLoader from "./SkeletonArticleCitationsLoader.svelte"
 
@@ -78,26 +78,26 @@
 					// Si une version de l'article citant est présente plusieurs fois, firstSubRow utilise les infos de la première sous-ligne pour le groupe
 					const firstSubRow = row.subRows[0]?.original
 					if (firstSubRow) {
-						return renderComponent(CellVersionCitante, {
+						return renderComponent(CellVersionArticle, {
 							data: {
-								date_debut_citant: firstSubRow.date_debut_citant,
-								date_fin_citant: firstSubRow.date_fin_citant,
-								etat_citant: firstSubRow.etat_citant,
-								article_type_citant: firstSubRow.article_type_citant,
+								date_debut: firstSubRow.date_debut_citant,
+								date_fin: firstSubRow.date_fin_citant,
+								etat: firstSubRow.etat_citant,
+								article_type: firstSubRow.article_type_citant,
 							},
 						})
 					}
 					return ""
 				} else {
-					return renderComponent(CellVersionCitante, {
+					return renderComponent(CellVersionArticle, {
 						data: {
 							article_citant: grouping.includes("article_citant")
 								? null
 								: (row.getValue("article_citant") as string | null),
-							date_debut_citant: row.original.date_debut_citant,
-							date_fin_citant: row.original.date_fin_citant,
-							etat_citant: row.original.etat_citant,
-							article_type_citant: row.original.article_type_citant,
+							date_debut: row.original.date_debut_citant,
+							date_fin: row.original.date_fin_citant,
+							etat: row.original.etat_citant,
+							article_type: row.original.article_type_citant,
 						},
 					})
 				}
@@ -132,12 +132,12 @@
 
 				if (!dataRow) return ""
 
-				return renderComponent(CellVersionCitante, {
+				return renderComponent(CellVersionArticle, {
 					data: {
-						date_debut_citant: dataRow.date_debut_cite,
-						date_fin_citant: dataRow.date_fin_cite,
-						etat_citant: dataRow.etat_cite,
-						article_type_citant: dataRow.article_type_cite,
+						date_debut: dataRow.date_debut_cite,
+						date_fin: dataRow.date_fin_cite,
+						etat: dataRow.etat_cite,
+						article_type: dataRow.article_type_cite,
 					},
 				})
 			},

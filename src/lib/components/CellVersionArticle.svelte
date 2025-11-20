@@ -1,10 +1,10 @@
 <script lang="ts">
 	interface Props {
 		data?: {
-			date_debut_citant?: string | null
-			date_fin_citant?: string | null
-			article_type_citant?: string | null
-			etat_citant?: string | null
+			date_debut?: string | null
+			date_fin?: string | null
+			article_type?: string | null
+			etat?: string | null
 			article_citant?: string | null
 			// ajoute d'autres champs si besoin
 		}
@@ -28,10 +28,8 @@
 			return
 		}
 
-		const start = data.date_debut_citant
-			? new Date(data.date_debut_citant)
-			: null
-		const end = data.date_fin_citant ? new Date(data.date_fin_citant) : null
+		const start = data.date_debut ? new Date(data.date_debut) : null
+		const end = data.date_fin ? new Date(data.date_fin) : null
 
 		if (start && end)
 			labelVersion = `Version du ${formatFrancaisAbregeDate(start)} au ${formatFrancaisAbregeDate(end)}`
@@ -129,22 +127,21 @@
 
 		<span
 			class={`rounded-md border border-neutral-300 px-1 text-xs tracking-wide text-neutral-600 ${
-				categorieEtatCitant(data?.etat_citant) === "vigueur_EtatCitantCategorie"
+				categorieEtatCitant(data?.etat) === "vigueur_EtatCitantCategorie"
 					? "bg-green-200"
-					: categorieEtatCitant(data?.etat_citant) ===
-						  "supprime_EtatCitantCategorie"
+					: categorieEtatCitant(data?.etat) === "supprime_EtatCitantCategorie"
 						? "bg-red-200"
 						: "bg-neutral-100"
 			}`}
 		>
-			{formatEtatCitant(data?.etat_citant)}
+			{formatEtatCitant(data?.etat)}
 		</span>
 
-		{#if data?.article_type_citant !== "AUTONOME"}
+		{#if data?.article_type !== "AUTONOME"}
 			<span
 				class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
 			>
-				{formatArticleTypeCitant(data?.article_type_citant)}
+				{formatArticleTypeCitant(data?.article_type)}
 			</span>
 		{/if}
 	</div>
