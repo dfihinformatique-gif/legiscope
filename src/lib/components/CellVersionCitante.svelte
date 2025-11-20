@@ -119,10 +119,12 @@
 	}
 </script>
 
-<div class="ml-9 flex flex-col gap-y-2 leading-tight">
-	<span>
-		<span class="text-le-gris-dispositif-dark underline underline-offset-4"
-			>{labelVersion}</span
+<div class="flex flex-col gap-y-1 leading-tight">
+	<div class="flex items-center gap-2">
+		<a
+			href="TODO"
+			class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
+			>{labelVersion}</a
 		>
 
 		<span
@@ -145,6 +147,8 @@
 				{formatArticleTypeCitant(data?.article_type_citant)}
 			</span>
 		{/if}
-	</span>
-	<span class="text-xs text-neutral-500">{data?.article_citant}</span>
+	</div>
+	{#if data?.article_citant}
+		<span class="text-xs text-neutral-500">{data?.article_citant}</span>
+	{/if}
 </div>

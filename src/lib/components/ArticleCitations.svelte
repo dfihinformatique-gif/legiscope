@@ -44,7 +44,7 @@
 			error = true
 		})
 
-	let grouping = $state<string[]>(["article_citant"])
+	let grouping = $state<string[]>(["article_citant", "version_citante"])
 	let sorting = $state<SortingState>([])
 	let expanded = $state<ExpandedState>({})
 	let columnFilters = $state<ColumnFiltersState>([])
@@ -59,7 +59,7 @@
 			accessorFn: (row) => {
 				const titre = row.titre_text_citant || ""
 				const num = row.num_citant || ""
-				return `${num ? "Article " + num : ""} du ${titre} `
+				return `${num ? "Article " + num : ""} du ${titre}`
 			},
 			cell: ({ getValue }) => getValue() as string,
 			enableGrouping: true,
@@ -68,16 +68,36 @@
 		{
 			id: "version_citante",
 			header: "Version citante",
-			cell: ({ row }) =>
-				renderComponent(CellVersionCitante, {
-					data: {
-						article_citant: row.getValue("article_citant") as string | null,
-						date_debut_citant: row.original.date_debut_citant,
-						date_fin_citant: row.original.date_fin_citant,
-						etat_citant: row.original.etat_citant,
-						article_type_citant: row.original.article_type_citant,
-					},
-				}),
+			enableGrouping: true,
+			getGroupingValue: (row: CitationsDataRow) =>
+				`${row.date_debut_citant ?? ""}|${row.date_fin_citant ?? ""}|${row.etat_citant ?? ""}|${row.article_type_citant ?? ""}`,
+			cell: ({ row }) => {
+				if (row.getIsGrouped()) {
+					// Si une version de l'article citant est présente plusieurs fois, firstSubRow utilise les infos de la première sous-ligne pour le groupe
+					const firstSubRow = row.subRows[0]?.original
+					if (firstSubRow) {
+						return renderComponent(CellVersionCitante, {
+							data: {
+								date_debut_citant: firstSubRow.date_debut_citant,
+								date_fin_citant: firstSubRow.date_fin_citant,
+								etat_citant: firstSubRow.etat_citant,
+								article_type_citant: firstSubRow.article_type_citant,
+							},
+						})
+					}
+					return ""
+				} else {
+					return renderComponent(CellVersionCitante, {
+						data: {
+							article_citant: row.getValue("article_citant") as string | null,
+							date_debut_citant: row.original.date_debut_citant,
+							date_fin_citant: row.original.date_fin_citant,
+							etat_citant: row.original.etat_citant,
+							article_type_citant: row.original.article_type_citant,
+						},
+					})
+				}
+			},
 		},
 		{
 			accessorKey: "article_type_citant",
@@ -253,25 +273,19 @@
 	<div class="mb-4 flex gap-2">
 		<button
 			class="rounded border px-4 py-2"
-			onclick={() =>
-				(grouping = grouping.includes("article_citant")
-					? []
-					: ["article_citant"])}
+			onclick={() => {
+				if (grouping.includes("article_citant")) {
+					grouping = ["version_citee"]
+				} else if (grouping.includes("version_citee")) {
+					grouping = ["article_citant"]
+				} else {
+					grouping = ["article_citant"]
+				}
+			}}
 		>
 			{grouping.includes("article_citant")
-				? "Dégrouper"
-				: "Grouper par article citant"}
-		</button>
-		<button
-			class="rounded border px-4 py-2"
-			onclick={() =>
-				(grouping = grouping.includes("version_citee")
-					? []
-					: ["version_citee"])}
-		>
-			{grouping.includes("version_citee")
-				? "Dégrouper"
-				: "Grouper par version citée"}
+				? "Grouper par version citée de cet article"
+				: "Grouper par article citant cet article"}
 		</button>
 		En vigueur seulement
 		<input
@@ -290,7 +304,7 @@
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<TableUI.Row>
 						{#each headerGroup.headers as header (header.id)}
-							{#if !header.isPlaceholder && header.column.id !== "version_citante"}
+							{#if !header.isPlaceholder && header.column.id !== "version_citante" && !(grouping.length > 0 && header.column.id === "version_citee")}
 								<TableUI.Head colspan={header.colSpan}>
 									{#if !header.isPlaceholder}
 										<FlexRender
@@ -314,28 +328,44 @@
 									cell.column.columnDef.id === "article_citant"}
 							>
 								{#if cell.getIsGrouped()}
-									<button
-										class="flex items-center gap-2 rounded px-2 py-1 font-semibold hover:bg-gray-100"
-										onclick={(e) => {
-											row.toggleExpanded()
-										}}
+									<div
+										class="flex items-center gap-1 rounded px-2 py-1 font-semibold {row.depth >
+										0
+											? 'ml-4'
+											: ''}"
 									>
-										<iconify-icon
-											class="align-[-0.3rem] text-xl"
-											icon={row.getIsExpanded()
-												? "ri:arrow-down-s-line"
-												: "ri:arrow-right-s-line"}
+										<button
+											class="flex items-center"
+											onclick={(e) => {
+												e.stopPropagation()
+												row.toggleExpanded()
+											}}
 										>
-										</iconify-icon>
-										<FlexRender
-											content={cell.column.columnDef.cell}
-											context={cell.getContext()}
-										/>
-										<span class="text-sm text-gray-600">
-											({row.subRows.length}
-											{row.subRows.length > 1 ? "lignes" : "ligne"})
-										</span>
-									</button>
+											<iconify-icon
+												class="align-[-0.3rem] text-xl hover:bg-gray-100"
+												icon={row.getIsExpanded()
+													? "ri:arrow-down-s-line"
+													: "ri:arrow-right-s-line"}
+											>
+											</iconify-icon>
+										</button>
+										<div class="flex items-center gap-2">
+											<FlexRender
+												content={cell.column.columnDef.cell}
+												context={cell.getContext()}
+											/>
+											<span class="text-sm font-normal text-gray-600">
+												({row.subRows.length}
+												{#if cell.column.id === "version_citante"}
+													{row.subRows.length > 1
+														? "versions citées"
+														: "version citée"})
+												{:else}
+													{row.subRows.length > 1 ? "versions" : "version"})
+												{/if}
+											</span>
+										</div>
+									</div>
 								{:else if cell.getIsAggregated()}
 									<!-- Cellule agrégée -->
 								{:else if cell.getIsPlaceholder()}
