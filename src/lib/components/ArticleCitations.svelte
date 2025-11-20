@@ -22,6 +22,7 @@
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
+	import CellVersionCitante from "./CellVersionCitante.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
 	import SkeletonArticleCitationsLoader from "./SkeletonArticleCitationsLoader.svelte"
 
@@ -58,7 +59,7 @@
 			accessorFn: (row) => {
 				const titre = row.titre_text_citant || ""
 				const num = row.num_citant || ""
-				return `${titre} ${num ? "art. " + num : ""}`
+				return `${num ? "Article " + num : ""} du ${titre} `
 			},
 			cell: ({ getValue }) => getValue() as string,
 			enableGrouping: true,
@@ -67,60 +68,16 @@
 		{
 			id: "version_citante",
 			header: "Version citante",
-			cell: ({ row }) => {
-				const dateDebutRaw = row.original.date_debut_citant
-				const dateFinRaw = row.original.date_fin_citant
-
-				if (!dateDebutRaw && !dateFinRaw) return ""
-
-				const dateDebut = dateDebutRaw ? new Date(dateDebutRaw) : null
-				const dateFin = dateFinRaw ? new Date(dateFinRaw) : null
-
-				const formatDate = (date: Date) =>
-					date.toLocaleDateString("fr-FR", {
-						day: "numeric",
-						month: "long",
-						year: "numeric",
-					})
-
-				let versionText = ""
-
-				// Cas : date fin ouverte (2999-01-01)
-				if (
-					dateFin &&
-					dateFin.getFullYear() === 2999 &&
-					dateFin.getMonth() === 0 &&
-					dateFin.getDate() === 1
-				) {
-					versionText = `Version depuis ${formatDate(dateDebut!)}`
-				}
-				// Cas : date début ouverte (2999-01-01)
-				else if (
-					dateDebut &&
-					dateDebut.getFullYear() === 2999 &&
-					dateDebut.getMonth() === 0 &&
-					dateDebut.getDate() === 1
-				) {
-					versionText = `Jusqu'au ${formatDate(dateFin!)}`
-				}
-				// Cas normal : afficher version du X au Y
-				else if (dateDebut && dateFin) {
-					versionText = `Version du ${formatDate(dateDebut)} au ${formatDate(dateFin)}`
-				} else if (dateDebut) {
-					versionText = `Version depuis ${formatDate(dateDebut)}`
-				} else if (dateFin) {
-					versionText = `Jusqu'au ${formatDate(dateFin)}`
-				}
-
-				// Ajouter le type et l'état
-				const typeCitant = row.original.article_type_citant
-				const etatCitant = row.original.etat_citant
-
-				if (typeCitant) versionText += ` de type "${typeCitant}"`
-				if (etatCitant) versionText += ` et d'état "${etatCitant}"`
-
-				return versionText
-			},
+			cell: ({ row }) =>
+				renderComponent(CellVersionCitante, {
+					data: {
+						article_citant: row.getValue("article_citant") as string | null,
+						date_debut_citant: row.original.date_debut_citant,
+						date_fin_citant: row.original.date_fin_citant,
+						etat_citant: row.original.etat_citant,
+						article_type_citant: row.original.article_type_citant,
+					},
+				}),
 		},
 		{
 			accessorKey: "article_type_citant",
