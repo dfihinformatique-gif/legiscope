@@ -56,6 +56,7 @@
 				renderComponent(DataTableVersionCitanteButton, {
 					onclick: column.getToggleSortingHandler(),
 					grouping,
+					articleNum: articleInfo.article?.num,
 				}),
 			accessorFn: (row) => {
 				const titre = row.titre_text_citant || ""
@@ -302,8 +303,8 @@
 			}}
 		>
 			{grouping[0] === "article_citant"
-				? "Grouper par version citée de cet article"
-				: "Grouper par article citant cet article"}
+				? `Grouper les citations par versions de cet article`
+				: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
 		</button>
 		En vigueur seulement
 		<input
@@ -363,6 +364,7 @@
 													e.stopPropagation()
 													row.toggleExpanded()
 												}}
+												aria-label="Ouvrir/fermer le volet"
 											>
 												<iconify-icon
 													class="align-[-0.3rem] text-xl hover:bg-gray-100"
@@ -381,8 +383,12 @@
 													({row.subRows.length}
 													{#if cell.column.id === "version_citante"}
 														{row.subRows.length > 1
-															? "versions citées"
-															: "version citée"})
+															? `versions de l'article ${articleInfo.article?.num ?? "étudié"} citées`
+															: `version de l'article ${articleInfo.article?.num ?? "étudié"} citée`})
+													{:else if cell.column.id === "version_citee"}
+														{row.subRows.length > 1
+															? "articles citant cette version"
+															: "article citant cette version"})
 													{:else}
 														{row.subRows.length > 1 ? "versions" : "version"})
 													{/if}

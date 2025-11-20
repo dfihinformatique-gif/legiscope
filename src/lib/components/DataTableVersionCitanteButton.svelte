@@ -8,11 +8,13 @@
 		inEffectOnly = $bindable(false),
 		onFilterChange,
 		grouping = [],
+		articleNum,
 		...restProps
 	}: ComponentProps<typeof Button> & {
 		inEffectOnly?: boolean
 		onFilterChange?: (value: boolean) => void
 		grouping?: string[]
+		articleNum?: string | null
 	} = $props()
 </script>
 
@@ -28,8 +30,8 @@
 		</Button>
 		<div>
 			{grouping.includes("version_citee")
-				? "Versions de cet article citées par un autre article:"
-				: "Cet article est cité par :"}
+				? `Versions de l'article ${articleNum ?? "étudié"} citées par un autre article :`
+				: `Cet article est cité par :`}
 		</div>
 	</div>
 </div>
