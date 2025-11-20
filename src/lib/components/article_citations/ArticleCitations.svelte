@@ -22,9 +22,9 @@
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
+	import SkeletonArticleCitationsLoader from "../SkeletonArticleCitationsLoader.svelte"
 	import CellVersionArticle from "./CellVersionArticle.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
-	import SkeletonArticleCitationsLoader from "./SkeletonArticleCitationsLoader.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
