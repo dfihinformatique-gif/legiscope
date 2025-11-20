@@ -292,36 +292,44 @@
 </script>
 
 {#if table !== undefined}
-	<div class="mb-4 flex gap-2">
-		<button
-			class="rounded border px-4 py-2"
-			onclick={() => {
-				if (grouping[0] === "article_citant") {
-					grouping = ["version_citee", "article_citant"]
-					columnOrder = [
-						"version_citee",
-						...defaultColumnOrder.filter((id) => id !== "version_citee"),
-					]
-				} else {
-					grouping = ["article_citant", "version_citante"]
-					columnOrder = defaultColumnOrder
-				}
-			}}
-		>
-			{grouping[0] === "article_citant"
-				? `Grouper les citations par versions de cet article`
-				: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
-		</button>
-		En vigueur seulement
-		<input
-			bind:checked={inEffectOnly}
-			type="checkbox"
-			onchange={() => {
-				table!
-					.getColumn("etat_citant")
-					?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
-			}}
-		/>
+	<div class="flex w-full flex-col justify-end pb-2">
+		<div class="flex justify-end">
+			<button
+				class="cursor-pointer rounded border px-2 py-1 text-sm text-neutral-700"
+				onclick={() => {
+					if (grouping[0] === "article_citant") {
+						grouping = ["version_citee", "article_citant"]
+						columnOrder = [
+							"version_citee",
+							...defaultColumnOrder.filter((id) => id !== "version_citee"),
+						]
+					} else {
+						grouping = ["article_citant", "version_citante"]
+						columnOrder = defaultColumnOrder
+					}
+				}}
+				><iconify-icon
+					class="align-[-0.3rem] text-base hover:bg-gray-100"
+					icon="ri-node-tree"
+				>
+				</iconify-icon>
+				{grouping[0] === "article_citant"
+					? `Grouper par versions`
+					: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
+			</button>
+		</div>
+		<div class="flex justify-end">
+			En vigueur seulement
+			<input
+				bind:checked={inEffectOnly}
+				type="checkbox"
+				onchange={() => {
+					table!
+						.getColumn("etat_citant")
+						?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
+				}}
+			/>
+		</div>
 	</div>
 	<div class="rounded-md border bg-white">
 		<TableUI.Root>

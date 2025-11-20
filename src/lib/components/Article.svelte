@@ -952,7 +952,13 @@
 				Citations
 			</button>
 			{#if citationsIsOpen}
-				<div class="p-4²">
+				<div
+					class="pb-10"
+					class:mb-10={citationsIsOpen}
+					class:border-b={citationsIsOpen}
+					class:shadow-bottom-extralight={citationsIsOpen}
+					class:border-gray-200={citationsIsOpen}
+				>
 					<ArticleCitations {articleInfo}></ArticleCitations>
 				</div>
 			{/if}
