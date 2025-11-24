@@ -922,6 +922,7 @@
 		>
 			<button
 				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				class:font-bold={historyIsOpen}
 				onclick={() => {
 					historyIsOpen = !historyIsOpen
 				}}
@@ -938,6 +939,7 @@
 
 			<button
 				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				class:font-bold={citationsIsOpen}
 				onclick={() => {
 					citationsIsOpen = !citationsIsOpen
 				}}
@@ -949,7 +951,7 @@
 						: "ri:arrow-right-s-line"}
 				>
 				</iconify-icon>
-				Citations
+				Articles citant cet article
 			</button>
 			{#if citationsIsOpen}
 				<div

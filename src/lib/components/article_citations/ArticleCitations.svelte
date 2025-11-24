@@ -292,10 +292,12 @@
 </script>
 
 {#if table !== undefined}
-	<div class="flex w-full flex-col justify-end gap-y-2 pb-2">
+	<div
+		class="mt-4 flex w-full justify-between gap-y-2 rounded-t-md border bg-neutral-100 p-3"
+	>
 		<div class="flex justify-end">
 			<button
-				class="cursor-pointer rounded border px-2 py-1 text-sm text-neutral-700"
+				class="lx-link-uppercase font-sans text-sm text-nowrap text-gray-500"
 				onclick={() => {
 					if (grouping[0] === "article_citant") {
 						grouping = ["version_citee", "article_citant"]
@@ -309,12 +311,14 @@
 					}
 				}}
 				><iconify-icon
-					class="align-[-0.3rem] text-base hover:bg-gray-100"
-					icon="ri-node-tree"
+					class="align-[-0.25rem] text-xl hover:bg-gray-100"
+					icon={grouping[0] === "article_citant"
+						? "ri-list-ordered-2"
+						: "ri-list-unordered"}
 				>
 				</iconify-icon>
 				{grouping[0] === "article_citant"
-					? `Grouper par versions`
+					? `Grouper par version de l'article ${articleInfo.article?.num ?? "étudié"}`
 					: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
@@ -339,7 +343,7 @@
 			</label>
 		</div>
 	</div>
-	<div class="w-full rounded-md border bg-white">
+	<div class="w-full rounded-b-md border bg-white">
 		<TableUI.Root>
 			<TableUI.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
