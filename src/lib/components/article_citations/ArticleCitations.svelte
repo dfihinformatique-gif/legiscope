@@ -49,16 +49,61 @@
 		"article_citant",
 		"version_citante",
 	])
-	let sorting = $state<SortingState>([])
+	let sorting = $state<SortingState>([
+		{ id: "article_citant_texte_nature", desc: false },
+		{ id: "date_debut_cite", desc: true },
+	])
 	let expanded = $state<ExpandedState>({})
 	let columnFilters = $state<ColumnFiltersState>([])
+
+	const NATURE_MAPPING: Record<number, { priority: number; label: string }> = {
+		72: { priority: 1, label: "Constitution" },
+		260: { priority: 2, label: "Loi constitutionnelle" },
+		157: { priority: 3, label: "Loi organique" },
+		60: { priority: 4, label: "Loi" },
+		237: { priority: 5, label: "Code" },
+		32: { priority: 6, label: "Ordonnance" },
+		14: { priority: 7, label: "Décret-loi" },
+		119: { priority: 8, label: "Décret" },
+		120: { priority: 8, label: "Décret" },
+		178: { priority: 9, label: "Arrêté" },
+		36: { priority: 10, label: "Arrêté" },
+		47: { priority: 11, label: "Projet" },
+		109: { priority: 12, label: "Traité" },
+	}
 
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			accessorKey: "article_citant_texte_nature",
 			header: "Nature",
 			enableGrouping: true,
-			cell: ({ getValue }) => getValue() as string,
+			cell: ({ row, getValue }) => {
+				const id = row.original.article_citant_texte_nature_id
+				if (id && NATURE_MAPPING[id]) {
+					return NATURE_MAPPING[id].label
+				}
+				return getValue() as string
+			},
+			sortingFn: (rowA, rowB, columnId) => {
+				// Tri des textes_natures du NATURE_MAPPING selon la priorité qui leur a été donnée
+				const idA = rowA.original.article_citant_texte_nature_id
+				const idB = rowB.original.article_citant_texte_nature_id
+
+				const priorityA = (idA && NATURE_MAPPING[idA]?.priority) || 99
+				const priorityB = (idB && NATURE_MAPPING[idB]?.priority) || 99
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB
+				}
+
+				// Pour les textes_natures n'ayant pas été mentionné dans le NATURE_MAPPING ci-dessus, on trie par ordre d'ID
+				if (idA && idB && idA !== idB) {
+					return idA - idB
+				}
+
+				// Fallback ultime : si pas d'ID, ordre arbitraire
+				return 0
+			},
 		},
 		{
 			id: "article_citant",
@@ -330,6 +375,7 @@
 				onclick={() => {
 					if (grouping[0] === "article_citant_texte_nature") {
 						grouping = ["version_citee", "article_citant"]
+						sorting = [{ id: "date_debut_cite", desc: true }]
 						columnOrder = [
 							"version_citee",
 							...defaultColumnOrder.filter((id) => id !== "version_citee"),
@@ -339,6 +385,10 @@
 							"article_citant_texte_nature",
 							"article_citant",
 							"version_citante",
+						]
+						sorting = [
+							{ id: "article_citant_texte_nature", desc: false },
+							{ id: "date_debut_cite", desc: true },
 						]
 						columnOrder = defaultColumnOrder
 					}
@@ -423,7 +473,14 @@
 												class="flex items-center bg-neutral-50 px-3 font-bold text-gray-400"
 											>
 												<div class="flex items-center gap-2">
-													{cell.getValue()}
+													{(() => {
+														const firstRow = row.subRows[0]?.original
+														const id = firstRow?.article_citant_texte_nature_id
+														return (
+															(id && NATURE_MAPPING[id]?.label) ||
+															cell.getValue()
+														)
+													})()}
 												</div>
 											</div>
 										{:else}
