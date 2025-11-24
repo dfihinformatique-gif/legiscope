@@ -29,12 +29,14 @@
 		}
 
 		const start = data.date_debut ? new Date(data.date_debut) : null
-		const end = data.date_fin ? new Date(data.date_fin) : null
+		let end = data.date_fin ? new Date(data.date_fin) : null
+
+		if (end?.getFullYear() === 2999) end = null
 
 		if (start && end)
 			labelVersion = `Version du ${formatFrancaisAbregeDate(start)} au ${formatFrancaisAbregeDate(end)}`
 		else if (start)
-			labelVersion = `Version depuis ${formatFrancaisAbregeDate(start)}`
+			labelVersion = `Version depuis le ${formatFrancaisAbregeDate(start)}`
 		else if (end)
 			labelVersion = `Version jusqu’au ${formatFrancaisAbregeDate(end)}`
 		else labelVersion = ""
