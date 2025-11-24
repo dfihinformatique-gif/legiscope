@@ -44,12 +44,22 @@
 			error = true
 		})
 
-	let grouping = $state<string[]>(["article_citant", "version_citante"])
+	let grouping = $state<string[]>([
+		"article_citant_texte_nature",
+		"article_citant",
+		"version_citante",
+	])
 	let sorting = $state<SortingState>([])
 	let expanded = $state<ExpandedState>({})
 	let columnFilters = $state<ColumnFiltersState>([])
 
 	const columns: ColumnDef<CitationsDataRow>[] = [
+		{
+			accessorKey: "article_citant_texte_nature",
+			header: "Nature",
+			enableGrouping: true,
+			cell: ({ getValue }) => getValue() as string,
+		},
 		{
 			id: "article_citant",
 			header: ({ column }) =>
@@ -288,36 +298,60 @@
 			})
 		}
 	})
+	$effect(() => {
+		if (grouping[0] === "article_citant_texte_nature" && table) {
+			const groups = table.getGroupedRowModel().rows
+			let changed = false
+			const newExpanded = typeof expanded === "object" ? { ...expanded } : {}
+
+			for (const row of groups) {
+				if (!newExpanded[row.id]) {
+					newExpanded[row.id] = true
+					changed = true
+				}
+			}
+
+			if (changed) {
+				expanded = newExpanded
+			}
+		}
+	})
+
 	let inEffectOnly = $state(false)
 </script>
 
 {#if table !== undefined}
 	<div
-		class="mt-4 flex w-full justify-between gap-y-2 rounded-t-md border bg-neutral-100 p-3"
+		class="mt-4 flex w-full flex-wrap justify-between gap-y-2 rounded-t-md border bg-neutral-100 p-3"
 	>
 		<div class="flex justify-end">
 			<button
-				class="lx-link-uppercase font-sans text-sm text-nowrap text-gray-500"
+				class="lx-link-uppercase text-left font-sans text-sm text-wrap text-gray-500"
 				onclick={() => {
-					if (grouping[0] === "article_citant") {
+					if (grouping[0] === "article_citant_texte_nature") {
 						grouping = ["version_citee", "article_citant"]
 						columnOrder = [
 							"version_citee",
 							...defaultColumnOrder.filter((id) => id !== "version_citee"),
 						]
 					} else {
-						grouping = ["article_citant", "version_citante"]
+						grouping = [
+							"article_citant_texte_nature",
+							"article_citant",
+							"version_citante",
+						]
 						columnOrder = defaultColumnOrder
 					}
 				}}
 				><iconify-icon
 					class="align-[-0.25rem] text-xl hover:bg-gray-100"
-					icon={grouping[0] === "article_citant"
+					icon={grouping[0] === "article_citant_texte_nature"
 						? "ri-list-ordered-2"
 						: "ri-list-unordered"}
 				>
 				</iconify-icon>
-				{grouping[0] === "article_citant"
+
+				{grouping[0] === "article_citant_texte_nature"
 					? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
 					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
@@ -349,7 +383,7 @@
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<TableUI.Row>
 						{#each headerGroup.headers as header (header.id)}
-							{#if !header.isPlaceholder && header.column.id !== "version_citante" && !(grouping.length > 0 && header.column.id === "version_citee")}
+							{#if !header.isPlaceholder && !["version_citante", "article_citant_texte_nature"].includes(header.column.id) && !(grouping.length > 0 && header.column.id === "version_citee")}
 								<TableUI.Head colspan={header.colSpan}>
 									{#if !header.isPlaceholder}
 										<FlexRender
@@ -371,71 +405,83 @@
 								<TableUI.Cell
 									isSubrow={row.depth > 0}
 									isFirstColumn={cellIndex === 0}
+									isArticleCitantEmptyColumn={cell.column.id ===
+										"article_citant" && row.depth > 1}
 									colspan={!row.getIsGrouped() &&
 									cell.column.id === "version_citante" &&
 									grouping.includes("version_citee")
 										? 99
-										: 1}
+										: cell.column.id === "article_citant_texte_nature" &&
+											  cell.getIsGrouped() &&
+											  row.depth === 0
+											? 99
+											: 1}
 								>
 									{#if cell.getIsGrouped()}
-										<div
-											class="flex items-center gap-1 rounded px-2 py-1 font-semibold {row.depth >
-											0
-												? 'ml-4'
-												: ''}"
-										>
-											<button
-												class="flex items-center"
-												onclick={(e) => {
-													e.stopPropagation()
-													row.toggleExpanded()
-												}}
-												aria-label="Ouvrir/fermer le volet"
+										{#if cell.column.id === "article_citant_texte_nature"}
+											<div
+												class="flex items-center bg-neutral-50 px-3 font-bold text-gray-400"
 											>
-												<iconify-icon
-													class="align-[-0.3rem] text-xl hover:bg-gray-100"
-													icon={row.getIsExpanded()
-														? "ri:arrow-down-s-line"
-														: "ri:arrow-right-s-line"}
-												>
-												</iconify-icon>
-											</button>
-											<div class="flex items-center gap-2">
-												<FlexRender
-													content={cell.column.columnDef.cell}
-													context={cell.getContext()}
-												/>
-												<span class="text-sm font-normal text-gray-600">
-													({row.subRows.length}
-													{#if cell.column.id === "version_citante"}
-														{row.subRows.length > 1
-															? `versions de l'art. ${articleInfo.article?.num ?? "étudié"} citées`
-															: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`})
-													{:else if cell.column.id === "version_citee"}
-														{row.subRows.length > 1
-															? "articles citent cette version"
-															: "article cite cette version"})
-													{:else}
-														{row.subRows.length > 1
-															? `versions citent l'art. ${articleInfo.article?.num ?? "étudié"}`
-															: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`})
-													{/if}
-												</span>
+												<div class="flex items-center gap-2">
+													{cell.getValue()}
+												</div>
 											</div>
-										</div>
+										{:else}
+											<div
+												class="flex items-center gap-1 rounded px-2 py-3 font-semibold {(grouping.includes(
+													'version_citante',
+												) &&
+													row.depth == 2) ||
+												(grouping.includes('version_citee') && row.depth == 1)
+													? 'ml-4'
+													: ''}"
+											>
+												<button
+													class="flex items-center"
+													onclick={(e) => {
+														e.stopPropagation()
+														row.toggleExpanded()
+													}}
+													aria-label="Ouvrir/fermer le volet"
+												>
+													<iconify-icon
+														class="align-[-0.3rem] text-xl hover:bg-gray-100"
+														icon={row.getIsExpanded()
+															? "ri:arrow-down-s-line"
+															: "ri:arrow-right-s-line"}
+													>
+													</iconify-icon>
+												</button>
+												<div class="flex items-center gap-2">
+													<FlexRender
+														content={cell.column.columnDef.cell}
+														context={cell.getContext()}
+													/>
+													<span class="text-sm font-normal text-gray-600">
+														({row.subRows.length}
+														{#if cell.column.id === "version_citante"}
+															{row.subRows.length > 1
+																? `versions de l'art. ${articleInfo.article?.num ?? "étudié"} citées`
+																: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`})
+														{:else if cell.column.id === "version_citee"}
+															{row.subRows.length > 1
+																? "articles citent cette version"
+																: "article cite cette version"})
+														{:else}
+															{row.subRows.length > 1
+																? `versions citent l'art. ${articleInfo.article?.num ?? "étudié"}`
+																: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`})
+														{/if}
+													</span>
+												</div>
+											</div>
+										{/if}
 									{:else if cell.getIsAggregated()}
 										<!-- Cellule agrégée -->
 									{:else if cell.getIsPlaceholder()}
 										<!-- Placeholder pour les lignes groupées -->
-									{:else if !row.getIsGrouped() && cell.column.id === "version_citante" && grouping.includes("version_citee")}
-										<div class="ml-12">
-											<FlexRender
-												content={cell.column.columnDef.cell}
-												context={cell.getContext()}
-											/>
-										</div>
 									{:else}
-										<div class="ml-12 flex">
+										<div class="ml-12 flex py-2">
 											cite l'art. {articleInfo.article?.num ?? "étudié"} - <FlexRender
 												content={cell.column.columnDef.cell}
 												context={cell.getContext()}

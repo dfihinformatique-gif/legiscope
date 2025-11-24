@@ -74,6 +74,7 @@ export interface CitationsDataRow {
 	etat_citant: string | null
 	legitext_id_citant: string | null
 	titre_text_citant: string | null
+	article_citant_texte_nature: string | null
 }
 export type CitationsData = CitationsDataRow[]
 

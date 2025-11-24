@@ -8,10 +8,12 @@
 		children,
 		isSubrow = false, // Custom props : La cellule appartient-elle à une ligne enfant dans un accordéon de tableau ?
 		isFirstColumn = false, // Custom props : La cellule fait-elle partie de la première colonne ?
+		isArticleCitantEmptyColumn = false,
 		...restProps
 	}: WithElementRef<HTMLTdAttributes> & {
 		isSubrow?: boolean
 		isFirstColumn?: boolean
+		isArticleCitantEmptyColumn?: boolean
 	} = $props()
 </script>
 
@@ -19,8 +21,10 @@
 	bind:this={ref}
 	data-slot="table-cell"
 	class={cn(
-		"bg-clip-padding p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+		"bg-clip-padding align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
 		isSubrow && isFirstColumn ? "hidden" : "",
+		isArticleCitantEmptyColumn ? "hidden" : "",
+
 		className,
 	)}
 	{...restProps}
