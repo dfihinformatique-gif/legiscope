@@ -377,9 +377,27 @@
 </script>
 
 {#if table !== undefined}
-	<div
-		class="mt-4 flex w-full flex-wrap justify-between gap-y-2 rounded-t-md border bg-neutral-100 p-3"
-	>
+	<div class="flex w-full flex-col flex-wrap justify-end gap-y-2 p-3">
+		<div class="flex items-center justify-end">
+			<label class="inline-flex cursor-pointer items-center">
+				<input
+					class="peer sr-only"
+					type="checkbox"
+					bind:checked={inEffectOnly}
+					onchange={() => {
+						table!
+							.getColumn("etat_citant")
+							?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
+					}}
+				/>
+				<div
+					class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+				></div>
+				<span class="ms-3 text-sm font-medium text-gray-900 sm:text-sm">
+					En vigueur seulement
+				</span>
+			</label>
+		</div>
 		<div class="flex justify-end">
 			<button
 				class="lx-link-uppercase text-left font-sans text-sm text-wrap text-gray-500"
@@ -417,28 +435,8 @@
 					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
-		<div class="flex items-center justify-end">
-			<label class="inline-flex cursor-pointer items-center">
-				<input
-					class="peer sr-only"
-					type="checkbox"
-					bind:checked={inEffectOnly}
-					onchange={() => {
-						table!
-							.getColumn("etat_citant")
-							?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
-					}}
-				/>
-				<div
-					class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-				></div>
-				<span class="ms-3 text-sm font-medium text-gray-900 sm:text-sm">
-					En vigueur seulement
-				</span>
-			</label>
-		</div>
 	</div>
-	<div class="w-full rounded-b-md border bg-white">
+	<div class="w-full rounded-md border bg-white">
 		<TableUI.Root>
 			<TableUI.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}

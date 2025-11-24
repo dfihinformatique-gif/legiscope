@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button/index.js"
-	import ArrowUpDownIcon from "@lucide/svelte/icons/arrow-up-down"
 	import type { ComponentProps } from "svelte"
 
 	let {
@@ -9,7 +8,6 @@
 		onFilterChange,
 		grouping = [],
 		articleNum,
-		...restProps
 	}: ComponentProps<typeof Button> & {
 		inEffectOnly?: boolean
 		onFilterChange?: (value: boolean) => void
@@ -18,22 +16,11 @@
 	} = $props()
 </script>
 
-<div class="flex items-center gap-4">
-	<div class="flex items-center gap-1">
-		{#if !grouping.includes("version_citee")}
-			<Button
-				class="-ml-1"
-				title="Inverse l'ordre des groupes de natures"
-				{variant}
-				{...restProps}
-			>
-				<ArrowUpDownIcon class="" />
-			</Button>
-		{/if}
-		<div class:pl-2={grouping.includes("version_citee")}>
-			{grouping.includes("version_citee")
-				? `Versions de l'art. ${articleNum ?? "étudié"} citées par un autre article :`
-				: `Cet article est cité par :`}
-		</div>
-	</div>
+<div
+	class="flex items-center font-bold"
+	class:pl-2={grouping.includes("version_citee")}
+>
+	{grouping.includes("version_citee")
+		? `Versions de l'art. ${articleNum ?? "étudié"} citées par un autre article :`
+		: `Cet article est cité par :`}
 </div>
