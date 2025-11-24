@@ -401,7 +401,7 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<TableUI.Row data-state={row.getIsSelected() && "selected"}>
 						{#each row.getVisibleCells() as cell, cellIndex (cell.id)}
-							{#if !(!row.getIsGrouped() && grouping.includes(cell.column.id))}
+							{#if !(!row.getIsGrouped() && grouping.includes(cell.column.id)) && !(cell.column.id === "article_citant_texte_nature" && !row.getIsGrouped() && grouping.includes("version_citee"))}
 								<TableUI.Cell
 									isSubrow={row.depth > 0}
 									isFirstColumn={cellIndex === 0}
