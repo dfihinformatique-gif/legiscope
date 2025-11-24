@@ -318,8 +318,8 @@
 				>
 				</iconify-icon>
 				{grouping[0] === "article_citant"
-					? `Grouper par version de l'article ${articleInfo.article?.num ?? "étudié"}`
-					: `Grouper par articles citant l'article ${articleInfo.article?.num ?? "étudié"}`}
+					? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
+					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
 		<div class="flex items-center justify-end">
