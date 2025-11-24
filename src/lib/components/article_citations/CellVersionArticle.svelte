@@ -106,13 +106,13 @@
 	function formatArticleTypeCitant(type?: string | null) {
 		switch (type) {
 			case "AUTONOME":
-				return "-"
+				return ""
 			case "ENTIEREMENT_MODIF":
-				return "entièrement modificatrice d'un autre article"
+				return "modifie uniquement un autre article"
 			case "PARTIELLEMENT_MODIF":
-				return "partiellement modificatrice"
+				return "une partie modifie un article"
 			default:
-				return type ?? "—"
+				return type ?? ""
 		}
 	}
 </script>
@@ -137,7 +137,7 @@
 			{formatEtatCitant(data?.etat)}
 		</span>
 
-		{#if data?.article_type !== "AUTONOME"}
+		{#if data?.article_type && ["ENTIEREMENT_MODIF", "PARTIELLEMENT_MODIF"].includes(data.article_type)}
 			<span
 				class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
 			>
