@@ -61,7 +61,7 @@
 			accessorFn: (row) => {
 				const titre = row.titre_text_citant || ""
 				const num = row.num_citant || ""
-				return `${num ? "Article " + num : ""} du ${titre}`
+				return num ? `Article ${num} du ${titre}` : titre
 			},
 			cell: ({ getValue }) => getValue() as string,
 			enableGrouping: true,
