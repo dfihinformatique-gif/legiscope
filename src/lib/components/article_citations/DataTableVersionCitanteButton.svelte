@@ -3,9 +3,7 @@
 	import type { ComponentProps } from "svelte"
 
 	let {
-		variant = "ghost",
 		inEffectOnly = $bindable(false),
-		onFilterChange,
 		grouping = [],
 		articleNum,
 	}: ComponentProps<typeof Button> & {
