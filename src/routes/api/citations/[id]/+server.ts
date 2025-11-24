@@ -100,7 +100,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	left join legitext legitext_citant on (legitext_citant.legi_id = case when c1.legi_id_lien like 'LEGITEXT%' then c1.legi_id_lien else subltree(scta_citant.chemin, 0, 1)::varchar end)
 	left join etats e_texte_citant on (legitext_citant.etat = e_texte_citant.id)
 	left join textes_natures on (textes_natures.id = legitext_citant.nature)
-	)`
+	)
+	order by date_debut_cite desc, date_debut_citant desc`
 
 	await dbConnection.release()
 
