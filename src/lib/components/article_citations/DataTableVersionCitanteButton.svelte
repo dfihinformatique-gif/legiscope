@@ -30,7 +30,7 @@
 		</Button>
 		<div>
 			{grouping.includes("version_citee")
-				? `Versions de l'article ${articleNum ?? "étudié"} citées par un autre article :`
+				? `Versions de l'art. ${articleNum ?? "étudié"} citées par un autre article :`
 				: `Cet article est cité par :`}
 		</div>
 	</div>

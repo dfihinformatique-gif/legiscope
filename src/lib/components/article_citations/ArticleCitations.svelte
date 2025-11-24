@@ -409,14 +409,16 @@
 													({row.subRows.length}
 													{#if cell.column.id === "version_citante"}
 														{row.subRows.length > 1
-															? `versions de l'article ${articleInfo.article?.num ?? "étudié"} citées`
-															: `version de l'article ${articleInfo.article?.num ?? "étudié"} citée`})
+															? `versions de l'art. ${articleInfo.article?.num ?? "étudié"} citées`
+															: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`})
 													{:else if cell.column.id === "version_citee"}
 														{row.subRows.length > 1
-															? "articles citant cette version"
-															: "article citant cette version"})
+															? "articles citent cette version"
+															: "article cite cette version"})
 													{:else}
-														{row.subRows.length > 1 ? "versions" : "version"})
+														{row.subRows.length > 1
+															? `versions citent l'art. ${articleInfo.article?.num ?? "étudié"}`
+															: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`})
 													{/if}
 												</span>
 											</div>
@@ -434,7 +436,7 @@
 										</div>
 									{:else}
 										<div class="ml-12 flex">
-											cite l'article {articleInfo.article?.num ?? "étudié"} - <FlexRender
+											cite l'art. {articleInfo.article?.num ?? "étudié"} - <FlexRender
 												content={cell.column.columnDef.cell}
 												context={cell.getContext()}
 											/>

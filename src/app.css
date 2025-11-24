@@ -108,12 +108,12 @@
 
   /* LIEN TEXTE: lien basique à l'intérieur d'un corps de texte, souligné sans changement de couleur*/
   .lx-link-text {
-    @apply underline underline-offset-4 hover:decoration-2;
+    @apply cursor-pointer underline underline-offset-4 hover:decoration-2;
   }
 
   /* lien texte, bleu au survol : si besoin de plus de visibilité */
   .lx-link-text-le-bleu {
-    @apply hover:text-le-bleu underline underline-offset-4 hover:decoration-2;
+    @apply hover:text-le-bleu cursor-pointer underline underline-offset-4 hover:decoration-2;
   }
 
   /* LIEN SIMPLE : lien solo (en dehors d'un corps de texte), se caractérise par un écard entre les lettres plus grand */
@@ -130,11 +130,11 @@
   /* LIEN UPPERCASE : lien solo à la frontière avec un bouton, se caractérise par une casse en majuscule et un écard entre les lettres plus grand*/
 
   .lx-link-uppercase {
-    @apply gap-2 font-semibold tracking-widest text-neutral-700 uppercase decoration-2 underline-offset-4 hover:text-black hover:underline md:text-nowrap;
+    @apply cursor-pointer gap-2 font-semibold tracking-widest text-neutral-700 uppercase decoration-2 underline-offset-4 hover:text-black hover:underline md:text-nowrap;
   }
   /* lien uppercase, bleu au survol : si besoin de plus de visibilité */
   .lx-link-uppercase-le-bleu {
-    @apply text-le-bleu gap-2 font-semibold tracking-widest uppercase decoration-2 underline-offset-4 hover:underline md:text-nowrap;
+    @apply text-le-bleu cursor-pointer gap-2 font-semibold tracking-widest uppercase decoration-2 underline-offset-4 hover:underline md:text-nowrap;
   }
   /* *******--- TITRES ---******* */
   .lx-titreh2 {
