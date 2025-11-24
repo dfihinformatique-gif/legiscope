@@ -549,11 +549,19 @@
 									{:else if cell.getIsPlaceholder()}
 										<!-- Placeholder pour les lignes groupées -->
 									{:else}
-										<div class="ml-12 flex py-2">
-											Cité par l'article {row.original.num_citant} - <FlexRender
-												content={cell.column.columnDef.cell}
-												context={cell.getContext()}
-											/>
+										<div class="ml-12 flex items-center py-2">
+											{#if grouping.includes("version_citante")}
+												Cite l'art. {row.original.num_cite} - <FlexRender
+													content={cell.column.columnDef.cell}
+													context={cell.getContext()}
+												/>
+											{:else if grouping.includes("version_citee")}
+												Version de l'art. {row.original.num_cite} citée par la&nbsp;
+												<FlexRender
+													content={cell.column.columnDef.cell}
+													context={cell.getContext()}
+												/>&nbsp;de l'article {row.original.num_citant}
+											{/if}
 										</div>
 									{/if}
 								</TableUI.Cell>

@@ -16,13 +16,11 @@
 		grouping?: string[]
 		articleNum?: string | null
 	} = $props()
-
-	const isVersionCiteeView = $derived(grouping.includes("version_citee"))
 </script>
 
 <div class="flex items-center gap-4">
 	<div class="flex items-center gap-1">
-		{#if !isVersionCiteeView}
+		{#if !grouping.includes("version_citee")}
 			<Button
 				class="-ml-1"
 				title="Inverse l'ordre des groupes de natures"
@@ -32,7 +30,7 @@
 				<ArrowUpDownIcon class="" />
 			</Button>
 		{/if}
-		<div>
+		<div class:pl-2={grouping.includes("version_citee")}>
 			{grouping.includes("version_citee")
 				? `Versions de l'art. ${articleNum ?? "étudié"} citées par un autre article :`
 				: `Cet article est cité par :`}
