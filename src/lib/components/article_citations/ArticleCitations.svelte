@@ -107,9 +107,20 @@
 		},
 		{
 			id: "article_citant",
-			header: ({ column }) =>
+			header: ({ column, table: tableInstance }) =>
 				renderComponent(DataTableVersionCitanteButton, {
-					onclick: column.getToggleSortingHandler(),
+					onclick: () => {
+						// Inverser le tri des groupes de nature
+						const currentDesc =
+							sorting.find((s) => s.id === "article_citant_texte_nature")
+								?.desc ?? false
+						const newSorting = [
+							{ id: "article_citant_texte_nature", desc: !currentDesc },
+							{ id: "date_debut_cite", desc: true },
+						]
+						tableInstance.setSorting(newSorting)
+						sorting = newSorting
+					},
 					grouping,
 					articleNum: articleInfo.article?.num,
 				}),
@@ -539,7 +550,7 @@
 										<!-- Placeholder pour les lignes groupées -->
 									{:else}
 										<div class="ml-12 flex py-2">
-											cite l'art. {articleInfo.article?.num ?? "étudié"} - <FlexRender
+											Cité par l'article {row.original.num_citant} - <FlexRender
 												content={cell.column.columnDef.cell}
 												context={cell.getContext()}
 											/>
