@@ -39,7 +39,7 @@
 			labelVersion = `Version depuis le ${formatFrancaisAbregeDate(start)}`
 		else if (end)
 			labelVersion = `Version jusqu’au ${formatFrancaisAbregeDate(end)}`
-		else labelVersion = ""
+		else labelVersion = "Version sans date"
 	})
 
 	// Mapping des états de l'article citant
