@@ -615,7 +615,13 @@
 								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
 							onclick={() => toggleArticleTypeFilter(articleType.value)}
 						>
-							{articleType.label}
+							{articleType.label}<iconify-icon
+								class="align-[-0.3rem] text-lg hover:bg-gray-100"
+								icon={selectedArticleTypes.includes(articleType.value)
+									? "ri-close-line"
+									: "ri-check-line"}
+							>
+							</iconify-icon>
 						</button>
 					{/each}
 				</div>
