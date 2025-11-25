@@ -73,6 +73,16 @@
 		109: { priority: 12, label: "Traité" },
 	}
 
+	/** Extrait le label de nature d'un groupe (Loi, Décret, etc.) */
+	function getGroupeArticlesCitantsTexteNatureLabel(row: any): string {
+		const firstRow = row.subRows?.[0]?.original
+		const id = firstRow?.article_citant_texte_nature_id
+		return (
+			(id && NATURE_MAPPING[id]?.label) ||
+			row.getValue("article_citant_texte_nature")
+		)
+	}
+
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			accessorKey: "article_citant_texte_nature",
@@ -487,6 +497,7 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<TableUI.Row data-state={row.getIsSelected() && "selected"}>
 						{#each row.getVisibleCells() as cell, cellIndex (cell.id)}
+							<!-- Afficher la cellule si elle est groupée OU si elle ne fait pas partie du groupement -->
 							{#if cell.getIsGrouped() || !grouping.includes(cell.column.id)}
 								<TableUI.Cell
 									isSubrow={row.depth > 0}
@@ -527,14 +538,7 @@
 													</iconify-icon>
 												</button>
 												<div class="flex items-center gap-2">
-													{(() => {
-														const firstRow = row.subRows[0]?.original
-														const id = firstRow?.article_citant_texte_nature_id
-														return (
-															(id && NATURE_MAPPING[id]?.label) ||
-															cell.getValue()
-														)
-													})()}
+													{getGroupeArticlesCitantsTexteNatureLabel(row)}
 												</div>
 											</div>
 										{:else}
@@ -576,16 +580,16 @@
 														{#if cell.column.id === "version_citante"}
 															{row.subRows.length > 1
 																? `versions de l'art. ${articleInfo.article?.num ?? "étudié"} citées`
-																: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`})
+																: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`}
 														{:else if cell.column.id === "version_citee"}
 															{row.subRows.length > 1
 																? "articles citent cette version"
-																: "article cite cette version"})
+																: "article cite cette version"}
 														{:else}
 															{row.subRows.length > 1
 																? `versions citent l'art. ${articleInfo.article?.num ?? "étudié"}`
-																: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`})
-														{/if}
+																: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`}
+														{/if})
 													</span>
 												</div>
 											</div>
