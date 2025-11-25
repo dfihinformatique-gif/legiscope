@@ -56,6 +56,8 @@
 	let expanded = $state<ExpandedState>({})
 	let lastInitializedGrouping = $state<string | null>(null)
 	let columnFilters = $state<ColumnFiltersState>([])
+	let showFiltersPanel = $state(false)
+	let selectedArticleTypes = $state<string[]>([])
 
 	const NATURE_MAPPING: Record<number, { priority: number; label: string }> = {
 		72: { priority: 1, label: "Constitution" },
@@ -232,6 +234,12 @@
 			accessorKey: "article_type_citant",
 			header: "Type de la version de l'article citant",
 			enableHiding: true,
+			filterFn: (row, columnId, filterValues) => {
+				if (!filterValues || filterValues.length === 0) return true
+
+				const value = row.getValue(columnId)
+				return filterValues.includes(value)
+			},
 		},
 		{
 			accessorKey: "etat_citant",
@@ -455,6 +463,34 @@
 	})
 
 	let inEffectOnly = $state(false)
+
+	// Mapping des types d'article (copié de CellVersionArticle.svelte)
+
+	const ARTICLE_TYPES = [
+		{ value: "AUTONOME", label: "Complétant le droit" },
+		{
+			value: "ENTIEREMENT_MODIF",
+			label: "Modifiant un autre article",
+		},
+		{
+			value: "PARTIELLEMENT_MODIF",
+			label: "Complétant le droit et modifiant un autre article",
+		},
+	]
+
+	// Fonction pour gérer le toggle des filtres de type d'article
+	function toggleArticleTypeFilter(type: string) {
+		if (selectedArticleTypes.includes(type)) {
+			selectedArticleTypes = selectedArticleTypes.filter((t) => t !== type)
+		} else {
+			selectedArticleTypes = [...selectedArticleTypes, type]
+		}
+
+		// Apply the array of selected types as filter value; the custom filterFn will handle inclusion
+		table
+			?.getColumn("article_type_citant")
+			?.setFilterValue(selectedArticleTypes)
+	}
 </script>
 
 {#if table !== undefined}
@@ -520,6 +556,68 @@
 					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
+		<div class="flex justify-end">
+			<button
+				class="lx-link-uppercase text-left font-sans text-sm text-wrap"
+				class:text-gray-500={!showFiltersPanel}
+				class:text-gray-800={showFiltersPanel}
+				onclick={() => {
+					showFiltersPanel = !showFiltersPanel
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.25rem] text-xl hover:bg-gray-100"
+					class:rotate-180={showFiltersPanel}
+					icon="ri-filter-3-line"
+				></iconify-icon>
+				Autres filtres
+				{#if selectedArticleTypes.length > 0}
+					<span
+						class="ml-1 rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white"
+					>
+						{selectedArticleTypes.length}
+					</span>
+				{/if}
+			</button>
+		</div>
+		{#if showFiltersPanel}
+			<div class="">
+				<div class="flex justify-between">
+					<h3 class="mb-3 font-semibold text-gray-700">
+						Filtrer les versions citant cet article :
+					</h3>
+
+					{#if selectedArticleTypes.length > 0}
+						<button
+							class="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
+							onclick={() => {
+								selectedArticleTypes = []
+								table
+									?.getColumn("article_type_citant")
+									?.setFilterValue(undefined)
+							}}
+						>
+							Réinitialiser les filtres
+						</button>
+					{/if}
+				</div>
+				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par type :</h4>
+				<div class="mb-2 flex flex-wrap gap-2">
+					{#each ARTICLE_TYPES as articleType}
+						<button
+							class="p-y cursor-pointer rounded-md border px-2 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
+								articleType.value,
+							)
+								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+							onclick={() => toggleArticleTypeFilter(articleType.value)}
+						>
+							{articleType.label}
+						</button>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 	<div class="w-full rounded-md border bg-white">
 		<TableUI.Root>
