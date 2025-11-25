@@ -54,6 +54,7 @@
 		{ id: "date_debut_cite", desc: true },
 	])
 	let expanded = $state<ExpandedState>({})
+	let lastInitializedGrouping = $state<string | null>(null)
 	let columnFilters = $state<ColumnFiltersState>([])
 
 	const NATURE_MAPPING: Record<number, { priority: number; label: string }> = {
@@ -355,21 +356,43 @@
 		}
 	})
 	$effect(() => {
-		if (grouping[0] === "article_citant_texte_nature" && table) {
+		if (table && grouping[0] !== lastInitializedGrouping) {
 			const groups = table.getGroupedRowModel().rows
 			let changed = false
 			const newExpanded = typeof expanded === "object" ? { ...expanded } : {}
 
-			for (const row of groups) {
-				if (!newExpanded[row.id]) {
-					newExpanded[row.id] = true
-					changed = true
+			// Ouvrir les groupes de premier niveau pour la vue article_citant_texte_nature
+			if (grouping[0] === "article_citant_texte_nature") {
+				for (const row of groups) {
+					if (!newExpanded[row.id]) {
+						newExpanded[row.id] = true
+						changed = true
+					}
+				}
+			}
+
+			// Ouvrir uniquement les groupes de nature de texte (niveau 1) pour la vue version_citee
+			// Ne PAS ouvrir les groupes de version (niveau 0)
+			if (grouping[0] === "version_citee") {
+				for (const versionGroup of groups) {
+					// Ouvrir les groupes de nature de texte (sous-groupes de niveau 1)
+					if (versionGroup.subRows) {
+						for (const natureGroup of versionGroup.subRows) {
+							if (!newExpanded[natureGroup.id]) {
+								newExpanded[natureGroup.id] = true
+								changed = true
+							}
+						}
+					}
 				}
 			}
 
 			if (changed) {
 				expanded = newExpanded
 			}
+
+			// Marquer cette vue comme initialisée
+			lastInitializedGrouping = grouping[0]
 		}
 	})
 
@@ -403,7 +426,11 @@
 				class="lx-link-uppercase text-left font-sans text-sm text-wrap text-gray-500"
 				onclick={() => {
 					if (grouping[0] === "article_citant_texte_nature") {
-						grouping = ["version_citee", "article_citant"]
+						grouping = [
+							"version_citee",
+							"article_citant_texte_nature",
+							"article_citant",
+						]
 						sorting = [{ id: "date_debut_cite", desc: true }]
 						columnOrder = [
 							"version_citee",
@@ -460,27 +487,45 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<TableUI.Row data-state={row.getIsSelected() && "selected"}>
 						{#each row.getVisibleCells() as cell, cellIndex (cell.id)}
-							{#if !(!row.getIsGrouped() && grouping.includes(cell.column.id)) && !(cell.column.id === "article_citant_texte_nature" && !row.getIsGrouped() && grouping.includes("version_citee"))}
+							{#if cell.getIsGrouped() || !grouping.includes(cell.column.id)}
 								<TableUI.Cell
 									isSubrow={row.depth > 0}
 									isFirstColumn={cellIndex === 0}
 									isArticleCitantEmptyColumn={cell.column.id ===
-										"article_citant" && row.depth > 1}
+										"article_citant" &&
+										row.depth > 1 &&
+										!cell.getIsGrouped()}
 									colspan={!row.getIsGrouped() &&
 									cell.column.id === "version_citante" &&
 									grouping.includes("version_citee")
 										? 99
-										: cell.column.id === "article_citant_texte_nature" &&
-											  cell.getIsGrouped() &&
-											  row.depth === 0
-											? 99
-											: 1}
+										: 1}
 								>
 									{#if cell.getIsGrouped()}
 										{#if cell.column.id === "article_citant_texte_nature"}
 											<div
-												class="flex items-center bg-neutral-50 px-3 font-bold text-gray-400"
+												class="flex items-center gap-1 bg-neutral-50 px-2 font-bold text-gray-400 {grouping.includes(
+													'version_citee',
+												) && row.depth >= 1
+													? 'pl-6'
+													: ''}"
 											>
+												<button
+													class="flex items-center"
+													onclick={(e) => {
+														e.stopPropagation()
+														row.toggleExpanded()
+													}}
+													aria-label="Ouvrir/fermer le volet"
+												>
+													<iconify-icon
+														class="align-[-0.3rem] text-xl hover:bg-gray-100"
+														icon={row.getIsExpanded()
+															? "ri:arrow-down-s-line"
+															: "ri:arrow-right-s-line"}
+													>
+													</iconify-icon>
+												</button>
 												<div class="flex items-center gap-2">
 													{(() => {
 														const firstRow = row.subRows[0]?.original
@@ -498,7 +543,7 @@
 													'version_citante',
 												) &&
 													row.depth == 2) ||
-												(grouping.includes('version_citee') && row.depth == 1)
+												(grouping.includes('version_citee') && row.depth >= 1)
 													? 'ml-4'
 													: ''}"
 											>
