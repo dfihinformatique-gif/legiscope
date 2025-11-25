@@ -83,6 +83,54 @@
 		)
 	}
 
+	/** Génère le texte complet du compteur de nombre de ligne enfant (ex: "(3 articles citent cette version)") */
+	function getInformationNombreEnfant(
+		row: any,
+		columnId: string,
+		articleNum?: string | null,
+	): string {
+		// CALCUL du nombre d'enfant
+		// Pour le cas général :
+		let count = row.subRows.length
+
+		// Pour la vue groupée par "version_citee" :
+		// On veut compter le nombre total d'articles (niveau 2) et pas le nombre de natures (niveau 1)
+		if (
+			columnId === "version_citee" &&
+			grouping.includes("article_citant_texte_nature")
+		) {
+			count = row.subRows.reduce(
+				(acc: number, subRow: any) => acc + (subRow.subRows?.length ?? 0),
+				0,
+			)
+		}
+
+		// TEXTE
+		const article = articleNum ?? "étudié"
+
+		if (columnId === "version_citante") {
+			return `(${count} ${
+				count > 1
+					? `versions de l'art. ${article} citées`
+					: `version de l'art. ${article} citée`
+			})`
+		}
+
+		if (columnId === "version_citee") {
+			return `(${count} ${
+				count > 1
+					? "articles citent cette version"
+					: "article cite cette version"
+			})`
+		}
+
+		return `(${count} ${
+			count > 1
+				? `versions citent l'art. ${article}`
+				: `version cite l'art. ${article}`
+		})`
+	}
+
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			accessorKey: "article_citant_texte_nature",
@@ -576,20 +624,11 @@
 														context={cell.getContext()}
 													/>
 													<span class="text-sm font-normal text-gray-600">
-														({row.subRows.length}
-														{#if cell.column.id === "version_citante"}
-															{row.subRows.length > 1
-																? `versions de l'art. ${articleInfo.article?.num ?? "étudié"} citées`
-																: `version de l'art. ${articleInfo.article?.num ?? "étudié"} citée`}
-														{:else if cell.column.id === "version_citee"}
-															{row.subRows.length > 1
-																? "articles citent cette version"
-																: "article cite cette version"}
-														{:else}
-															{row.subRows.length > 1
-																? `versions citent l'art. ${articleInfo.article?.num ?? "étudié"}`
-																: `version cite l'art. ${articleInfo.article?.num ?? "étudié"}`}
-														{/if})
+														{getInformationNombreEnfant(
+															row,
+															cell.column.id,
+															articleInfo.article?.num,
+														)}
 													</span>
 												</div>
 											</div>
