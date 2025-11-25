@@ -534,6 +534,24 @@
 			?.setFilterValue(selectedArticleTypes)
 	}
 
+	// Extraire les types d'article uniques présents dans les données
+	let uniqueArticleTypes = $derived.by(() => {
+		if (!citationsData) return []
+
+		const typesSet = new Set<string>()
+		for (const row of citationsData) {
+			const type = row.article_type_citant
+			if (type !== null) {
+				typesSet.add(type)
+			}
+		}
+
+		// Filtrer ARTICLE_TYPES pour ne garder que ceux présents dans les données
+		return ARTICLE_TYPES.filter((articleType) =>
+			typesSet.has(articleType.value),
+		)
+	})
+
 	/* FILTRE PAR NATURE DE TEXTE */
 
 	// Fonction pour gérer le toggle des filtres de nature de texte
@@ -687,7 +705,7 @@
 				</div>
 				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par type :</h4>
 				<div class="mb-4 flex flex-wrap gap-2">
-					{#each ARTICLE_TYPES as articleType}
+					{#each uniqueArticleTypes as articleType}
 						<button
 							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
 								articleType.value,
