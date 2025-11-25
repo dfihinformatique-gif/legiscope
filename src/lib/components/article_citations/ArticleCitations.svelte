@@ -59,18 +59,18 @@
 
 	const NATURE_MAPPING: Record<number, { priority: number; label: string }> = {
 		72: { priority: 1, label: "Constitution" },
-		260: { priority: 2, label: "Loi constitutionnelle" },
-		157: { priority: 3, label: "Loi organique" },
-		60: { priority: 4, label: "Loi" },
-		237: { priority: 5, label: "Code" },
-		32: { priority: 6, label: "Ordonnance" },
-		14: { priority: 7, label: "Décret-loi" },
-		119: { priority: 8, label: "Décret" },
-		120: { priority: 8, label: "Décret" },
-		178: { priority: 9, label: "Arrêté" },
-		36: { priority: 10, label: "Arrêté" },
-		47: { priority: 11, label: "Projet" },
-		109: { priority: 12, label: "Traité" },
+		260: { priority: 2, label: "Lois constitutionnelles" },
+		157: { priority: 3, label: "Lois organiques" },
+		60: { priority: 4, label: "Lois" },
+		237: { priority: 5, label: "Codes" },
+		32: { priority: 6, label: "Ordonnances" },
+		14: { priority: 7, label: "Décrets-loi" },
+		119: { priority: 8, label: "Décrets" },
+		120: { priority: 8, label: "Décrets" },
+		178: { priority: 9, label: "Arrêtés" },
+		36: { priority: 10, label: "Arrêtés" },
+		47: { priority: 11, label: "Projets" },
+		109: { priority: 12, label: "Traités" },
 	}
 
 	/** Extrait le label de nature d'un groupe (Loi, Décret, etc.) */
@@ -160,13 +160,13 @@
 					return idA - idB
 				}
 
-				// Fallback ultime : si pas d'ID, ordre arbitraire
+				// si pas d'ID, ordre arbitraire
 				return 0
 			},
 		},
 		{
 			id: "article_citant",
-			header: ({ column, table: tableInstance }) =>
+			header: ({ table: tableInstance }) =>
 				renderComponent(DataTableVersionCitanteButton, {
 					onclick: () => {
 						// Inverser le tri des groupes de nature
