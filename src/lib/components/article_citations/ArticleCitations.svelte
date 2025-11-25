@@ -59,6 +59,7 @@
 	let showFiltersPanel = $state(false)
 	let selectedArticleTypes = $state<string[]>([])
 	let selectedTextNatures = $state<number[]>([])
+	let filterEnVigueurOnly = $state(false)
 
 	/* ARTICLES_TYPES des versions */
 
@@ -406,6 +407,8 @@
 	let columnOrder = $state<string[]>(defaultColumnOrder)
 
 	let table: Table<CitationsDataRow> | undefined = $state()
+
+	/** INITIALISATION DE LA TABLE APRÈS CHARGEMENT DES DONNÉES (TanStack Table)*/
 	$effect(() => {
 		if (citationsData !== undefined) {
 			table = createSvelteTable({
@@ -516,8 +519,7 @@
 		}
 	})
 
-	let inEffectOnly = $state(false)
-
+	/* FILTRE PAR TYPE D'ARTICLE */
 	// Fonction pour gérer le toggle des filtres de type d'article
 	function toggleArticleTypeFilter(type: string) {
 		if (selectedArticleTypes.includes(type)) {
@@ -531,6 +533,8 @@
 			?.getColumn("article_type_citant")
 			?.setFilterValue(selectedArticleTypes)
 	}
+
+	/* FILTRE PAR NATURE DE TEXTE */
 
 	// Fonction pour gérer le toggle des filtres de nature de texte
 	function toggleTextNatureFilter(natureId: number) {
@@ -568,6 +572,7 @@
 {#if table !== undefined}
 	<div class="flex w-full flex-col flex-wrap justify-end gap-y-2 p-3">
 		<div class="flex justify-end">
+			<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
 			<button
 				class="lx-link-uppercase text-left font-sans text-sm text-wrap text-gray-500"
 				onclick={() => {
@@ -610,15 +615,16 @@
 		</div>
 		<div class="my-2 flex items-center justify-end gap-2">
 			<div class="flex items-center">
+				<!--Filtre "en vigueur" -->
 				<label class="inline-flex cursor-pointer items-center">
 					<input
 						class="peer sr-only"
 						type="checkbox"
-						bind:checked={inEffectOnly}
+						bind:checked={filterEnVigueurOnly}
 						onchange={() => {
 							table!
 								.getColumn("etat_citant")
-								?.setFilterValue(inEffectOnly ? "VIGUEUR" : "")
+								?.setFilterValue(filterEnVigueurOnly ? "VIGUEUR" : "")
 						}}
 					/>
 					<div
@@ -629,8 +635,7 @@
 					</span>
 				</label>
 			</div>
-			|
-
+			<!--Bouton "Autres filtres" -->
 			<button
 				class="lx-link-uppercase text-left font-sans text-sm text-wrap"
 				class:text-gray-500={!showFiltersPanel}
@@ -654,7 +659,7 @@
 				{/if}
 			</button>
 		</div>
-
+		<!--Boutons des autres filtres lorsque le volet est ouvert-->
 		{#if showFiltersPanel}
 			<div class="">
 				<div class="flex justify-between">
@@ -728,6 +733,7 @@
 			</div>
 		{/if}
 	</div>
+	<!--TABLEAU DES CITATIONS -->
 	<div class="w-full rounded-md border bg-white">
 		<TableUI.Root>
 			<TableUI.Header>
