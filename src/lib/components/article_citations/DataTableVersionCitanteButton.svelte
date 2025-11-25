@@ -15,7 +15,7 @@
 </script>
 
 <div
-	class="flex items-center font-bold"
+	class="flex items-center text-base font-bold text-gray-700"
 	class:pl-2={grouping.includes("version_citee")}
 >
 	{grouping.includes("version_citee")
