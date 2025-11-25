@@ -58,7 +58,32 @@
 	let columnFilters = $state<ColumnFiltersState>([])
 	let showFiltersPanel = $state(false)
 	let selectedArticleTypes = $state<string[]>([])
+	let selectedTextNatures = $state<number[]>([])
 
+	/* ARTICLES_TYPES des versions */
+
+	// Mapping des types d'article
+	const ARTICLE_TYPES = [
+		{ value: "AUTONOME", label: "Complétant le droit" },
+		{
+			value: "ENTIEREMENT_MODIF",
+			label: "Modifiant un autre article",
+		},
+		{
+			value: "PARTIELLEMENT_MODIF",
+			label: "Complétant le droit et modifiant un autre article",
+		},
+	]
+
+	// Formate le type d'article en label lisible
+	function labelArticleType(type?: string | null): string {
+		const found = ARTICLE_TYPES.find((t) => t.value === type)
+		return found?.label ?? type ?? ""
+	}
+
+	/* TEXTES_NATURES des versions */
+
+	// Ajout d'un label et d'un indicateur de priorité pour les principaux types de textes_natures
 	const NATURE_MAPPING: Record<number, { priority: number; label: string }> = {
 		72: { priority: 1, label: "Constitution" },
 		260: { priority: 2, label: "Lois constitutionnelles" },
@@ -75,27 +100,59 @@
 		109: { priority: 12, label: "Traités" },
 	}
 
-	/** Extrait le label de nature d'un groupe (Loi, Décret, etc.) */
+	// Récupère le label d'une nature de texte à partir de son ID
+
+	function getTextNatureLabel(
+		natureId: number | null | undefined,
+		fallbackLabel?: string | null,
+	): string {
+		if (natureId && NATURE_MAPPING[natureId]) {
+			return NATURE_MAPPING[natureId].label
+		}
+		return fallbackLabel || `Nature ${natureId}`
+	}
+
+	// Fonction de comparaison de 2 IDs de nature de texte selon leur priorité
+	function compareTextNatureIds(
+		idA: number | null,
+		idB: number | null,
+	): number {
+		const priorityA = (idA && NATURE_MAPPING[idA]?.priority) || 99
+		const priorityB = (idB && NATURE_MAPPING[idB]?.priority) || 99
+
+		if (priorityA !== priorityB) {
+			return priorityA - priorityB
+		}
+
+		// Pour les textes_natures n'ayant pas été mentionnés dans le NATURE_MAPPING ci-dessus, on trie par ordre d'ID
+		if (idA && idB && idA !== idB) {
+			return idA - idB
+		}
+
+		// Si pas d'ID, ordre arbitraire
+		return 0
+	}
+
+	// Extrait le label de nature des groupes par nature */
 	function getGroupeArticlesCitantsTexteNatureLabel(row: any): string {
 		const firstRow = row.subRows?.[0]?.original
 		const id = firstRow?.article_citant_texte_nature_id
-		return (
-			(id && NATURE_MAPPING[id]?.label) ||
-			row.getValue("article_citant_texte_nature")
-		)
+		return getTextNatureLabel(id, row.getValue("article_citant_texte_nature"))
 	}
 
-	/** Génère le texte complet du compteur de nombre de ligne enfant (ex: "(3 articles citent cette version)") */
+	/** COMPTEUR DU NOMBRE DE CITATIONS */
+
+	// Génère le texte complet du compteur de nombre de ligne enfant (ex: "(3 articles citent cette version)")
 	function getInformationNombreEnfant(
 		row: any,
 		columnId: string,
 		articleNum?: string | null,
 	): string {
 		// CALCUL du nombre d'enfant
-		// Pour le cas général :
+		/* Pour le cas général :*/
 		let count = row.subRows.length
 
-		// Pour la vue groupée par "version_citee" :
+		/*  Pour la vue groupée par "version_citee" :*/
 		// On veut compter le nombre total d'articles (niveau 2) et pas le nombre de natures (niveau 1)
 		if (
 			columnId === "version_citee" &&
@@ -133,37 +190,28 @@
 		})`
 	}
 
+	// DÉFINITION DES COLONNES DU TABLEAU (TanStack Table)
 	const columns: ColumnDef<CitationsDataRow>[] = [
 		{
 			accessorKey: "article_citant_texte_nature",
 			header: "Nature",
 			enableGrouping: true,
 			cell: ({ row, getValue }) => {
+				return getTextNatureLabel(
+					row.original.article_citant_texte_nature_id,
+					getValue() as string,
+				)
+			},
+			filterFn: (row, columnId, filterValues) => {
+				if (!filterValues || filterValues.length === 0) return true
+
 				const id = row.original.article_citant_texte_nature_id
-				if (id && NATURE_MAPPING[id]) {
-					return NATURE_MAPPING[id].label
-				}
-				return getValue() as string
+				return id !== null && filterValues.includes(id)
 			},
 			sortingFn: (rowA, rowB, columnId) => {
-				// Tri des textes_natures du NATURE_MAPPING selon la priorité qui leur a été donnée
 				const idA = rowA.original.article_citant_texte_nature_id
 				const idB = rowB.original.article_citant_texte_nature_id
-
-				const priorityA = (idA && NATURE_MAPPING[idA]?.priority) || 99
-				const priorityB = (idB && NATURE_MAPPING[idB]?.priority) || 99
-
-				if (priorityA !== priorityB) {
-					return priorityA - priorityB
-				}
-
-				// Pour les textes_natures n'ayant pas été mentionné dans le NATURE_MAPPING ci-dessus, on trie par ordre d'ID
-				if (idA && idB && idA !== idB) {
-					return idA - idB
-				}
-
-				// si pas d'ID, ordre arbitraire
-				return 0
+				return compareTextNatureIds(idA, idB)
 			},
 		},
 		{
@@ -212,6 +260,7 @@
 								etat: firstSubRow.etat_citant,
 								article_type: firstSubRow.article_type_citant,
 							},
+							labelArticleType,
 						})
 					}
 					return ""
@@ -226,6 +275,7 @@
 							etat: row.original.etat_citant,
 							article_type: row.original.article_type_citant,
 						},
+						labelArticleType,
 					})
 				}
 			},
@@ -272,6 +322,7 @@
 						etat: dataRow.etat_cite,
 						article_type: dataRow.article_type_cite,
 					},
+					labelArticleType,
 				})
 			},
 			enableGrouping: true,
@@ -421,6 +472,9 @@
 			})
 		}
 	})
+
+	/** EXPANSION AUTOMATIQUE DES ACCORDÉONS DES GROUPES */
+
 	$effect(() => {
 		if (table && grouping[0] !== lastInitializedGrouping) {
 			const groups = table.getGroupedRowModel().rows
@@ -464,20 +518,6 @@
 
 	let inEffectOnly = $state(false)
 
-	// Mapping des types d'article (copié de CellVersionArticle.svelte)
-
-	const ARTICLE_TYPES = [
-		{ value: "AUTONOME", label: "Complétant le droit" },
-		{
-			value: "ENTIEREMENT_MODIF",
-			label: "Modifiant un autre article",
-		},
-		{
-			value: "PARTIELLEMENT_MODIF",
-			label: "Complétant le droit et modifiant un autre article",
-		},
-	]
-
 	// Fonction pour gérer le toggle des filtres de type d'article
 	function toggleArticleTypeFilter(type: string) {
 		if (selectedArticleTypes.includes(type)) {
@@ -491,6 +531,38 @@
 			?.getColumn("article_type_citant")
 			?.setFilterValue(selectedArticleTypes)
 	}
+
+	// Fonction pour gérer le toggle des filtres de nature de texte
+	function toggleTextNatureFilter(natureId: number) {
+		if (selectedTextNatures.includes(natureId)) {
+			selectedTextNatures = selectedTextNatures.filter((id) => id !== natureId)
+		} else {
+			selectedTextNatures = [...selectedTextNatures, natureId]
+		}
+
+		table
+			?.getColumn("article_citant_texte_nature")
+			?.setFilterValue(selectedTextNatures)
+	}
+
+	// Extraire les natures de texte uniques présentes dans les données
+	let uniqueTextNatures = $derived.by(() => {
+		if (!citationsData) return []
+
+		const naturesMap = new Map<number, string>()
+		for (const row of citationsData) {
+			const id = row.article_citant_texte_nature_id
+			if (id !== null) {
+				const label = getTextNatureLabel(id, row.article_citant_texte_nature)
+				naturesMap.set(id, label)
+			}
+		}
+
+		// Trier par priorité selon NATURE_MAPPING en utilisant la même fonction que le sortingFn
+		return Array.from(naturesMap.entries())
+			.map(([id, label]) => ({ id, label }))
+			.sort((a, b) => compareTextNatureIds(a.id, b.id))
+	})
 </script>
 
 {#if table !== undefined}
@@ -573,11 +645,11 @@
 					icon="ri-filter-3-line"
 				></iconify-icon>
 				Autres filtres
-				{#if selectedArticleTypes.length > 0}
+				{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0}
 					<span
 						class="ml-1 rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white"
 					>
-						{selectedArticleTypes.length}
+						{selectedArticleTypes.length + selectedTextNatures.length}
 					</span>
 				{/if}
 			</button>
@@ -590,13 +662,17 @@
 						Filtrer les versions citant cet article :
 					</h3>
 
-					{#if selectedArticleTypes.length > 0}
+					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0}
 						<button
 							class="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
 							onclick={() => {
 								selectedArticleTypes = []
+								selectedTextNatures = []
 								table
 									?.getColumn("article_type_citant")
+									?.setFilterValue(undefined)
+								table
+									?.getColumn("article_citant_texte_nature")
 									?.setFilterValue(undefined)
 							}}
 						>
@@ -605,7 +681,7 @@
 					{/if}
 				</div>
 				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par type :</h4>
-				<div class="mb-2 flex flex-wrap gap-2">
+				<div class="mb-4 flex flex-wrap gap-2">
 					{#each ARTICLE_TYPES as articleType}
 						<button
 							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
@@ -618,6 +694,30 @@
 							{articleType.label}<iconify-icon
 								class="align-[-0.3rem] text-lg hover:bg-gray-100"
 								icon={selectedArticleTypes.includes(articleType.value)
+									? "ri-close-line"
+									: "ri-check-line"}
+							>
+							</iconify-icon>
+						</button>
+					{/each}
+				</div>
+
+				<h4 class="mb-2 text-sm font-semibold text-gray-700">
+					Par nature de texte :
+				</h4>
+				<div class="mb-2 flex flex-wrap gap-2">
+					{#each uniqueTextNatures as textNature}
+						<button
+							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
+								textNature.id,
+							)
+								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+							onclick={() => toggleTextNatureFilter(textNature.id)}
+						>
+							{textNature.label}<iconify-icon
+								class="align-[-0.3rem] text-lg hover:bg-gray-100"
+								icon={selectedTextNatures.includes(textNature.id)
 									? "ri-close-line"
 									: "ri-check-line"}
 							>

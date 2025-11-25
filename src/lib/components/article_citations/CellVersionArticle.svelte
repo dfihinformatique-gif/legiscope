@@ -8,8 +8,9 @@
 			article_citant?: string | null
 			// ajoute d'autres champs si besoin
 		}
+		labelArticleType?: (type?: string | null) => string
 	}
-	let { data }: Props = $props()
+	let { data, labelArticleType }: Props = $props()
 
 	let labelVersion = $state("")
 
@@ -103,20 +104,6 @@
 
 		return "autre_EtatCitantCategorie"
 	}
-
-	// Mapping des types d'article
-	function formatArticleTypeCitant(type?: string | null) {
-		switch (type) {
-			case "AUTONOME":
-				return "Complétant le droit"
-			case "ENTIEREMENT_MODIF":
-				return "Modifiant un autre article"
-			case "PARTIELLEMENT_MODIF":
-				return "Complétant le droit et modifiant un autre article"
-			default:
-				return type ?? ""
-		}
-	}
 </script>
 
 <div class="flex flex-col gap-y-1 leading-tight">
@@ -143,7 +130,7 @@
 			<span
 				class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
 			>
-				{formatArticleTypeCitant(data?.article_type)}
+				{labelArticleType?.(data?.article_type) ?? data?.article_type}
 			</span>
 		{/if}
 	</div>
