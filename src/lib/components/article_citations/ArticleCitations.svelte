@@ -518,7 +518,10 @@
 													>
 													</iconify-icon>
 												</button>
-												<div class="flex items-center gap-2">
+												<div class="flex items-center gap-1">
+													{#if grouping.includes("version_citee") && cell.column.id === "article_citant"}
+														<span class="font-normal">Citée par</span>
+													{/if}
 													<FlexRender
 														content={cell.column.columnDef.cell}
 														context={cell.getContext()}
@@ -554,11 +557,10 @@
 													context={cell.getContext()}
 												/>
 											{:else if grouping.includes("version_citee")}
-												Version de l'art. {row.original.num_cite} citée par la&nbsp;
 												<FlexRender
 													content={cell.column.columnDef.cell}
 													context={cell.getContext()}
-												/>&nbsp;de l'article {row.original.num_citant}
+												/>
 											{/if}
 										</div>
 									{/if}

@@ -120,7 +120,7 @@
 </script>
 
 <div class="flex flex-col gap-y-1 leading-tight">
-	<div class="flex items-center gap-2">
+	<div class="1">
 		<a
 			href="TODO"
 			class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
