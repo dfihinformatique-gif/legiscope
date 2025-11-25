@@ -78,7 +78,7 @@
 			case "CREE":
 				return "Créée"
 			default:
-				return etat ?? "—"
+				return etat ?? "état inconnu"
 		}
 	}
 
@@ -108,11 +108,11 @@
 	function formatArticleTypeCitant(type?: string | null) {
 		switch (type) {
 			case "AUTONOME":
-				return ""
+				return "Complétant le droit"
 			case "ENTIEREMENT_MODIF":
-				return "modifie uniquement un autre article"
+				return "Modifiant un autre article"
 			case "PARTIELLEMENT_MODIF":
-				return "une partie modifie un article"
+				return "Complétant le droit et modifiant un autre article"
 			default:
 				return type ?? ""
 		}
