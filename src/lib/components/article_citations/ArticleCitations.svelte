@@ -59,6 +59,7 @@
 	let showFiltersPanel = $state(false)
 	let selectedArticleTypes = $state<string[]>([])
 	let selectedTextNatures = $state<number[]>([])
+	let selectedEtatVersions = $state<string[]>([])
 	let filterEnVigueurOnly = $state(false)
 
 	/* ARTICLES_TYPES des versions */
@@ -80,6 +81,42 @@
 	function labelArticleType(type?: string | null): string {
 		const found = ARTICLE_TYPES.find((t) => t.value === type)
 		return found?.label ?? type ?? ""
+	}
+
+	/* ÉTATS DES VERSIONS */
+
+	// Mapping des états des versions
+	const ETAT_VERSIONS = [
+		{ value: "VIGUEUR", label: "en vigueur", categorie: "vigueur" },
+		{
+			value: "VIGUEUR_DIFF",
+			label: "en vigueur différé",
+			categorie: "vigueur",
+		},
+		{ value: "VIGUEUR_ETEN", label: "en vigueur étendu", categorie: "vigueur" },
+		{
+			value: "VIGUEUR_NON_ETEN",
+			label: "En vigueur non étendu",
+			categorie: "vigueur",
+		},
+		{ value: "ABROGE", label: "Abrogée", categorie: "supprime" },
+		{ value: "ABROGE_DIFF", label: "Abrogée diff", categorie: "supprime" },
+		{ value: "ANNULE", label: "Annulée", categorie: "supprime" },
+		{ value: "DENONCE", label: "Dénoncée", categorie: "supprime" },
+		{ value: "MODIFIE_MORT_NE", label: "Morte née", categorie: "supprime" },
+		{ value: "PERIME", label: "Périmée", categorie: "supprime" },
+		{ value: "DEPLACE", label: "Déplacée", categorie: "autre" },
+		{ value: "DISJOINT", label: "Disjointe", categorie: "autre" },
+		{ value: "MODIFIE", label: "Modifiée", categorie: "autre" },
+		{ value: "REMPLACE", label: "Remplacée", categorie: "autre" },
+		{ value: "TRANSFERE", label: "Transférée", categorie: "autre" },
+		{ value: "CREE", label: "Créée", categorie: "autre" },
+	] as const
+
+	// Formate l'état d'une version en label lisible
+	function labelEtatVersion(etat?: string | null): string {
+		const found = ETAT_VERSIONS.find((e) => e.value === etat)
+		return found?.label ?? etat ?? "état inconnu"
 	}
 
 	/* TEXTES_NATURES des versions */
@@ -262,6 +299,8 @@
 								article_type: firstSubRow.article_type_citant,
 							},
 							labelArticleType,
+							labelEtatVersion,
+							etatVersions: ETAT_VERSIONS,
 						})
 					}
 					return ""
@@ -277,6 +316,8 @@
 							article_type: row.original.article_type_citant,
 						},
 						labelArticleType,
+						labelEtatVersion,
+						etatVersions: ETAT_VERSIONS,
 					})
 				}
 			},
@@ -295,6 +336,12 @@
 		{
 			accessorKey: "etat_citant",
 			header: "État de la version citant",
+			filterFn: (row, columnId, filterValues) => {
+				if (!filterValues || filterValues.length === 0) return true
+
+				const value = row.getValue(columnId)
+				return filterValues.includes(value)
+			},
 		},
 		{
 			accessorKey: "titre_text_citant",
@@ -324,6 +371,8 @@
 						article_type: dataRow.article_type_cite,
 					},
 					labelArticleType,
+					labelEtatVersion,
+					etatVersions: ETAT_VERSIONS,
 				})
 			},
 			enableGrouping: true,
@@ -585,6 +634,37 @@
 			.map(([id, label]) => ({ id, label }))
 			.sort((a, b) => compareTextNatureIds(a.id, b.id))
 	})
+
+	/* FILTRE PAR ÉTAT */
+
+	// Fonction pour gérer le toggle des filtres d'état
+	function toggleEtatFilter(etat: string) {
+		if (selectedEtatVersions.includes(etat)) {
+			selectedEtatVersions = selectedEtatVersions.filter((e) => e !== etat)
+		} else {
+			selectedEtatVersions = [...selectedEtatVersions, etat]
+		}
+
+		table?.getColumn("etat_citant")?.setFilterValue(selectedEtatVersions)
+	}
+
+	// Extraire les états uniques présents dans les données
+	let uniqueEtatVersions = $derived.by(() => {
+		if (!citationsData) return []
+
+		const etatsSet = new Set<string>()
+		for (const row of citationsData) {
+			const etat = row.etat_citant
+			if (etat !== null) {
+				etatsSet.add(etat)
+			}
+		}
+
+		// Filtrer ETAT_VERSIONS pour ne garder que ceux présents dans les données
+		return ETAT_VERSIONS.filter((etatVersion) =>
+			etatsSet.has(etatVersion.value),
+		)
+	})
 </script>
 
 {#if table !== undefined}
@@ -668,11 +748,13 @@
 					icon="ri-filter-3-line"
 				></iconify-icon>
 				Autres filtres
-				{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0}
+				{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedEtatVersions.length > 0}
 					<span
 						class="ml-1 rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white"
 					>
-						{selectedArticleTypes.length + selectedTextNatures.length}
+						{selectedArticleTypes.length +
+							selectedTextNatures.length +
+							selectedEtatVersions.length}
 					</span>
 				{/if}
 			</button>
@@ -685,18 +767,20 @@
 						Filtrer les versions citant cet article :
 					</h3>
 
-					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0}
+					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedEtatVersions.length > 0}
 						<button
 							class="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
 							onclick={() => {
 								selectedArticleTypes = []
 								selectedTextNatures = []
+								selectedEtatVersions = []
 								table
 									?.getColumn("article_type_citant")
 									?.setFilterValue(undefined)
 								table
 									?.getColumn("article_citant_texte_nature")
 									?.setFilterValue(undefined)
+								table?.getColumn("etat_citant")?.setFilterValue(undefined)
 							}}
 						>
 							Réinitialiser les filtres
@@ -741,6 +825,28 @@
 							{textNature.label}<iconify-icon
 								class="align-[-0.3rem] text-lg hover:bg-gray-100"
 								icon={selectedTextNatures.includes(textNature.id)
+									? "ri-close-line"
+									: "ri-check-line"}
+							>
+							</iconify-icon>
+						</button>
+					{/each}
+				</div>
+
+				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par état :</h4>
+				<div class="mb-2 flex flex-wrap gap-2">
+					{#each uniqueEtatVersions as etatVersion}
+						<button
+							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
+								etatVersion.value,
+							)
+								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+							onclick={() => toggleEtatFilter(etatVersion.value)}
+						>
+							{etatVersion.label}<iconify-icon
+								class="align-[-0.3rem] text-lg hover:bg-gray-100"
+								icon={selectedEtatVersions.includes(etatVersion.value)
 									? "ri-close-line"
 									: "ri-check-line"}
 							>

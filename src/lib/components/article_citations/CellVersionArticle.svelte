@@ -9,8 +9,15 @@
 			// ajoute d'autres champs si besoin
 		}
 		labelArticleType?: (type?: string | null) => string
+		labelEtatVersion?: (etat?: string | null) => string
+		etatVersions?: ReadonlyArray<{
+			value: string
+			label: string
+			categorie: string
+		}>
 	}
-	let { data, labelArticleType }: Props = $props()
+	let { data, labelArticleType, labelEtatVersion, etatVersions }: Props =
+		$props()
 
 	let labelVersion = $state("")
 
@@ -43,66 +50,15 @@
 		else labelVersion = "Version sans date"
 	})
 
-	// Mapping des états de l'article citant
-	function formatEtatCitant(etat?: string | null) {
-		switch (etat?.toUpperCase().trim()) {
-			case "ABROGE":
-				return "Abrogée"
-			case "ABROGE_DIFF":
-				return "Abrogée diff"
-			case "ANNULE":
-				return "Annulée"
-			case "DENONCE":
-				return "Dénoncée"
-			case "DEPLACE":
-				return "Déplacée"
-			case "DISJOINT":
-				return "Disjointe"
-			case "MODIFIE":
-				return "Modifiée"
-			case "MODIFIE_MORT_NE":
-				return "Morte née"
-			case "PERIME":
-				return "Périmée"
-			case "REMPLACE":
-				return "Remplacée"
-			case "TRANSFERE":
-				return "Transférée"
-			case "VIGUEUR":
-				return "en vigueur"
-			case "VIGUEUR_DIFF":
-				return "en vigueur différé"
-			case "VIGUEUR_ETEN":
-				return "en vigueur étendu"
-			case "VIGUEUR_NON_ETEN":
-				return "En vigueur non étendu"
-			case "CREE":
-				return "Créée"
-			default:
-				return etat ?? "état inconnu"
-		}
-	}
+	// Retourne la catégorie d'un état (pour le style CSS)
+	// Retourne la classe de couleur pour le badge d'état
+	function getEtatBadgeColor(etat?: string | null): string {
+		const found = etatVersions?.find((e) => e.value === etat)
+		const categorie = found?.categorie
 
-	function categorieEtatCitant(etat?: string | null): string {
-		if (
-			etat === "VIGUEUR" ||
-			etat === "VIGUEUR_DIFF" ||
-			etat === "VIGUEUR_ETEN" ||
-			etat === "VIGUEUR_NON_ETEN"
-		)
-			return "vigueur_EtatCitantCategorie"
-
-		if (
-			etat === "ABROGE" ||
-			etat === "ABROGE_DIFF" ||
-			etat === "ANNULE" ||
-			etat === "DENONCE" ||
-			etat === "MODIFIE_MORT_NE" ||
-			etat === "PERIME"
-		)
-			return "supprime_EtatCitantCategorie"
-
-		return "autre_EtatCitantCategorie"
+		if (categorie === "vigueur") return "bg-green-200"
+		if (categorie === "supprime") return "bg-red-200"
+		return "bg-blue-50"
 	}
 </script>
 
@@ -115,15 +71,9 @@
 		>
 
 		<span
-			class={`rounded-md border border-neutral-300 px-1 text-xs tracking-wide text-neutral-600 ${
-				categorieEtatCitant(data?.etat) === "vigueur_EtatCitantCategorie"
-					? "bg-green-200"
-					: categorieEtatCitant(data?.etat) === "supprime_EtatCitantCategorie"
-						? "bg-red-200"
-						: "bg-neutral-100"
-			}`}
+			class={`rounded-md border border-neutral-300 px-1 text-xs tracking-wide text-neutral-600 ${getEtatBadgeColor(data?.etat)}`}
 		>
-			{formatEtatCitant(data?.etat)}
+			{labelEtatVersion?.(data?.etat) ?? data?.etat ?? "état inconnu"}
 		</span>
 
 		{#if data?.article_type && ["ENTIEREMENT_MODIF", "PARTIELLEMENT_MODIF"].includes(data.article_type)}
