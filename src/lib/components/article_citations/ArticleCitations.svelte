@@ -668,7 +668,7 @@
 </script>
 
 {#if table !== undefined}
-	<div class="flex w-full flex-col flex-wrap justify-end gap-y-2 p-3">
+	<div class="mt-2 flex w-full flex-col flex-wrap justify-end gap-y-2">
 		<div class="flex justify-end">
 			<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
 			<button
@@ -711,7 +711,7 @@
 					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 			</button>
 		</div>
-		<div class="my-2 flex items-center justify-end gap-2">
+		<div class="mt-1 mb-3 flex items-center justify-end gap-2">
 			<div class="flex items-center">
 				<!--Filtre "en vigueur" -->
 				<label class="inline-flex cursor-pointer items-center">
@@ -761,10 +761,10 @@
 		</div>
 		<!--Boutons des autres filtres lorsque le volet est ouvert-->
 		{#if showFiltersPanel}
-			<div class="">
+			<div class="rounded-t-md border bg-neutral-100 p-3">
 				<div class="flex justify-between">
-					<h3 class="mb-3 font-semibold text-gray-700">
-						Filtrer les versions citant cet article :
+					<h3 class="mb-3 font-semibold tracking-wide text-gray-500 uppercase">
+						Filtrer les versions :
 					</h3>
 
 					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedEtatVersions.length > 0}
@@ -787,78 +787,87 @@
 						</button>
 					{/if}
 				</div>
-				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par type :</h4>
-				<div class="mb-4 flex flex-wrap gap-2">
-					{#each uniqueArticleTypes as articleType}
-						<button
-							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
-								articleType.value,
-							)
-								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
-								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
-							onclick={() => toggleArticleTypeFilter(articleType.value)}
-						>
-							{articleType.label}<iconify-icon
-								class="align-[-0.3rem] text-lg hover:bg-gray-100"
-								icon={selectedArticleTypes.includes(articleType.value)
-									? "ri-close-line"
-									: "ri-check-line"}
-							>
-							</iconify-icon>
-						</button>
-					{/each}
-				</div>
-
-				<h4 class="mb-2 text-sm font-semibold text-gray-700">
-					Par nature de texte :
-				</h4>
-				<div class="mb-2 flex flex-wrap gap-2">
-					{#each uniqueTextNatures as textNature}
-						<button
-							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
-								textNature.id,
-							)
-								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
-								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
-							onclick={() => toggleTextNatureFilter(textNature.id)}
-						>
-							{textNature.label}<iconify-icon
-								class="align-[-0.3rem] text-lg hover:bg-gray-100"
-								icon={selectedTextNatures.includes(textNature.id)
-									? "ri-close-line"
-									: "ri-check-line"}
-							>
-							</iconify-icon>
-						</button>
-					{/each}
-				</div>
-
-				<h4 class="mb-2 text-sm font-semibold text-gray-700">Par état :</h4>
-				<div class="mb-2 flex flex-wrap gap-2">
-					{#each uniqueEtatVersions as etatVersion}
-						<button
-							class="p-y cursor-pointer rounded-full border px-2 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
-								etatVersion.value,
-							)
-								? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
-								: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
-							onclick={() => toggleEtatFilter(etatVersion.value)}
-						>
-							{etatVersion.label}<iconify-icon
-								class="align-[-0.3rem] text-lg hover:bg-gray-100"
-								icon={selectedEtatVersions.includes(etatVersion.value)
-									? "ri-close-line"
-									: "ri-check-line"}
-							>
-							</iconify-icon>
-						</button>
-					{/each}
+				<div class="flex flex-wrap justify-between">
+					<div>
+						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par type :</h4>
+						<div class="mb-4 flex flex-wrap gap-2">
+							{#each uniqueArticleTypes as articleType}
+								<button
+									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
+										articleType.value,
+									)
+										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+									onclick={() => toggleArticleTypeFilter(articleType.value)}
+								>
+									{articleType.label}<iconify-icon
+										class="align-[-0.3rem] text-lg hover:bg-gray-100"
+										icon={selectedArticleTypes.includes(articleType.value)
+											? "ri-close-line"
+											: "ri-check-line"}
+									>
+									</iconify-icon>
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div>
+						<h4 class="mb-2 text-sm font-semibold text-gray-500">
+							Par nature de texte :
+						</h4>
+						<div class="mb-2 flex flex-wrap gap-2">
+							{#each uniqueTextNatures as textNature}
+								<button
+									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
+										textNature.id,
+									)
+										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+									onclick={() => toggleTextNatureFilter(textNature.id)}
+								>
+									{textNature.label}<iconify-icon
+										class="align-[-0.3rem] text-lg hover:bg-gray-100"
+										icon={selectedTextNatures.includes(textNature.id)
+											? "ri-close-line"
+											: "ri-check-line"}
+									>
+									</iconify-icon>
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div>
+						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par état :</h4>
+						<div class="mb-2 flex flex-wrap gap-2">
+							{#each uniqueEtatVersions as etatVersion}
+								<button
+									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
+										etatVersion.value,
+									)
+										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+									onclick={() => toggleEtatFilter(etatVersion.value)}
+								>
+									{etatVersion.label}<iconify-icon
+										class="align-[-0.3rem] text-lg hover:bg-gray-100"
+										icon={selectedEtatVersions.includes(etatVersion.value)
+											? "ri-close-line"
+											: "ri-check-line"}
+									>
+									</iconify-icon>
+								</button>
+							{/each}
+						</div>
+					</div>
 				</div>
 			</div>
 		{/if}
 	</div>
 	<!--TABLEAU DES CITATIONS -->
-	<div class="w-full rounded-md border bg-white">
+	<div
+		class="w-full rounded-b-md border bg-white"
+		class:rounded-t-md={!showFiltersPanel}
+	>
 		<TableUI.Root>
 			<TableUI.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
