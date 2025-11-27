@@ -21,9 +21,6 @@
 		simplifyHtml,
 		type FragmentPosition,
 		type FragmentReverseTransformation,
-		type Transformation,
-		type TransformationLeaf,
-		type TransformationNode,
 	} from "@tricoteuses/tisseuse"
 	import { diffWords } from "diff"
 	import { onMount } from "svelte"
@@ -141,19 +138,6 @@
 		}
 	}
 	const segmenter = new LegiSegmenter()
-
-	function* iterTransformationLeafs(
-		transformation: Transformation,
-	): Generator<TransformationLeaf, void> {
-		if ((transformation as TransformationNode).transformations === undefined) {
-			yield transformation as TransformationLeaf
-		} else {
-			for (const subTransformation of (transformation as TransformationNode)
-				.transformations) {
-				yield* iterTransformationLeafs(subTransformation)
-			}
-		}
-	}
 
 	function addEventListenersOnHighlighted() {
 		const baseBg = "#ccd3e7" /* Fond bleu clair */
