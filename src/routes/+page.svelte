@@ -87,6 +87,24 @@
 							></iconify-icon>
 						</a>
 					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B2141
+"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							PLFSS 2026 <span
+								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
+								>Deuxième lecture - version déposée le 26/11/2025</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
 				{/if}
 			</div>
 		</div>
