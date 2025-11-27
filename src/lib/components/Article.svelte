@@ -15,15 +15,17 @@
 	import { shared } from "$lib/shared.svelte"
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	import {
-		originalMergedPositionsFromTransformed,
+		assertNever,
+		newReverseTransformationsMergedFromPositionsIterator,
+		reversePositionsSplitFromPositions,
 		simplifyHtml,
-		type SourceMapSegment,
-		type TextPosition,
+		type FragmentPosition,
+		type FragmentReverseTransformation,
 		type Transformation,
 		type TransformationLeaf,
 		type TransformationNode,
 	} from "@tricoteuses/tisseuse"
-	import { diffArrays, type ChangeObject } from "diff"
+	import { diffWords } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -153,183 +155,6 @@
 		}
 	}
 
-	/**
-	 * Représente le mapping entre une position transformée et ses positions originales correspondantes.
-	 */
-	export interface PositionMapping {
-		transformedPosition: TextPosition
-		originalPositions: TextPosition[]
-	}
-
-	/**
-	 * Note: Les positions originales sont divisées lorsqu'elles chevauchent plusieurs segments.
-	 * Le résultat associe chaque position transformée à ses positions originales correspondantes.
-	 */
-	export function originalSplitPositionsArrayFromTransformed(
-		transformation: Transformation,
-		positions: TextPosition[],
-	): PositionMapping[] {
-		// Initialiser les mappings avec les positions d'entrée
-		let mappings: PositionMapping[] = positions.map((pos) => ({
-			transformedPosition: pos,
-			originalPositions: [pos],
-		}))
-
-		// Appliquer les transformations en ordre inverse
-		for (const { sourceMap } of [
-			...iterTransformationLeafs(transformation),
-		].reverse()) {
-			mappings = mappings.map((mapping) => ({
-				transformedPosition: mapping.transformedPosition,
-				originalPositions:
-					originalSplitPositionsArrayFromTransformedUsingSourceMap(
-						sourceMap,
-						mapping.originalPositions,
-					),
-			}))
-		}
-
-		return mappings
-	}
-
-	/**
-	 * Note: Les positions originales sont divisées lorsqu'elles chevauchent plusieurs segments.
-	 * Donc, il peut y avoir plus de positions originales que de positions transformées.
-	 */
-	function originalSplitPositionsArrayFromTransformedUsingSourceMap(
-		sourceMap: SourceMapSegment[],
-		transformedPositions: TextPosition[],
-	): TextPosition[] {
-		const originalPositions: TextPosition[] = []
-		// Insert empty segment at start & end.
-		sourceMap = [
-			{ inputIndex: 0, inputLength: 0, outputIndex: 0, outputLength: 0 },
-			...sourceMap,
-			{
-				inputIndex: Number.MAX_SAFE_INTEGER,
-				inputLength: 0,
-				outputIndex: Number.MAX_SAFE_INTEGER,
-				outputLength: 0,
-			},
-		]
-		let segmentIndex = 0
-		let segment = sourceMap[segmentIndex]
-		for (const transformedPosition of transformedPositions) {
-			let { start: transformedStart } = transformedPosition
-			const { stop: transformedStop } = transformedPosition
-
-			transformPosition: for (
-				let positionReverseTransformed = false;
-				!positionReverseTransformed;
-
-			) {
-				for (
-					;
-					segment.outputIndex + segment.outputLength <= transformedStart;
-					segmentIndex++, segment = sourceMap[segmentIndex]
-				);
-				let firstIncludedSegmentIndex = segmentIndex
-				const segmentBefore = sourceMap[firstIncludedSegmentIndex - 1]
-				let originalStart =
-					segmentBefore.inputIndex +
-					segmentBefore.inputLength +
-					transformedStart -
-					(segmentBefore.outputIndex + segmentBefore.outputLength)
-
-				let lastIncludedSegmentIndex: number
-				for (
-					lastIncludedSegmentIndex = firstIncludedSegmentIndex - 1;
-					sourceMap[lastIncludedSegmentIndex + 1].outputIndex < transformedStop;
-					lastIncludedSegmentIndex++
-				);
-				const lastIncludedSegment = sourceMap[lastIncludedSegmentIndex]
-				let originalStop =
-					lastIncludedSegment.inputIndex +
-					lastIncludedSegment.inputLength +
-					transformedStop -
-					(lastIncludedSegment.outputIndex + lastIncludedSegment.outputLength)
-
-				for (
-					let includedSegmentIndex = firstIncludedSegmentIndex;
-					includedSegmentIndex <= lastIncludedSegmentIndex;
-					includedSegmentIndex++
-				) {
-					const includedSegment = sourceMap[includedSegmentIndex]
-					const matchingSegmentIndex = includedSegment.matchingSegmentIndex
-					if (matchingSegmentIndex !== undefined) {
-						// Note: Add 1 to matchingSegmentIndex, because of empty segment
-						// inserted at start of source map.
-						if (matchingSegmentIndex + 1 < firstIncludedSegmentIndex) {
-							const matchingSegment = sourceMap[matchingSegmentIndex + 1]
-							if (matchingSegment.outputIndex < transformedStart) {
-								// Split transformed position.
-								if (includedSegment.inputIndex > originalStart) {
-									originalPositions.push({
-										start: originalStart,
-										stop: includedSegment.inputIndex,
-									})
-								}
-								transformedStart =
-									includedSegment.outputIndex + includedSegment.outputLength
-								// Ignore following segments whose output are empty.
-								for (
-									let nextSegmentIndex = includedSegmentIndex,
-										nextSegment = includedSegment;
-									nextSegment.outputIndex + nextSegment.outputLength ===
-									transformedStart;
-									nextSegmentIndex++, nextSegment = sourceMap[nextSegmentIndex]
-								) {
-									segmentIndex = nextSegmentIndex
-								}
-								// Handle remaining split position.
-								continue transformPosition
-							}
-							firstIncludedSegmentIndex = matchingSegmentIndex + 1
-							originalStart = matchingSegment.inputIndex
-						} else if (matchingSegmentIndex + 1 > lastIncludedSegmentIndex) {
-							const matchingSegment = sourceMap[matchingSegmentIndex + 1]
-							if (
-								matchingSegment.outputIndex + matchingSegment.outputLength >
-								transformedStop
-							) {
-								// Split transformed position.
-								if (includedSegment.inputIndex > originalStart) {
-									originalPositions.push({
-										start: originalStart,
-										stop: includedSegment.inputIndex,
-									})
-								}
-								transformedStart =
-									includedSegment.outputIndex + includedSegment.outputLength
-								// Ignore following segments whose output are empty.
-								for (
-									let nextSegmentIndex = includedSegmentIndex,
-										nextSegment = includedSegment;
-									nextSegment.outputIndex + nextSegment.outputLength ===
-									transformedStart;
-									nextSegmentIndex++, nextSegment = sourceMap[nextSegmentIndex]
-								) {
-									segmentIndex = nextSegmentIndex
-								}
-								// Handle remaining split position.
-								continue transformPosition
-							}
-							lastIncludedSegmentIndex = matchingSegmentIndex + 1
-							originalStop =
-								matchingSegment.inputIndex + matchingSegment.inputLength
-						}
-					}
-				}
-				originalPositions.push({
-					start: originalStart,
-					stop: originalStop,
-				})
-				positionReverseTransformed = true
-			}
-		}
-		return originalPositions
-	}
-
 	function addEventListenersOnHighlighted() {
 		const baseBg = "#ccd3e7" /* Fond bleu clair */
 		const hoverBg =
@@ -400,122 +225,6 @@
 		if (showDiff === false) addEventListenersOnHighlighted()
 	})
 
-	function isSmallChange(
-		change: ChangeObject<string[]>,
-		threshold: number,
-	): boolean {
-		return (change.count ?? change.value.length) < threshold
-	}
-
-	export function mergeSmallChanges(
-		diff: ChangeObject<string[]>[],
-		options: MergeOptions = {},
-	): ChangeObject<string[]>[] {
-		const { countThreshold = 7 } = options
-
-		if (diff.length === 0) return diff
-
-		const result: ChangeObject<string[]>[] = []
-		let i = 0
-
-		while (i < diff.length) {
-			// Chercher une séquence de petits éléments consécutifs
-			const sequenceEnd = findSmallSequenceEnd(diff, i, countThreshold)
-
-			if (sequenceEnd === i) {
-				// Pas de petite séquence, on garde l'élément tel quel
-				result.push(diff[i])
-				i++
-			} else {
-				// On a une séquence de petits éléments, on les fusionne
-				const merged = mergeSequence(diff, i, sequenceEnd)
-				result.push(...merged)
-				i = sequenceEnd
-			}
-		}
-
-		return result
-	}
-
-	function findSmallSequenceEnd(
-		diff: ChangeObject<string[]>[],
-		start: number,
-		threshold: number,
-	): number {
-		let i = start
-		while (i < diff.length && isSmallChange(diff[i], threshold)) {
-			i++
-		}
-		return i
-	}
-
-	function mergeSequence(
-		diff: ChangeObject<string[]>[],
-		start: number,
-		end: number,
-	): ChangeObject<string[]>[] {
-		const sequence = diff.slice(start, end)
-		const result: ChangeObject<string[]>[] = []
-
-		// Collecter tous les removed et unchanged
-		const removedTokens: string[] = []
-		let hasRemoved = false
-
-		for (const item of sequence) {
-			if (item.removed) {
-				removedTokens.push(...item.value)
-				hasRemoved = true
-			} else if (!item.added && !item.removed) {
-				// Les unchanged sont intercalés dans les removed
-				removedTokens.push(...item.value)
-			}
-		}
-		const addedTokens: string[] = []
-		let hasAdded = false
-
-		for (const item of sequence) {
-			if (item.added) {
-				addedTokens.push(...item.value)
-				hasAdded = true
-			} else if (!item.added && !item.removed) {
-				// Les unchanged sont intercalés dans les added
-				addedTokens.push(...item.value)
-			}
-		}
-
-		// Ajouter le bloc removed fusionné s'il existe
-		if (hasRemoved) {
-			result.push({
-				added: false,
-				removed: true,
-				value: removedTokens,
-				count: removedTokens.length,
-			})
-		}
-
-		// Ajouter le bloc added fusionné s'il existe
-		if (hasAdded) {
-			result.push({
-				added: true,
-				removed: false,
-				value: addedTokens,
-				count: addedTokens.length,
-			})
-		}
-
-		// Si la séquence ne contient que des unchanged, on les garde tels quels
-		if (!hasRemoved && !hasAdded) {
-			result.push({
-				added: false,
-				removed: false,
-				value: addedTokens, // ou removedTokens, c'est la même chose
-				count: addedTokens.length,
-			})
-		}
-
-		return result
-	}
-
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const currentBlocTextuel = articleInfo.article?.bloc_textuel
@@ -542,141 +251,210 @@
 	let showDiff = $state(false)
 	const diffContent = $derived.by(() => {
 		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
-			const simplifiedArticleText = simplifyHtml({ removeAWithHref: true })(
-				currentBlocTextuel,
-			)
-			const simplifiedPreviousVersionText = simplifyHtml({
-				removeAWithHref: true,
-			})(previousBlocTextuel)
+			const generateHtmlSplitDiff = (
+				previousHtml: string,
+				currentHtml: string,
+			): string => {
+				const currentTransformation = simplifyHtml()(currentHtml)
+				const currentText = currentTransformation.output
 
-			const previousSegments = segmenter.segmentToArray(
-				simplifiedPreviousVersionText.output,
-			)
+				const previousTransformation = simplifyHtml()(previousHtml)
+				const previousText = previousTransformation.output
 
-			const currentSegments = segmenter.segmentToArray(
-				simplifiedArticleText.output,
-			)
-			// const diff = diffWords(
-			// 	simplifiedPreviousVersionText.output,
-			// 	simplifiedArticleText.output,
-			// )
-			const diff = mergeSmallChanges(
-				diffArrays(previousSegments, currentSegments),
-			)
+				const changes = diffWords(previousText, currentText, {
+					// ignoreCase,
+					// intlSegmenter,
+				})
 
-			function extractHtmlBetweenOriginalPositions(
-				html: string,
-				positions: TextPosition[],
-			): string {
-				if (positions.length === 0) return ""
-
-				const startPos = positions[0].start
-				const endPos = positions[positions.length - 1].stop
-
-				return html.slice(startPos, endPos)
-			}
-
-			let partialDiffContent = ""
-			let offsetInPrevious = 0
-			let offsetInCurrent = 0
-			let lastPreviousPos = 0 // Pour suivre où on en est dans le HTML précédent
-			let lastCurrentPos = 0 // Pour suivre où on en est dans le HTML actuel
-
-			for (const part of diff) {
-				if (part.removed) {
-					const string = part.value.join("")
-
-					const originalPositionsArray =
-						originalSplitPositionsArrayFromTransformed(
-							simplifiedPreviousVersionText,
-							[
-								{
-									start: offsetInPrevious,
-									stop: offsetInPrevious + string.length,
-								},
-							],
-						)
-
-					const positions = originalPositionsArray[0].originalPositions
-					const htmlContent = extractHtmlBetweenOriginalPositions(
-						previousBlocTextuel,
-						positions,
-					)
-
-					partialDiffContent += `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${htmlContent}</span>`
-
-					if (positions.length > 0) {
-						lastPreviousPos = positions[positions.length - 1].stop
+				let currentTextIndex = 0
+				let previousTextIndex = 0
+				const textPositions: Array<
+					| {
+							currentPositions: FragmentPosition[]
+							previousIndex: number
+							source: "current"
+					  }
+					| {
+							currentIndex: number
+							previousPositions: FragmentPosition[]
+							source: "previous"
+					  }
+				> = []
+				for (const change of changes) {
+					const changeLength = change.value.length
+					if (change.added) {
+						const changeStop = currentTextIndex + changeLength
+						const currentPositions: FragmentPosition[] = []
+						textPositions.push({
+							currentPositions,
+							previousIndex: previousTextIndex,
+							source: "current",
+						})
+						let start = currentTextIndex
+						for (let i = currentTextIndex; i < changeStop; i++) {
+							if (currentText[i] === "\n") {
+								if (i > start) {
+									currentPositions.push({
+										start,
+										stop: i,
+									})
+									start = i + 1
+								}
+							}
+						}
+						if (start < changeStop) {
+							currentPositions.push({
+								start,
+								stop: changeStop,
+							})
+						}
+						currentTextIndex += changeLength // - (changeEndsWithLineFeed ? 1 : 0);
+					} else if (change.removed) {
+						const changeStop = previousTextIndex + changeLength
+						const previousPositions: FragmentPosition[] = []
+						textPositions.push({
+							currentIndex: currentTextIndex,
+							previousPositions,
+							source: "previous",
+						})
+						let start = previousTextIndex
+						for (let i = previousTextIndex; i < changeStop; i++) {
+							if (previousText[i] === "\n") {
+								if (i > start) {
+									previousPositions.push({
+										start,
+										stop: i,
+									})
+									start = i + 1
+								}
+							}
+						}
+						if (start < changeStop) {
+							previousPositions.push({
+								start,
+								stop: changeStop,
+							})
+						}
+						previousTextIndex += changeLength // - (changeEndsWithLineFeed ? 1 : 0);
+					} else {
+						previousTextIndex += changeLength
+						currentTextIndex += changeLength
 					}
-					offsetInPrevious += string.length
-				} else if (part.added) {
-					const string = part.value.join("")
-
-					const originalPositionsArray =
-						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
-							{
-								start: offsetInCurrent,
-								stop: offsetInCurrent + string.length,
-							},
-						])
-
-					const positions = originalPositionsArray[0].originalPositions
-					const htmlContent = extractHtmlBetweenOriginalPositions(
-						currentBlocTextuel,
-						positions,
-					)
-
-					partialDiffContent += `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${htmlContent}</span>`
-
-					if (positions.length > 0) {
-						lastCurrentPos = positions[positions.length - 1].stop
-					}
-					offsetInCurrent += string.length
-				} else {
-					// Partie inchangée : prendre le HTML actuel
-					const string = part.value.join("")
-
-					const originalPositionsArray =
-						originalSplitPositionsArrayFromTransformed(simplifiedArticleText, [
-							{
-								start: offsetInCurrent,
-								stop: offsetInCurrent + string.length,
-							},
-						])
-
-					const positions = originalPositionsArray[0].originalPositions
-					const htmlContent = extractHtmlBetweenOriginalPositions(
-						currentBlocTextuel,
-						positions,
-					)
-
-					partialDiffContent += htmlContent
-
-					if (positions.length > 0) {
-						lastCurrentPos = positions[positions.length - 1].stop
-					}
-
-					const originalPositionsArrayPrev =
-						originalSplitPositionsArrayFromTransformed(
-							simplifiedPreviousVersionText,
-							[
-								{
-									start: offsetInPrevious,
-									stop: offsetInPrevious + string.length,
-								},
-							],
-						)
-					const positionsPrev = originalPositionsArrayPrev[0].originalPositions
-					if (positionsPrev.length > 0) {
-						lastPreviousPos = positionsPrev[positionsPrev.length - 1].stop
-					}
-
-					offsetInPrevious += string.length
-					offsetInCurrent += string.length
 				}
+
+				const currentHtmlPositions = reversePositionsSplitFromPositions(
+					currentTransformation,
+					textPositions.map((textPositionForChange) =>
+						textPositionForChange.source === "previous"
+							? [
+									{
+										start: textPositionForChange.currentIndex,
+										stop: textPositionForChange.currentIndex,
+									},
+								]
+							: textPositionForChange.currentPositions,
+					),
+				)
+				const previousHtmlPositions = reversePositionsSplitFromPositions(
+					previousTransformation,
+					textPositions.map((textPositionForChange) =>
+						textPositionForChange.source === "current"
+							? [
+									{
+										start: textPositionForChange.previousIndex,
+										stop: textPositionForChange.previousIndex,
+									},
+								]
+							: textPositionForChange.previousPositions,
+					),
+				)
+				let currentHtmlIndex = 0
+				const htmlFragments: string[] = []
+				let previousHtmlIndex = 0
+				for (const [
+					changeIndex,
+					textPositionsForChange,
+				] of textPositions.entries()) {
+					switch (textPositionsForChange.source) {
+						case "current": {
+							const previousHtmlPosition = previousHtmlPositions[changeIndex][0]
+							if (previousHtmlPosition.start > previousHtmlIndex) {
+								// Text fragment is the same on both previous & current texts.
+								htmlFragments.push(
+									previousHtml.slice(
+										previousHtmlIndex,
+										previousHtmlPosition.start,
+									),
+								)
+								previousHtmlIndex +=
+									previousHtmlPosition.start - previousHtmlIndex
+							}
+							for (const [i, currentHtmlPosition] of currentHtmlPositions[
+								changeIndex
+							].entries()) {
+								if (i > 0 && currentHtmlPosition.start > currentHtmlIndex) {
+									htmlFragments.push(
+										currentHtml.slice(
+											currentHtmlIndex,
+											currentHtmlPosition.start,
+										),
+									)
+								}
+								const currentOriginalHtmlFragment = currentHtml.slice(
+									currentHtmlPosition.start,
+									currentHtmlPosition.stop,
+								)
+								const currentModifiedHtmlFragment = `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${currentOriginalHtmlFragment}</span>`
+								htmlFragments.push(currentModifiedHtmlFragment)
+								currentHtmlIndex = currentHtmlPosition.stop
+							}
+							break
+						}
+
+						case "previous": {
+							const currentHtmlPosition = currentHtmlPositions[changeIndex][0]
+							if (currentHtmlPosition.start > currentHtmlIndex) {
+								// Text fragment is the same on both previous & current texts.
+								currentHtmlIndex += currentHtmlPosition.start - currentHtmlIndex
+							}
+							for (const previousHtmlPosition of previousHtmlPositions[
+								changeIndex
+							]) {
+								if (previousHtmlPosition.start > previousHtmlIndex) {
+									htmlFragments.push(
+										previousHtml.slice(
+											previousHtmlIndex,
+											previousHtmlPosition.start,
+										),
+									)
+								}
+								const previousOriginalHtmlFragment = previousHtml.slice(
+									previousHtmlPosition.start,
+									previousHtmlPosition.stop,
+								)
+								const previousModifiedHtmlFragment = `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${previousOriginalHtmlFragment}</span>`
+								htmlFragments.push(previousModifiedHtmlFragment)
+								previousHtmlIndex = previousHtmlPosition.stop
+							}
+							break
+						}
+
+						default: {
+							assertNever(
+								"HtmlDiffInline textPositionsForChange.source",
+								textPositionsForChange,
+							)
+						}
+					}
+				}
+				if (previousHtmlIndex < previousHtml.length) {
+					htmlFragments.push(previousHtml.slice(previousHtmlIndex))
+				}
+
+				return htmlFragments.join("")
 			}
 
-			return partialDiffContent
+			return generateHtmlSplitDiff(previousBlocTextuel, currentBlocTextuel)
 		}
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
 	})
@@ -823,10 +601,14 @@
 					self.findIndex((r) => r.start === item.start && r.stop === item.stop),
 			)
 			.sort((a, b) => a.start - b.start)
-		const coordsInOriginal = originalMergedPositionsFromTransformed(
-			simplified,
-			sortedSimplifiedCoord,
-		)
+		const originalPositionsIterator =
+			newReverseTransformationsMergedFromPositionsIterator(simplified)
+		const coordsInOriginal: FragmentReverseTransformation[] = []
+		for (const simplifiedCoord of sortedSimplifiedCoord) {
+			const result = originalPositionsIterator.next(simplifiedCoord)
+			coordsInOriginal.push(result.value!)
+		}
+
 		if (sortedSimplifiedCoord.length > 0) {
 			sortedSimplifiedCoord.forEach((coord, index) => {
 				coordsToHighlight.set(

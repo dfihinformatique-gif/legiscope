@@ -11,8 +11,9 @@ import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 import {
-	originalMergedPositionsFromTransformed,
+	newReverseTransformationsMergedFromPositionsIterator,
 	simplifyHtml,
+	type FragmentReverseTransformation,
 } from "@tricoteuses/tisseuse"
 import type { LayoutServerLoad } from "./$types"
 
@@ -186,10 +187,13 @@ function highlightParameterValuesInHTML(
 						),
 				)
 				.sort((a, b) => a.start - b.start)
-			const coordsInOriginal = originalMergedPositionsFromTransformed(
-				simplified,
-				sortedSimplifiedCoord,
-			)
+			const originalPositionsIterator =
+				newReverseTransformationsMergedFromPositionsIterator(simplified)
+			const coordsInOriginal: FragmentReverseTransformation[] = []
+			for (const simplifiedCoord of sortedSimplifiedCoord) {
+				const result = originalPositionsIterator.next(simplifiedCoord)
+				coordsInOriginal.push(result.value!)
+			}
 			if (sortedSimplifiedCoord.length > 0) {
 				sortedSimplifiedCoord.forEach((coord, index) => {
 					coordsToHighlight.set(

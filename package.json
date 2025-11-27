@@ -24,7 +24,7 @@
 		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "^4.1.8",
 		"@tricoteuses/legifrance": "^0.14.0",
-		"@tricoteuses/tisseuse": "^0.1.2",
+		"@tricoteuses/tisseuse": "^0.7.0",
 		"@types/js-yaml": "^4.0.9",
 		"@types/node": "^24.3.0",
 		"dedent-js": "^1.0.1",
