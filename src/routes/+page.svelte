@@ -97,7 +97,7 @@
 						>
 							PLFSS 2026 <span
 								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Deuxième lecture - version déposée le 26/11/2025</span
+								>Nouvelle lecture - version déposée le 26/11/2025</span
 							>
 							<iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
