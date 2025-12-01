@@ -805,7 +805,7 @@
 						</button>
 					{/if}
 				</div>
-				<div class="flex flex-wrap justify-between">
+				<div class="flex flex-wrap justify-between gap-2">
 					<div>
 						<h4 class="mb-2 text-sm font-semibold text-gray-500">
 							Par nature de texte :
@@ -813,20 +813,20 @@
 						<div class="mb-2 flex flex-wrap gap-2">
 							{#each uniqueTextNatures as textNature}
 								<button
-									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
+									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
 										textNature.id,
 									)
 										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
 										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
 									onclick={() => toggleTextNatureFilter(textNature.id)}
 								>
-									{textNature.label}<iconify-icon
-										class="align-[-0.3rem] text-lg hover:bg-gray-100"
-										icon={selectedTextNatures.includes(textNature.id)
-											? "ri-close-line"
-											: "ri-check-line"}
-									>
-									</iconify-icon>
+									{textNature.label}
+									{#if selectedTextNatures.includes(textNature.id)}
+										<iconify-icon
+											class="absolute -top-2 -right-1 rounded-full border bg-white text-lg"
+											icon="ri-check-line"
+										></iconify-icon>
+									{/if}
 								</button>
 							{/each}
 						</div>
@@ -836,20 +836,21 @@
 						<div class="mb-2 flex flex-wrap gap-2">
 							{#each uniqueEtatVersions as etatVersion}
 								<button
-									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
+									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
 										etatVersion.value,
 									)
 										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
 										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
 									onclick={() => toggleEtatFilter(etatVersion.value)}
 								>
-									{etatVersion.label}<iconify-icon
-										class="align-[-0.3rem] text-lg hover:bg-gray-100"
-										icon={selectedEtatVersions.includes(etatVersion.value)
-											? "ri-close-line"
-											: "ri-check-line"}
-									>
-									</iconify-icon>
+									{etatVersion.label}
+
+									{#if selectedEtatVersions.includes(etatVersion.value)}
+										<iconify-icon
+											class="absolute -top-2 -right-1 rounded-full border bg-white text-lg"
+											icon="ri-check-line"
+										></iconify-icon>
+									{/if}
 								</button>
 							{/each}
 						</div>
@@ -862,7 +863,7 @@
 							{#each uniqueArticleTypes as articleType}
 								<button
 									title={articleType.title}
-									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
+									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
 										articleType.value,
 									)
 										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
@@ -872,13 +873,14 @@
 									<span
 										class="underline decoration-neutral-400 decoration-dotted underline-offset-2"
 										>{articleType.label}</span
-									><iconify-icon
-										class="align-[-0.3rem] text-lg hover:bg-gray-100"
-										icon={selectedArticleTypes.includes(articleType.value)
-											? "ri-close-line"
-											: "ri-check-line"}
 									>
-									</iconify-icon>
+
+									{#if selectedArticleTypes.includes(articleType.value)}
+										<iconify-icon
+											class="absolute -top-2 -right-1 rounded-full border bg-white text-lg"
+											icon="ri-check-line"
+										></iconify-icon>
+									{/if}
 								</button>
 							{/each}
 						</div>
