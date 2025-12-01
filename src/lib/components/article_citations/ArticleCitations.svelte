@@ -68,19 +68,19 @@
 	const ARTICLE_TYPES = [
 		{
 			value: "AUTONOME",
-			label: "autonome",
+			label: "Autonome",
 			title:
 				"Version autonome, c'est-à-dire dont le contenu complète le droit. Par opposition aux versions modifiant un article.",
 		},
 		{
 			value: "ENTIEREMENT_MODIF",
-			label: "modificatrice",
+			label: "Modificatrice",
 			title:
 				"Version entièrement modificatrice, c'est-à-dire dont le contenu vise à modifier le contenu d'autres articles. Par opposition aux version autonomes dont le contenu s'ajoute au droit.",
 		},
 		{
 			value: "PARTIELLEMENT_MODIF",
-			label: "autonome et modificatrice",
+			label: "Autonome et modificatrice",
 			title:
 				"Version à la fois autonome et modificatrice, c'est-à-dire dont le contenu complète le droit, et aussi, vise à modifier d'autres articles.",
 		},
@@ -102,13 +102,13 @@
 
 	// Mapping des états des versions
 	const ETAT_VERSIONS = [
-		{ value: "VIGUEUR", label: "en vigueur", categorie: "vigueur" },
+		{ value: "VIGUEUR", label: "En vigueur", categorie: "vigueur" },
 		{
 			value: "VIGUEUR_DIFF",
-			label: "en vigueur différé",
+			label: "En vigueur différé",
 			categorie: "vigueur",
 		},
-		{ value: "VIGUEUR_ETEN", label: "en vigueur étendu", categorie: "vigueur" },
+		{ value: "VIGUEUR_ETEN", label: "En vigueur étendu", categorie: "vigueur" },
 		{
 			value: "VIGUEUR_NON_ETEN",
 			label: "En vigueur non étendu",
