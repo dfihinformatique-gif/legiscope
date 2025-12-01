@@ -297,6 +297,7 @@
 								date_fin: firstSubRow.date_fin_citant,
 								etat: firstSubRow.etat_citant,
 								article_type: firstSubRow.article_type_citant,
+								legi_id: firstSubRow.legi_id_citant,
 							},
 							labelArticleType,
 							labelEtatVersion,
@@ -307,13 +308,11 @@
 				} else {
 					return renderComponent(CellVersionArticle, {
 						data: {
-							article_citant: grouping.includes("article_citant")
-								? null
-								: (row.getValue("article_citant") as string | null),
 							date_debut: row.original.date_debut_citant,
 							date_fin: row.original.date_fin_citant,
 							etat: row.original.etat_citant,
 							article_type: row.original.article_type_citant,
+							legi_id: row.original.legi_id_citant,
 						},
 						labelArticleType,
 						labelEtatVersion,
@@ -369,6 +368,7 @@
 						date_fin: dataRow.date_fin_cite,
 						etat: dataRow.etat_cite,
 						article_type: dataRow.article_type_cite,
+						legi_id: dataRow.legi_id_cite,
 					},
 					labelArticleType,
 					labelEtatVersion,
@@ -986,7 +986,9 @@
 									{:else}
 										<div class="ml-12 flex items-center py-2">
 											{#if grouping.includes("version_citante")}
-												Cite l'art. {row.original.num_cite} - <FlexRender
+												Cite&nbsp;{#if row.original.num_cite}
+													l'art. {row.original.num_cite} -{/if}
+												<FlexRender
 													content={cell.column.columnDef.cell}
 													context={cell.getContext()}
 												/>
