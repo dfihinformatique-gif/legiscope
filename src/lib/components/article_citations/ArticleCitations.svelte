@@ -66,14 +66,23 @@
 
 	// Mapping des types d'article
 	const ARTICLE_TYPES = [
-		{ value: "AUTONOME", label: "Complétant le droit" },
+		{
+			value: "AUTONOME",
+			label: "autonome",
+			title:
+				"Version autonome, c'est-à-dire dont le contenu vient compléter le droit. Par opposition aux versions modifiant un article.",
+		},
 		{
 			value: "ENTIEREMENT_MODIF",
-			label: "Modifiant un autre article",
+			label: "modificatrice",
+			title:
+				"Version entièrement modificatrice, c'est-à-dire dont le contenu vise à modifier le contenu d'autres articles. Par opposition aux version autonomes dont le contenu s'ajoute au droit.",
 		},
 		{
 			value: "PARTIELLEMENT_MODIF",
-			label: "Complétant le droit et modifiant un autre article",
+			label: "autonome et modificatrice",
+			title:
+				"Version partiellement modificatrice, c'est-à-dire dont le contenu vient compléter le droit et également vise à modifier d'autres articles.",
 		},
 	]
 
