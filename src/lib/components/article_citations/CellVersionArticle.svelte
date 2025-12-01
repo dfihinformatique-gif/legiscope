@@ -11,6 +11,7 @@
 			// ajoute d'autres champs si besoin
 		}
 		labelArticleType?: (type?: string | null) => string
+		titleArticleType?: (type?: string | null) => string
 		labelEtatVersion?: (etat?: string | null) => string
 		etatVersions?: ReadonlyArray<{
 			value: string
@@ -18,8 +19,13 @@
 			categorie: string
 		}>
 	}
-	let { data, labelArticleType, labelEtatVersion, etatVersions }: Props =
-		$props()
+	let {
+		data,
+		labelArticleType,
+		titleArticleType,
+		labelEtatVersion,
+		etatVersions,
+	}: Props = $props()
 
 	let labelVersion = $state("")
 	let isJORFVersion = $derived(data?.legi_id.startsWith("JORF") || false)
@@ -86,7 +92,8 @@
 
 			{#if data?.article_type && ["ENTIEREMENT_MODIF", "PARTIELLEMENT_MODIF"].includes(data.article_type)}
 				<span
-					class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
+					title={titleArticleType?.(data?.article_type) ?? data?.article_type}
+					class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600 underline decoration-neutral-400 decoration-dotted"
 				>
 					{labelArticleType?.(data?.article_type) ?? data?.article_type}
 				</span>

@@ -70,7 +70,7 @@
 			value: "AUTONOME",
 			label: "autonome",
 			title:
-				"Version autonome, c'est-à-dire dont le contenu vient compléter le droit. Par opposition aux versions modifiant un article.",
+				"Version autonome, c'est-à-dire dont le contenu complète le droit. Par opposition aux versions modifiant un article.",
 		},
 		{
 			value: "ENTIEREMENT_MODIF",
@@ -82,7 +82,7 @@
 			value: "PARTIELLEMENT_MODIF",
 			label: "autonome et modificatrice",
 			title:
-				"Version partiellement modificatrice, c'est-à-dire dont le contenu vient compléter le droit et également vise à modifier d'autres articles.",
+				"Version à la fois autonome et modificatrice, c'est-à-dire dont le contenu complète le droit, et aussi, vise à modifier d'autres articles.",
 		},
 	]
 
@@ -90,6 +90,12 @@
 	function labelArticleType(type?: string | null): string {
 		const found = ARTICLE_TYPES.find((t) => t.value === type)
 		return found?.label ?? type ?? ""
+	}
+
+	// Formate le type d'article en title lisible
+	function titleArticleType(type?: string | null): string {
+		const found = ARTICLE_TYPES.find((t) => t.value === type)
+		return found?.title ?? type ?? ""
 	}
 
 	/* ÉTATS DES VERSIONS */
@@ -309,6 +315,7 @@
 								legi_id: firstSubRow.legi_id_citant,
 							},
 							labelArticleType,
+							titleArticleType,
 							labelEtatVersion,
 							etatVersions: ETAT_VERSIONS,
 						})
@@ -324,6 +331,7 @@
 							legi_id: row.original.legi_id_citant,
 						},
 						labelArticleType,
+						titleArticleType,
 						labelEtatVersion,
 						etatVersions: ETAT_VERSIONS,
 					})
@@ -380,6 +388,7 @@
 						legi_id: dataRow.legi_id_cite,
 					},
 					labelArticleType,
+					titleArticleType,
 					labelEtatVersion,
 					etatVersions: ETAT_VERSIONS,
 				})
@@ -798,29 +807,6 @@
 				</div>
 				<div class="flex flex-wrap justify-between">
 					<div>
-						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par type :</h4>
-						<div class="mb-4 flex flex-wrap gap-2">
-							{#each uniqueArticleTypes as articleType}
-								<button
-									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
-										articleType.value,
-									)
-										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
-										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
-									onclick={() => toggleArticleTypeFilter(articleType.value)}
-								>
-									{articleType.label}<iconify-icon
-										class="align-[-0.3rem] text-lg hover:bg-gray-100"
-										icon={selectedArticleTypes.includes(articleType.value)
-											? "ri-close-line"
-											: "ri-check-line"}
-									>
-									</iconify-icon>
-								</button>
-							{/each}
-						</div>
-					</div>
-					<div>
 						<h4 class="mb-2 text-sm font-semibold text-gray-500">
 							Par nature de texte :
 						</h4>
@@ -860,6 +846,35 @@
 									{etatVersion.label}<iconify-icon
 										class="align-[-0.3rem] text-lg hover:bg-gray-100"
 										icon={selectedEtatVersions.includes(etatVersion.value)
+											? "ri-close-line"
+											: "ri-check-line"}
+									>
+									</iconify-icon>
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div>
+						<h4 class="mb-2 text-sm font-semibold text-gray-500">
+							Par type de version :
+						</h4>
+						<div class="mb-4 flex flex-wrap gap-2">
+							{#each uniqueArticleTypes as articleType}
+								<button
+									title={articleType.title}
+									class="cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
+										articleType.value,
+									)
+										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
+										: 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'}"
+									onclick={() => toggleArticleTypeFilter(articleType.value)}
+								>
+									<span
+										class="underline decoration-neutral-400 decoration-dotted underline-offset-2"
+										>{articleType.label}</span
+									><iconify-icon
+										class="align-[-0.3rem] text-lg hover:bg-gray-100"
+										icon={selectedArticleTypes.includes(articleType.value)
 											? "ri-close-line"
 											: "ri-check-line"}
 									>
