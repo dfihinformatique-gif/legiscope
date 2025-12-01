@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from "$app/state"
+
 	interface Props {
 		data?: {
 			date_debut?: string | null
@@ -71,7 +73,7 @@
 <div class="flex flex-col gap-y-1 leading-tight">
 	<div class="1">
 		<a
-			href="TODO"
+			href="/pjl/{page.params.pjl}?article={data?.legi_id}"
 			class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
 			>{labelVersion}</a
 		>
