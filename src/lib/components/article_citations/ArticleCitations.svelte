@@ -76,7 +76,7 @@
 			value: "ENTIEREMENT_MODIF",
 			label: "Modificatrice",
 			title:
-				"Version entièrement modificatrice, c'est-à-dire dont le contenu vise à modifier le contenu d'autres articles. Par opposition aux version autonomes dont le contenu s'ajoute au droit.",
+				"Version entièrement modificatrice, c'est-à-dire dont le contenu vise à modifier le contenu d'autres articles. Par opposition aux versions autonomes dont le contenu s'ajoute au droit.",
 		},
 		{
 			value: "PARTIELLEMENT_MODIF",
