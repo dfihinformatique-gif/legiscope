@@ -151,10 +151,17 @@
 		36: { priority: 10, label: "Arrêtés" },
 		47: { priority: 11, label: "Projets" },
 		109: { priority: 12, label: "Traités" },
+		242: { priority: 13, label: "Accord de la fonction publique" },
 	}
 
-	// Récupère le label d'une nature de texte à partir de son ID
+	// Récupère et formate le label d'une nature de texte à partir de son ID
 
+	/* Fonction pour mettre en minuscules sauf la première lettre les textes_natures qui ne sont pas dans le mapping*/
+	function capitalizeFirstLetter(str: string): string {
+		return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+	}
+
+	/* Fonction princiaple pour récupérer le label à partir de l'ID */
 	function getTextNatureLabel(
 		natureId: number | null | undefined,
 		fallbackLabel?: string | null,
@@ -162,7 +169,8 @@
 		if (natureId && NATURE_MAPPING[natureId]) {
 			return NATURE_MAPPING[natureId].label
 		}
-		return fallbackLabel || `Nature ${natureId}`
+		const raw = fallbackLabel || `Nature ${natureId}`
+		return capitalizeFirstLetter(raw)
 	}
 
 	// Fonction de comparaison de 2 IDs de nature de texte selon leur priorité
