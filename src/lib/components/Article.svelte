@@ -1010,9 +1010,9 @@
 							selected={articleInfo.article.legi_id === version.legi_id_lien}
 						>
 							{#if version.debut}
-								{#if version.legi_id_lien.startsWith("JORF")}(JORF {formatDateFr(
+								{#if version.legi_id_lien.startsWith("JORF")}Journal officiel du {formatDateFr(
 										articleInfo.jorfTextDatePubli!,
-									)})
+									)}
 								{:else if version.debut === "2999-01-01"}
 									Version de versement
 								{:else if version.fin === "2999-01-01"}
