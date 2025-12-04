@@ -59,7 +59,7 @@
 	let showFiltersPanel = $state(false)
 	let selectedArticleTypes = $state<string[]>([])
 	let selectedTextNatures = $state<number[]>([])
-	let selectedEtatVersions = $state<string[]>([])
+	let selectedVersionEtats = $state<string[]>([])
 	let filterEnVigueurOnly = $state(false)
 
 	/* ARTICLES_TYPES des versions */
@@ -127,6 +127,9 @@
 		{ value: "TRANSFERE", label: "Transférée", categorie: "autre" },
 		{ value: "CREE", label: "Créée", categorie: "autre" },
 	] as const
+	const VIGUEUR_ETATS: string[] = ETAT_VERSIONS.filter(
+		(etat) => etat.categorie === "vigueur",
+	).map((etat) => etat.value)
 
 	// Formate l'état d'une version en label lisible
 	function labelEtatVersion(etat?: string | null): string {
@@ -595,7 +598,7 @@
 	})
 
 	/* FILTRE PAR TYPE D'ARTICLE */
-	// Fonction pour gérer le toggle des filtres de type d'article
+	// Fonction pour gérer les filtres de type d'article
 	function toggleArticleTypeFilter(type: string) {
 		if (selectedArticleTypes.includes(type)) {
 			selectedArticleTypes = selectedArticleTypes.filter((t) => t !== type)
@@ -609,8 +612,8 @@
 			?.setFilterValue(selectedArticleTypes)
 	}
 
-	// Extraire les types d'article uniques présents dans les données
-	let uniqueArticleTypes = $derived.by(() => {
+	// Scanner toutes les citations pour trouver tous les types d'article réellements présents pour l'article
+	let availableArticleTypes = $derived.by(() => {
 		if (!citationsData) return []
 
 		const typesSet = new Set<string>()
@@ -629,7 +632,7 @@
 
 	/* FILTRE PAR NATURE DE TEXTE */
 
-	// Fonction pour gérer le toggle des filtres de nature de texte
+	// Fonction pour gérer les filtres de nature de texte
 	function toggleTextNatureFilter(natureId: number) {
 		if (selectedTextNatures.includes(natureId)) {
 			selectedTextNatures = selectedTextNatures.filter((id) => id !== natureId)
@@ -642,8 +645,8 @@
 			?.setFilterValue(selectedTextNatures)
 	}
 
-	// Extraire les natures de texte uniques présentes dans les données
-	let uniqueTextNatures = $derived.by(() => {
+	// Scanner toutes les citations pour trouver toutes les natures de texte réellements présentes pour l'article
+	let availableTextNatures = $derived.by(() => {
 		if (!citationsData) return []
 
 		const naturesMap = new Map<number, string>()
@@ -663,19 +666,8 @@
 
 	/* FILTRE PAR ÉTAT */
 
-	// Fonction pour gérer le toggle des filtres d'état
-	function toggleEtatFilter(etat: string) {
-		if (selectedEtatVersions.includes(etat)) {
-			selectedEtatVersions = selectedEtatVersions.filter((e) => e !== etat)
-		} else {
-			selectedEtatVersions = [...selectedEtatVersions, etat]
-		}
-
-		table?.getColumn("etat_citant")?.setFilterValue(selectedEtatVersions)
-	}
-
-	// Extraire les états uniques présents dans les données
-	let uniqueEtatVersions = $derived.by(() => {
+	// Scanner toutes les citations pour trouver tous les états réellements présents pour l'article
+	let availableVersionEtats = $derived.by(() => {
 		if (!citationsData) return []
 
 		const etatsSet = new Set<string>()
@@ -691,6 +683,38 @@
 			etatsSet.has(etatVersion.value),
 		)
 	})
+
+	// Lister les états de catégorie "vigueur" disponibles pour l'article
+	let availableVigueurVersionEtats = $derived(
+		availableVersionEtats
+			.filter((etat) => etat.categorie === "vigueur")
+			.map((etat) => etat.value),
+	)
+
+	// Fonction pour gérer les filtres d'état
+	function toggleEtatFilter(etat: string) {
+		if (selectedVersionEtats.includes(etat)) {
+			selectedVersionEtats = selectedVersionEtats.filter(
+				(etatString) => etatString !== etat,
+			)
+		} else {
+			selectedVersionEtats = [...selectedVersionEtats, etat]
+		}
+
+		// Synchronisation avec le toggle "En vigueur seulement"
+		const hasAllVigueur =
+			availableVigueurVersionEtats.length > 0 &&
+			availableVigueurVersionEtats.every((etatString) =>
+				selectedVersionEtats.includes(etatString),
+			)
+
+		const hasOnlyVigueur = selectedVersionEtats.every((etatString) =>
+			VIGUEUR_ETATS.includes(etatString),
+		)
+		filterEnVigueurOnly = hasAllVigueur && hasOnlyVigueur
+
+		table?.getColumn("etat_citant")?.setFilterValue(selectedVersionEtats)
+	}
 </script>
 
 {#if table !== undefined}
@@ -739,16 +763,24 @@
 		</div>
 		<div class="mt-1 mb-3 flex items-center justify-end gap-2">
 			<div class="flex items-center">
-				<!--Filtre "en vigueur" -->
+				<!--Toggle "en vigueur seulement" -->
 				<label class="inline-flex cursor-pointer items-center">
 					<input
 						class="peer sr-only"
 						type="checkbox"
 						bind:checked={filterEnVigueurOnly}
 						onchange={() => {
-							table!
-								.getColumn("etat_citant")
-								?.setFilterValue(filterEnVigueurOnly ? "VIGUEUR" : "")
+							if (filterEnVigueurOnly) {
+								selectedVersionEtats = [...availableVigueurVersionEtats]
+							} else {
+								// Si le toggle est off, tous les filtres de catégories vigueur sont décochés, mais pas les filtres des autres catégories
+								selectedVersionEtats = selectedVersionEtats.filter(
+									(etatString) => !VIGUEUR_ETATS.includes(etatString),
+								)
+							}
+							table
+								?.getColumn("etat_citant")
+								?.setFilterValue(selectedVersionEtats)
 						}}
 					/>
 					<div
@@ -774,13 +806,13 @@
 					icon="ri-filter-3-line"
 				></iconify-icon>
 				Autres filtres
-				{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedEtatVersions.length > 0}
+				{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedVersionEtats.length > 0}
 					<span
 						class="ml-1 rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white"
 					>
 						{selectedArticleTypes.length +
 							selectedTextNatures.length +
-							selectedEtatVersions.length}
+							selectedVersionEtats.length}
 					</span>
 				{/if}
 			</button>
@@ -793,13 +825,14 @@
 						Filtrer les versions :
 					</h3>
 
-					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedEtatVersions.length > 0}
+					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedVersionEtats.length > 0}
 						<button
 							class="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
 							onclick={() => {
 								selectedArticleTypes = []
 								selectedTextNatures = []
-								selectedEtatVersions = []
+								selectedVersionEtats = []
+								filterEnVigueurOnly = false
 								table
 									?.getColumn("article_type_citant")
 									?.setFilterValue(undefined)
@@ -819,7 +852,7 @@
 							Par nature de texte :
 						</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each uniqueTextNatures as textNature}
+							{#each availableTextNatures as textNature}
 								<button
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
 										textNature.id,
@@ -842,9 +875,9 @@
 					<div>
 						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par état :</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each uniqueEtatVersions as etatVersion}
+							{#each availableVersionEtats as etatVersion}
 								<button
-									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedEtatVersions.includes(
+									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedVersionEtats.includes(
 										etatVersion.value,
 									)
 										? 'border-blue-500 bg-blue-100 font-medium text-blue-700'
@@ -853,7 +886,7 @@
 								>
 									{etatVersion.label}
 
-									{#if selectedEtatVersions.includes(etatVersion.value)}
+									{#if selectedVersionEtats.includes(etatVersion.value)}
 										<iconify-icon
 											class="absolute -top-2 -right-1 rounded-full border bg-white text-lg"
 											icon="ri-check-line"
@@ -868,7 +901,7 @@
 							Par type de version :
 						</h4>
 						<div class="mb-4 flex flex-wrap gap-2">
-							{#each uniqueArticleTypes as articleType}
+							{#each availableArticleTypes as articleType}
 								<button
 									title={articleType.title}
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
