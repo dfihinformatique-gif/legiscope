@@ -1,5 +1,5 @@
 default:
-  image: node:24.11.1-trixie
+  image: node:24-trixie
 
   cache:
     paths:
