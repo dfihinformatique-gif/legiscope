@@ -22,7 +22,7 @@
 		type FragmentPosition,
 		type FragmentReverseTransformation,
 	} from "@tricoteuses/tisseuse"
-	import { diffWords } from "diff"
+	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -209,6 +209,122 @@
 		if (showDiff === false) addEventListenersOnHighlighted()
 	})
 
+	function isSmallChange(
+		change: ChangeObject<string[]>,
+		threshold: number,
+	): boolean {
+		return (change.count ?? change.value.length) < threshold
+	}
+
+	export function mergeSmallChanges(
+		diff: ChangeObject<string[]>[],
+		options: MergeOptions = {},
+	): ChangeObject<string[]>[] {
+		const { countThreshold = 8 } = options
+
+		if (diff.length === 0) return diff
+
+		const result: ChangeObject<string[]>[] = []
+		let i = 0
+
+		while (i < diff.length) {
+			// Chercher une séquence de petits éléments consécutifs
+			const sequenceEnd = findSmallSequenceEnd(diff, i, countThreshold)
+
+			if (sequenceEnd === i) {
+				// Pas de petite séquence, on garde l'élément tel quel
+				result.push(diff[i])
+				i++
+			} else {
+				// On a une séquence de petits éléments, on les fusionne
+				const merged = mergeSequence(diff, i, sequenceEnd)
+				result.push(...merged)
+				i = sequenceEnd
+			}
+		}
+
+		return result
+	}
+
+	function findSmallSequenceEnd(
+		diff: ChangeObject<string[]>[],
+		start: number,
+		threshold: number,
+	): number {
+		let i = start
+		while (i < diff.length && isSmallChange(diff[i], threshold)) {
+			i++
+		}
+		return i
+	}
+
+	function mergeSequence(
+		diff: ChangeObject<string[]>[],
+		start: number,
+		end: number,
+	): ChangeObject<string[]>[] {
+		const sequence = diff.slice(start, end)
+		const result: ChangeObject<string[]>[] = []
+
+		// Collecter tous les removed et unchanged
+		const removedTokens: string[] = []
+		let hasRemoved = false
+
+		for (const item of sequence) {
+			if (item.removed) {
+				removedTokens.push(...item.value)
+				hasRemoved = true
+			} else if (!item.added && !item.removed) {
+				// Les unchanged sont intercalés dans les removed
+				removedTokens.push(...item.value)
+			}
+		}
+		const addedTokens: string[] = []
+		let hasAdded = false
+
+		for (const item of sequence) {
+			if (item.added) {
+				addedTokens.push(...item.value)
+				hasAdded = true
+			} else if (!item.added && !item.removed) {
+				// Les unchanged sont intercalés dans les added
+				addedTokens.push(...item.value)
+			}
+		}
+
+		// Ajouter le bloc removed fusionné s'il existe
+		if (hasRemoved) {
+			result.push({
+				added: false,
+				removed: true,
+				value: removedTokens,
+				count: removedTokens.length,
+			})
+		}
+
+		// Ajouter le bloc added fusionné s'il existe
+		if (hasAdded) {
+			result.push({
+				added: true,
+				removed: false,
+				value: addedTokens,
+				count: addedTokens.length,
+			})
+		}
+
+		// Si la séquence ne contient que des unchanged, on les garde tels quels
+		if (!hasRemoved && !hasAdded) {
+			result.push({
+				added: false,
+				removed: false,
+				value: addedTokens, // ou removedTokens, c'est la même chose
+				count: addedTokens.length,
+			})
+		}
+
+		return result
+	}
+
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
 	const currentBlocTextuel = articleInfo.article?.bloc_textuel
@@ -233,211 +349,327 @@
 		: undefined
 
 	let showDiff = $state(false)
-	const diffContent = $derived.by(() => {
-		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
-			const generateHtmlSplitDiff = (
-				previousHtml: string,
-				currentHtml: string,
-			): string => {
-				const currentTransformation = simplifyHtml()(currentHtml)
-				const currentText = currentTransformation.output
+	const generateHtmlSplitDiff = (
+		previousHtml: string,
+		currentHtml: string,
+	): string => {
+		const ATOMIC_SPACE_MARKER = "_"
 
-				const previousTransformation = simplifyHtml()(previousHtml)
-				const previousText = previousTransformation.output
+		const protectLinks = (html: string): string => {
+			return html.replace(
+				/(<a\b[^>]*>)(.*?)(<\/a>)/gis,
+				(match, startTag, content, endTag) => {
+					let protectedContent = content
 
-				const changes = diffWords(previousText, currentText, {
-					// ignoreCase,
-					// intlSegmenter,
-				})
+					protectedContent = protectedContent.replace(
+						/&nbsp;/gi,
+						ATOMIC_SPACE_MARKER,
+					)
 
-				let currentTextIndex = 0
-				let previousTextIndex = 0
-				const textPositions: Array<
-					| {
-							currentPositions: FragmentPosition[]
-							previousIndex: number
-							source: "current"
-					  }
-					| {
-							currentIndex: number
-							previousPositions: FragmentPosition[]
-							source: "previous"
-					  }
-				> = []
-				for (const change of changes) {
-					const changeLength = change.value.length
-					if (change.added) {
-						const changeStop = currentTextIndex + changeLength
-						const currentPositions: FragmentPosition[] = []
+					protectedContent = protectedContent.replace(
+						/\s+/g,
+						ATOMIC_SPACE_MARKER,
+					)
+
+					protectedContent = protectedContent.replace(
+						/[\.\,\-\'’°]/g,
+						ATOMIC_SPACE_MARKER,
+					)
+
+					return `${startTag}${protectedContent}${endTag}`
+				},
+			)
+		}
+
+		const currentTransformation = simplifyHtml()(currentHtml)
+		const currentText = currentTransformation.output
+
+		const previousTransformation = simplifyHtml()(previousHtml)
+		const previousText = previousTransformation.output
+
+		const protectedCurrentHtml = protectLinks(currentHtml)
+		const protectedPreviousHtml = protectLinks(previousHtml)
+
+		const protectedCurrentText = simplifyHtml()(protectedCurrentHtml).output
+		const protectedPreviousText = simplifyHtml()(protectedPreviousHtml).output
+
+		const sentenceChanges = diffSentences(
+			protectedPreviousText,
+			protectedCurrentText,
+		)
+
+		const reworkedChanges: Array<{
+			value: string
+			added?: boolean
+			removed?: boolean
+		}> = []
+
+		for (const sentenceChange of sentenceChanges) {
+			if (!sentenceChange.added && !sentenceChange.removed) {
+				reworkedChanges.push(sentenceChange)
+			} else {
+				if (sentenceChange.added) {
+					const prevIndex = reworkedChanges.length - 1
+					if (prevIndex >= 0 && reworkedChanges[prevIndex].removed) {
+						const removedSentence = reworkedChanges[prevIndex].value
+						const addedSentence = sentenceChange.value
+
+						const tokensRemoved = segmenter.segmentToArray(removedSentence)
+						const tokensAdded = segmenter.segmentToArray(addedSentence)
+
+						const arrayChanges = mergeSmallChanges(
+							diffArrays(tokensRemoved, tokensAdded),
+						)
+
+						const wordChanges = arrayChanges.flatMap((change) => {
+							return {
+								...change,
+								value: change.value.join(""),
+							}
+						})
+
+						let changedChars = 0
+						let totalChars = 0
+						for (const wc of wordChanges) {
+							totalChars += wc.value.length
+							if (wc.added || wc.removed) {
+								changedChars += wc.value.length
+							}
+						}
+						const changeRatio = totalChars > 0 ? changedChars / totalChars : 0
+
+						if (changeRatio < 0.4) {
+							reworkedChanges.pop()
+							reworkedChanges.push(...wordChanges)
+						} else {
+							reworkedChanges.push(sentenceChange)
+						}
+					} else {
+						reworkedChanges.push(sentenceChange)
+					}
+				} else if (sentenceChange.removed) {
+					reworkedChanges.push(sentenceChange)
+				}
+			}
+		}
+
+		const changes = reworkedChanges.map((change) => ({
+			...change,
+			value: change.value.replaceAll(ATOMIC_SPACE_MARKER, " "),
+		}))
+
+		let currentTextIndex = 0
+		let previousTextIndex = 0
+		const textPositions: Array<
+			| {
+					currentPosition: FragmentPosition
+					previousIndex: number
+					source: "current"
+			  }
+			| {
+					currentIndex: number
+					previousPosition: FragmentPosition
+					source: "previous"
+			  }
+		> = []
+
+		for (const change of changes) {
+			const changeLength = change.value.length
+			if (change.added) {
+				const changeStop = currentTextIndex + changeLength
+				let start = currentTextIndex
+				for (let i = currentTextIndex; i < changeStop; i++) {
+					if (currentText[i] === "\n") {
+						if (i > start) {
+							textPositions.push({
+								currentPosition: {
+									start,
+									stop: i,
+								},
+								previousIndex: previousTextIndex,
+								source: "current",
+							})
+						}
 						textPositions.push({
-							currentPositions,
+							currentPosition: {
+								start: i,
+								stop: i + 1,
+							},
 							previousIndex: previousTextIndex,
 							source: "current",
 						})
-						let start = currentTextIndex
-						for (let i = currentTextIndex; i < changeStop; i++) {
-							if (currentText[i] === "\n") {
-								if (i > start) {
-									currentPositions.push({
-										start,
-										stop: i,
-									})
-									start = i + 1
-								}
-							}
-						}
-						if (start < changeStop) {
-							currentPositions.push({
-								start,
-								stop: changeStop,
+						start = i + 1
+					}
+				}
+				if (start < changeStop) {
+					textPositions.push({
+						currentPosition: {
+							start,
+							stop: changeStop,
+						},
+						previousIndex: previousTextIndex,
+						source: "current",
+					})
+				}
+				currentTextIndex += changeLength
+			} else if (change.removed) {
+				const changeStop = previousTextIndex + changeLength
+				let start = previousTextIndex
+				for (let i = previousTextIndex; i < changeStop; i++) {
+					if (previousText[i] === "\n") {
+						if (i > start) {
+							textPositions.push({
+								currentIndex: currentTextIndex,
+								previousPosition: {
+									start,
+									stop: i,
+								},
+								source: "previous",
 							})
 						}
-						currentTextIndex += changeLength // - (changeEndsWithLineFeed ? 1 : 0);
-					} else if (change.removed) {
-						const changeStop = previousTextIndex + changeLength
-						const previousPositions: FragmentPosition[] = []
 						textPositions.push({
 							currentIndex: currentTextIndex,
-							previousPositions,
+							previousPosition: {
+								start: i,
+								stop: i + 1,
+							},
 							source: "previous",
 						})
-						let start = previousTextIndex
-						for (let i = previousTextIndex; i < changeStop; i++) {
-							if (previousText[i] === "\n") {
-								if (i > start) {
-									previousPositions.push({
-										start,
-										stop: i,
-									})
-									start = i + 1
-								}
-							}
-						}
-						if (start < changeStop) {
-							previousPositions.push({
-								start,
-								stop: changeStop,
-							})
-						}
-						previousTextIndex += changeLength // - (changeEndsWithLineFeed ? 1 : 0);
-					} else {
-						previousTextIndex += changeLength
-						currentTextIndex += changeLength
+						start = i + 1
 					}
 				}
+				if (start < changeStop) {
+					textPositions.push({
+						currentIndex: currentTextIndex,
+						previousPosition: {
+							start,
+							stop: changeStop,
+						},
+						source: "previous",
+					})
+				}
+				previousTextIndex += changeLength
+			} else {
+				previousTextIndex += changeLength
+				currentTextIndex += changeLength
+			}
+		}
 
-				const currentHtmlPositions = reversePositionsSplitFromPositions(
-					currentTransformation,
-					textPositions.map((textPositionForChange) =>
-						textPositionForChange.source === "previous"
-							? [
-									{
-										start: textPositionForChange.currentIndex,
-										stop: textPositionForChange.currentIndex,
-									},
-								]
-							: textPositionForChange.currentPositions,
-					),
-				)
-				const previousHtmlPositions = reversePositionsSplitFromPositions(
-					previousTransformation,
-					textPositions.map((textPositionForChange) =>
-						textPositionForChange.source === "current"
-							? [
-									{
-										start: textPositionForChange.previousIndex,
-										stop: textPositionForChange.previousIndex,
-									},
-								]
-							: textPositionForChange.previousPositions,
-					),
-				)
-				let currentHtmlIndex = 0
-				const htmlFragments: string[] = []
-				let previousHtmlIndex = 0
-				for (const [
-					changeIndex,
-					textPositionsForChange,
-				] of textPositions.entries()) {
-					switch (textPositionsForChange.source) {
-						case "current": {
-							const previousHtmlPosition = previousHtmlPositions[changeIndex][0]
-							if (previousHtmlPosition.start > previousHtmlIndex) {
-								// Text fragment is the same on both previous & current texts.
-								htmlFragments.push(
-									previousHtml.slice(
-										previousHtmlIndex,
-										previousHtmlPosition.start,
-									),
-								)
-								previousHtmlIndex +=
-									previousHtmlPosition.start - previousHtmlIndex
-							}
-							for (const [i, currentHtmlPosition] of currentHtmlPositions[
-								changeIndex
-							].entries()) {
-								if (i > 0 && currentHtmlPosition.start > currentHtmlIndex) {
-									htmlFragments.push(
-										currentHtml.slice(
-											currentHtmlIndex,
-											currentHtmlPosition.start,
-										),
-									)
-								}
-								const currentOriginalHtmlFragment = currentHtml.slice(
-									currentHtmlPosition.start,
-									currentHtmlPosition.stop,
-								)
-								const currentModifiedHtmlFragment = `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${currentOriginalHtmlFragment}</span>`
-								htmlFragments.push(currentModifiedHtmlFragment)
-								currentHtmlIndex = currentHtmlPosition.stop
-							}
-							break
+		const currentHtmlPositions = reversePositionsSplitFromPositions(
+			currentTransformation,
+			textPositions.map((textPositionForChange) =>
+				textPositionForChange.source === "previous"
+					? {
+							start: textPositionForChange.currentIndex,
+							stop: textPositionForChange.currentIndex,
 						}
-
-						case "previous": {
-							const currentHtmlPosition = currentHtmlPositions[changeIndex][0]
-							if (currentHtmlPosition.start > currentHtmlIndex) {
-								// Text fragment is the same on both previous & current texts.
-								currentHtmlIndex += currentHtmlPosition.start - currentHtmlIndex
-							}
-							for (const previousHtmlPosition of previousHtmlPositions[
-								changeIndex
-							]) {
-								if (previousHtmlPosition.start > previousHtmlIndex) {
-									htmlFragments.push(
-										previousHtml.slice(
-											previousHtmlIndex,
-											previousHtmlPosition.start,
-										),
-									)
-								}
-								const previousOriginalHtmlFragment = previousHtml.slice(
-									previousHtmlPosition.start,
-									previousHtmlPosition.stop,
-								)
-								const previousModifiedHtmlFragment = `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${previousOriginalHtmlFragment}</span>`
-								htmlFragments.push(previousModifiedHtmlFragment)
-								previousHtmlIndex = previousHtmlPosition.stop
-							}
-							break
+					: textPositionForChange.currentPosition,
+			),
+		)
+		const previousHtmlPositions = reversePositionsSplitFromPositions(
+			previousTransformation,
+			textPositions.map((textPositionForChange) =>
+				textPositionForChange.source === "current"
+					? {
+							start: textPositionForChange.previousIndex,
+							stop: textPositionForChange.previousIndex,
 						}
-
-						default: {
-							assertNever(
-								"HtmlDiffInline textPositionsForChange.source",
-								textPositionsForChange,
+					: textPositionForChange.previousPosition,
+			),
+		)
+		let currentHtmlIndex = 0
+		const htmlFragments: string[] = []
+		let previousHtmlIndex = 0
+		for (const [
+			changeIndex,
+			textPositionForChange,
+		] of textPositions.entries()) {
+			switch (textPositionForChange.source) {
+				case "current": {
+					const previousHtmlPosition = previousHtmlPositions[changeIndex][0]
+					if (previousHtmlPosition.start > previousHtmlIndex) {
+						htmlFragments.push(
+							previousHtml.slice(previousHtmlIndex, previousHtmlPosition.start),
+						)
+						previousHtmlIndex += previousHtmlPosition.start - previousHtmlIndex
+					}
+					const lineBreak =
+						currentText.slice(
+							textPositionForChange.currentPosition.start,
+							textPositionForChange.currentPosition.stop,
+						) === "\n"
+					for (const [i, currentHtmlPosition] of currentHtmlPositions[
+						changeIndex
+					].entries()) {
+						if (i > 0 && currentHtmlPosition.start > currentHtmlIndex) {
+							htmlFragments.push(
+								currentHtml.slice(currentHtmlIndex, currentHtmlPosition.start),
 							)
 						}
+						const currentOriginalHtmlFragment = currentHtml.slice(
+							currentHtmlPosition.start,
+							currentHtmlPosition.stop,
+						)
+						const currentModifiedHtmlFragment = lineBreak
+							? currentOriginalHtmlFragment
+							: `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${currentOriginalHtmlFragment}</span>`
+						htmlFragments.push(currentModifiedHtmlFragment)
+						currentHtmlIndex = currentHtmlPosition.stop
 					}
-				}
-				if (previousHtmlIndex < previousHtml.length) {
-					htmlFragments.push(previousHtml.slice(previousHtmlIndex))
+					break
 				}
 
-				return htmlFragments.join("")
+				case "previous": {
+					const currentHtmlPosition = currentHtmlPositions[changeIndex][0]
+					if (currentHtmlPosition.start > currentHtmlIndex) {
+						currentHtmlIndex += currentHtmlPosition.start - currentHtmlIndex
+					}
+					const lineBreak =
+						previousText.slice(
+							textPositionForChange.previousPosition.start,
+							textPositionForChange.previousPosition.stop,
+						) === "\n"
+					for (const previousHtmlPosition of previousHtmlPositions[
+						changeIndex
+					]) {
+						if (previousHtmlPosition.start > previousHtmlIndex) {
+							htmlFragments.push(
+								previousHtml.slice(
+									previousHtmlIndex,
+									previousHtmlPosition.start,
+								),
+							)
+						}
+						const previousOriginalHtmlFragment = previousHtml.slice(
+							previousHtmlPosition.start,
+							previousHtmlPosition.stop,
+						)
+						const previousModifiedHtmlFragment = lineBreak
+							? previousOriginalHtmlFragment
+							: `<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${previousOriginalHtmlFragment}</span>`
+						htmlFragments.push(previousModifiedHtmlFragment)
+						previousHtmlIndex = previousHtmlPosition.stop
+					}
+					break
+				}
+
+				default: {
+					assertNever(
+						"HtmlDiffInline textPositionsForChange.source",
+						textPositionForChange,
+					)
+				}
 			}
+		}
+		if (previousHtmlIndex < previousHtml.length) {
+			htmlFragments.push(previousHtml.slice(previousHtmlIndex))
+		}
 
+		return htmlFragments.join("")
+	}
+
+	const diffContent = $derived.by(() => {
+		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
 			return generateHtmlSplitDiff(previousBlocTextuel, currentBlocTextuel)
 		}
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
