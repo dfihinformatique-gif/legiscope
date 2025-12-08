@@ -5,6 +5,9 @@ default:
     paths:
       - node_modules
 
+variables:
+  FF_PRINT_POD_EVENTS: true
+
 stages:
   - test
   - deploy
