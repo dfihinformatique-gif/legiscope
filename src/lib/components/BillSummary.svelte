@@ -101,7 +101,7 @@
 	>
 		<span class="truncate text-lg tracking-wide">{currentTitle}</span>
 		<button
-			class="lx-link-uppercase font-sans text-nowrap text-gray-500 uppercase"
+			class="lx-link-uppercase font-sans text-nowrap text-gray-500"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon

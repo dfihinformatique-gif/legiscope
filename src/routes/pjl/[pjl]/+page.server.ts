@@ -267,7 +267,7 @@ async function getArticle(
 			select legi_id_lien, to_char(debut, 'YYYY-MM-DD') debut, to_char(fin, 'YYYY-MM-DD') fin
 			from versions
 			where legi_id = ${articleFromDb[0].legi_id}
-			and debut < fin
+			and (debut < fin or legi_id_lien like 'JORF%')
 			order by debut desc`
 		output.versions = versionsResult
 

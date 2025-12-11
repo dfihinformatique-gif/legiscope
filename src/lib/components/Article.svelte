@@ -24,6 +24,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
@@ -853,6 +854,7 @@
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 	let historyIsOpen = $state(false)
+	let citationsIsOpen = $state(false)
 
 	const allVersions =
 		articleInfo.versions !== undefined && articleInfo.versions.length > 1
@@ -869,7 +871,7 @@
 </script>
 
 <div
-	class="mb-20 h-fit w-full max-w-6xl bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
+	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
 	{#if articleInfo.article}
@@ -877,6 +879,10 @@
 		<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 
 		<!--En-tête-->
+		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+			Premier article :
+		{/if}
 		<div
 			class="mt-2 flex flex-col items-start justify-between gap-x-5 md:flex-row"
 		>
@@ -916,6 +922,7 @@
 		>
 			<button
 				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				class:font-bold={historyIsOpen}
 				onclick={() => {
 					historyIsOpen = !historyIsOpen
 				}}
@@ -929,6 +936,48 @@
 				</iconify-icon>
 				Historique
 			</button>
+
+			<button
+				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+				class:font-bold={citationsIsOpen}
+				onclick={() => {
+					citationsIsOpen = !citationsIsOpen
+				}}
+			>
+				<iconify-icon
+					class="align-[-0.3rem] text-xl"
+					icon={citationsIsOpen
+						? "ri:arrow-down-s-line"
+						: "ri:arrow-right-s-line"}
+				>
+				</iconify-icon>
+				Articles citant cet article
+			</button>
+			{#if citationsIsOpen}
+				<div
+					class="pb-10"
+					class:mb-10={citationsIsOpen}
+					class:border-b={citationsIsOpen}
+					class:shadow-bottom-extralight={citationsIsOpen}
+					class:border-gray-200={citationsIsOpen}
+				>
+					<ArticleCitations {articleInfo}></ArticleCitations>
+					<div
+						class="mt-4 rounded-sm border-2 border-yellow-600 bg-amber-50 p-2 text-sm text-yellow-900"
+					>
+						<iconify-icon
+							icon="ri-information-fill"
+							class="mr-1 align-[-0.2rem] text-base text-yellow-600"
+						></iconify-icon>
+						<b
+							>Certaines versions ne citent pas cet article ? Il manque des
+							citations ?</b
+						>
+						Le Légiscope s'appuie sur la liste des citations mise à disposition par
+						Légifrance. Cette liste peut contenir des erreurs ou des manques.
+					</div>
+				</div>
+			{/if}
 
 			{#if historyIsOpen}
 				<div class=" bg-white p-4">
@@ -961,9 +1010,9 @@
 							selected={articleInfo.article.legi_id === version.legi_id_lien}
 						>
 							{#if version.debut}
-								{#if version.legi_id_lien.startsWith("JORF")}(JORF {formatDateFr(
+								{#if version.legi_id_lien.startsWith("JORF")}Journal officiel du {formatDateFr(
 										articleInfo.jorfTextDatePubli!,
-									)})
+									)}
 								{:else if version.debut === "2999-01-01"}
 									Version de versement
 								{:else if version.fin === "2999-01-01"}

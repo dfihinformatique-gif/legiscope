@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from "$app/state"
 	import Toc from "$lib/components/Toc.svelte"
 	import type { ArticleInfo } from "$lib/db_data_types"
 
@@ -7,7 +8,18 @@
 		date: string
 	}
 	let { articleInfo, date }: Props = $props()
-	let tocIsOpen = $state(false)
+
+	const requestedId = page.url.searchParams.get("article")
+
+	let tocIsOpen = $state(
+		requestedId !== null &&
+			(requestedId.startsWith("LEGITEXT") ||
+				requestedId.startsWith("JORFTEXT") ||
+				requestedId.startsWith("LEGISCTA") ||
+				requestedId.startsWith("JORFSCTA"))
+			? true
+			: false,
+	)
 </script>
 
 <div
