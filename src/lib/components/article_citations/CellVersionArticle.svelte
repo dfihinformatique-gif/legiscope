@@ -8,7 +8,7 @@
 			article_type?: string | null
 			etat?: string | null
 			legi_id: string
-			// ajoute d'autres champs si besoin
+			is_version_citee?: boolean
 		}
 		labelArticleType?: (type?: string | null) => string
 		titleArticleType?: (type?: string | null) => string
@@ -78,11 +78,15 @@
 
 <div class="flex flex-col gap-y-1 leading-tight">
 	<div class="1">
-		<a
-			href="/pjl/{page.params.pjl}?article={data?.legi_id}"
-			class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
-			>{labelVersion}</a
-		>
+		{#if !data?.is_version_citee}
+			<a
+				href="/pjl/{page.params.pjl}?article={data?.legi_id}"
+				class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
+				>{labelVersion}</a
+			>
+		{:else}
+			<span>{labelVersion}</span>
+		{/if}
 		{#if !data?.legi_id.startsWith("JORF")}
 			<span
 				class={`rounded-md border border-neutral-300 px-1 text-xs tracking-wide text-neutral-600 ${getEtatBadgeColor(data?.etat)}`}
