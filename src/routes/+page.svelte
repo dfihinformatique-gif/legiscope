@@ -3,8 +3,9 @@
 	let isLoadingPjl = $state(false)
 </script>
 
+<!--Retrait de la hauteur maximale h-[70vh] en attendant de mettre une barre de recherche -->
 <section
-	class="fond relative h-[70vh] py-10 before:absolute before:inset-x-0 before:top-0 before:h-[50vh] before:bg-gradient-to-b before:from-[#dbeafe] before:to-transparent"
+	class="fond relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-[50vh] before:bg-gradient-to-b before:from-[#dbeafe] before:to-transparent"
 >
 	<div
 		class="relative z-10 flex h-full flex-col items-center justify-evenly text-2xl"
@@ -40,65 +41,29 @@
 							title="Vers le projet de loi"
 						>
 							PLF 2026 <span
-								class="rounded-md border bg-neutral-200 p-1 text-sm font-normal tracking-normal"
-								>Version initiale du 14/10/2025</span
+								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
+								>Version initiale déposée à l'Assemblée, le 14/10/2025, pour
+								première lecture</span
 							><iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
 								icon="ri-arrow-right-line"
 							></iconify-icon>
 						</a>
 					</div>
-					<h2 class="mt-8 font-serif">
+					<h2 class="mt-12 font-serif">
 						Projet de loi de financement de la sécurité sociale :
 					</h2>
 					<div class="flex justify-start">
 						<a
 							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B1907
-"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-neutral-200 p-1 text-sm font-normal tracking-normal"
-								>Version initiale du 14/10/2025</span
-							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/pjl25-122
-"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Version déposée au Sénat le 13/11/2025</span
-							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B2141
-"
+							href="/pjl/PRJLANR5L17B1907"
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi"
 						>
 							PLFSS 2026 <span
 								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Nouvelle lecture - version déposée à l'Assemblée nationale le
-								26/11/2025</span
+								>Version initiale déposée à l'Assemblée, le 14/10/2025, pour
+								première lecture</span
 							>
 							<iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
@@ -109,14 +74,13 @@
 					<div class="flex justify-start">
 						<a
 							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/pjl25-193
-"
+							href="/pjl/pjl25-122"
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi"
 						>
 							PLFSS 2026 <span
 								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Nouvelle lecture - version déposée au Sénat le 09/12/2025</span
+								>Version déposée au Sénat, le 13/11/2025, pour première lecture</span
 							>
 							<iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
@@ -124,6 +88,118 @@
 							></iconify-icon>
 						</a>
 					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B2141"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							PLFSS 2026 <span
+								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
+								>Version déposée à l'Assemblée nationale, le 26/11/2025 pour
+								nouvelle lecture</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/pjl25-193"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							PLFSS 2026 <span
+								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
+								>Version déposée au Sénat le 09/12/2025 pour nouvelle lecture</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<h2 class="mt-12 font-serif">
+						Projet de loi relatif à la lutte contre les fraudes sociales et
+						fiscales :
+					</h2>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="pjl/pjl25-024"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							Projet de loi n°24 <span
+								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
+								>Version initiale, déposée au Sénat le 14/10/2925, pour première
+								lecture en commission</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/pjl25-112"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							Projet de loi n°24 <span
+								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
+								>Version de la commission Sénat, déposée le 05/11/2025, pour
+								première lecture en séance</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B2115"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							Projet de loi n°24 <span
+								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
+								>Version déposée à l'Assemblée nationale, le 18/11/2025, pour
+								première lecture en commission</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					<!--
+					<div class="flex justify-start">
+						<a
+							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
+							href="/pjl/PRJLANR5L17B2115"
+							onclick={() => (isLoadingPjl = true)}
+							title="Vers le projet de loi"
+						>
+							Projet de loi n°24 <span
+								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
+								>Version de la commission Assemblée, déposée le 05/01/2026, pour première lecture en séance</span
+							>
+							<iconify-icon
+								class="ml-2 align-[-0.4rem] text-2xl"
+								icon="ri-arrow-right-line"
+							></iconify-icon>
+						</a>
+					</div>
+					-->
 				{/if}
 			</div>
 		</div>
