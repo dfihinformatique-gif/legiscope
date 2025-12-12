@@ -191,7 +191,7 @@
 						>
 							Projet de loi n°24 <span
 								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Version de la commission déposée le 05/01/2026, pour première lecture en séance</span
+								>Version de la commission Assemblée, déposée le 05/01/2026, pour première lecture en séance</span
 							>
 							<iconify-icon
 								class="ml-2 align-[-0.4rem] text-2xl"
