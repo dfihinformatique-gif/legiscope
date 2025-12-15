@@ -80,7 +80,9 @@
 	<div class="1">
 		{#if !data?.is_version_citee}
 			<a
-				href="/pjl/{page.params.pjl}?article={data?.legi_id}"
+				href="/pjl/{page.params.pjl}?article={page.url.searchParams.get(
+					'article',
+				)}&citant={data?.legi_id}"
 				class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
 				>{labelVersion}</a
 			>
