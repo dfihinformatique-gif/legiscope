@@ -39,6 +39,7 @@
 				Projet de loi
 			</button>
 		</div>
+
 		<div class="flex-1">
 			<button
 				class="
@@ -48,7 +49,11 @@
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
 				onclick={() => {
 					shared.showLawDesktop = !shared.showLawDesktop
-					if (!shared.showBillDesktop && !shared.showLawDesktop) {
+					if (
+						!shared.showBillDesktop &&
+						!shared.showLawDesktop &&
+						!shared.showCitingDesktop
+					) {
 						shared.showBillDesktop = true
 					}
 				}}
@@ -59,6 +64,33 @@
 				></iconify-icon>
 
 				Loi
+			</button>
+		</div>
+
+		<div class="flex-1">
+			<button
+				class="
+    cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+    {shared.showCitingDesktop
+					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
+					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+				onclick={() => {
+					shared.showCitingDesktop = !shared.showCitingDesktop
+					if (
+						!shared.showBillDesktop &&
+						!shared.showLawDesktop &&
+						!shared.showCitingDesktop
+					) {
+						shared.showBillDesktop = true
+					}
+				}}
+			>
+				<iconify-icon
+					class="mr-1 align-[-0.3rem] text-2xl"
+					icon={shared.showCitingDesktop ? "ri:eye-fill" : "ri:eye-off-line"}
+				></iconify-icon>
+
+				Citation
 			</button>
 		</div>
 	</div>

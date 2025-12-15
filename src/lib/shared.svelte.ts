@@ -4,7 +4,7 @@ export interface Shared {
 	activePanelMobile: "bill" | "law" | "citing"
 	showBillDesktop: boolean
 	showLawDesktop: boolean
-	showCiting: boolean
+	showCitingDesktop: boolean
 	pjlDate: string
 }
 
@@ -14,6 +14,6 @@ export const shared: Shared = $state({
 	activePanelMobile: "bill",
 	showBillDesktop: true,
 	showLawDesktop: true,
-	showCiting: false,
+	showCitingDesktop: true,
 	pjlDate: "2025-10-01",
 })

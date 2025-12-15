@@ -142,7 +142,7 @@
 		{#if citingArticleInfo}
 			<div
 				class={`flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
-				class:hidden={!shared.showLawDesktop}
+				class:hidden={!shared.showCitingDesktop}
 			>
 				{#if isLoadingCitingArticle}
 					<SkeletonArticleLoader />
