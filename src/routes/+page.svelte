@@ -57,7 +57,7 @@
 							onclick={() => (isLoadingPjl = true)}
 							title="Vers le projet de loi"
 						>
-							PLFSS 2026 <span
+							PLF 2026 <span
 								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
 								>Version déposée à l'Assemblée nationale, le 15/12/2025 pour
 								deuxième lecture</span
