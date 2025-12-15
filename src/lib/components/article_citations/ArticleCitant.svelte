@@ -2,43 +2,24 @@
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
-	import {
-		decodeParametersToVariables,
-		encodeParametersToVariables,
-		findVariablesByParameter,
-		getSimplifiedCoordOfValuesToHighlight,
-		parameterReferences,
-	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
-	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	import {
 		assertNever,
-		newReverseTransformationsMergedFromPositionsIterator,
 		reversePositionsSplitFromPositions,
 		simplifyHtml,
 		type FragmentPosition,
-		type FragmentReverseTransformation,
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import ArticleSummary from "./../ArticleSummary.svelte"
 
 	interface Props {
-		articleInfo: ArticleInfo
-		pjlDate: string
-		showParameterModal: boolean
+		citingArticleInfo: ArticleInfo
+		versionsArticle: VersionArticle[] | undefined
 		parametersToVariables: Record<string, string[]> | null
 	}
-	let {
-		articleInfo,
-		pjlDate,
-		showParameterModal,
-		parametersToVariables,
-	}: Props = $props()
-
-	let parameterSimulatorlinksOpen = $state(false)
-	let selectedParameter = $state<string | null>(null)
-	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+	let { citingArticleInfo, versionsArticle, parametersToVariables }: Props =
+		$props()
 
 	interface MergeOptions {
 		countThreshold?: number
@@ -133,76 +114,6 @@
 		}
 	}
 	const segmenter = new LegiSegmenter()
-
-	function addEventListenersOnHighlighted() {
-		const baseBg = "#ccd3e7" /* Fond bleu clair */
-		const hoverBg =
-			"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
-		document
-			.querySelectorAll<HTMLButtonElement>("button.highlighted")
-			.forEach((button) => {
-				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
-					button.innerHTML,
-				).output.replace(" ", "")
-				button.addEventListener("mouseenter", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", hoverBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
-								btn.innerHTML,
-							).output.replace(" ", "")
-
-							if (
-								btn.dataset.params === button.dataset.params &&
-								btnInnerText === buttonInnerText
-							)
-								btn.style.setProperty("background-color", hoverBg, "important")
-						})
-					}
-				})
-				button.addEventListener("mouseleave", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", baseBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							if (btn.dataset.params === button.dataset.params)
-								btn.style.setProperty("background-color", baseBg, "important")
-						})
-					}
-				})
-
-				button.addEventListener("click", (e: Event) => {
-					button.classList.add("bg-le-vert-500/50")
-					parametersToVariables = button.dataset.params
-						? decodeParametersToVariables(button.dataset.params)
-						: {}
-					showParameterModal = true
-					clickedParameterButtons.push(button)
-				})
-			})
-	}
-
-	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
-	$effect(() => {
-		if (
-			parametersToVariables &&
-			selectedParameter &&
-			!(selectedParameter in parametersToVariables)
-		) {
-			selectedParameter = null
-		}
-	})
-
-	$effect(() => {
-		if (showDiff === false) addEventListenersOnHighlighted()
-	})
 
 	function isSmallChange(
 		change: ChangeObject<string[]>,
@@ -322,23 +233,42 @@
 
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const currentBlocTextuel = articleInfo.article?.bloc_textuel
-		? articleInfo.article.bloc_textuel.replace(
+	const currentBlocTextuel = citingArticleInfo.article?.bloc_textuel
+		? citingArticleInfo.article.bloc_textuel.replace(
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					if (
+						versionsArticle &&
+						versionsArticle.some(
+							(version) => version.legi_id_lien === lawArticle,
+						)
+					) {
+						return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune">${p2}</a>`
+					} else {
+						return p2
+					}
 				},
 			)
 		: undefined
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
-		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
+	const previousBlocTextuel = citingArticleInfo.articlePreviousVersion
+		?.bloc_textuel
+		? citingArticleInfo.articlePreviousVersion?.bloc_textuel.replace(
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					if (
+						versionsArticle &&
+						versionsArticle.some(
+							(version) => version.legi_id_lien === lawArticle,
+						)
+					) {
+						return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune lien_citation">${p2}</a>`
+					} else {
+						return p2
+					}
 				},
 			)
 		: undefined
@@ -670,10 +600,6 @@
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
 	})
 
-	onMount(() => {
-		addEventListenersOnHighlighted()
-	})
-
 	function formatDateFr(dateStr: string): string {
 		const date = new Date(dateStr)
 		return date
@@ -684,193 +610,32 @@
 			})
 			.replace(/^1 /, "1er ")
 	}
-	function injectHighlightsIntoHtml(
-		html: string,
-		coordsToHighlight: Map<
-			{
-				simplifiedStart: number
-				simplifiedStop: number
-				originalStart: number
-				originalStop: number
-				innerPrefix?: string
-				innerSuffix?: string
-				outerPrefix?: string
-				outerSuffix?: string
-			},
-			{ parameters: string[] }
-		>,
-	): string {
-		const highlights = Array.from(coordsToHighlight.entries()).sort(
-			([a], [b]) => b.originalStart - a.originalStart,
-		)
 
-		let result = html
-
-		for (const [coords, { parameters }] of highlights) {
-			const { originalStart, originalStop } = coords
-			const before = result.slice(0, originalStart)
-			const target = result.slice(originalStart, originalStop)
-			const after = result.slice(originalStop)
-
-			const title = parameters.join(", ")
-			const parametersToVariables: Record<string, string[]> = {}
-
-			for (const parameter of parameters) {
-				// const possibleVariables = findVariablesByParameter(parameter)
-				parametersToVariables[parameter] = findVariablesByParameter(parameter)
-			}
-
-			result = `${before}${coords.outerPrefix ?? ""}<button class="px-1 hover:bg-le-vert-500/50 highlighted cursor-pointer bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
+	const scrollToCitationLink = () => {
+		const element = document.getElementById("lien_citation")
+		console.log(element)
+		if (element) {
+			element.scrollIntoView({ behavior: "smooth", block: "center" })
 		}
-
-		return result
-	}
-
-	function generateMiddleDate(startDate: string, endDate: string): string {
-		const start = new Date(startDate + "T00:00:00")
-		const end = new Date(endDate + "T00:00:00")
-
-		const middleTimestamp =
-			start.getTime() + (end.getTime() - start.getTime()) / 2
-
-		const middleDate = new Date(middleTimestamp)
-
-		return middleDate.toISOString().split("T")[0]
-	}
-
-	function highlightParameterValuesInArticleHTML(
-		articleParameterReferences: Array<ValueParameter | ScaleParameter>,
-	): string {
-		const articleText = currentBlocTextuel ?? ""
-
-		const simplified = simplifyHtml({ removeAWithHref: true })(articleText)
-		const textPlain = simplified.output
-		let processedHtml = articleText
-
-		const simplifiedCoordWithParameters: Map<
-			{ start: number; stop: number },
-			Array<string>
-		> = new Map()
-
-		const coordsToHighlight: Map<
-			{
-				simplifiedStart: number
-				simplifiedStop: number
-				originalStart: number
-				originalStop: number
-				innerPrefix?: string
-				innerSuffix?: string
-				outerPrefix?: string
-				outerSuffix?: string
-			},
-			{ parameters: Array<string> }
-		> = new Map()
-
-		const dateForParameterValuesSearch = generateMiddleDate(
-			articleInfo.article?.date_debut!,
-			articleInfo.article?.date_fin!,
-		)
-
-		articleParameterReferences.forEach((param) => {
-			const simplifiedCoordToHighlight = getSimplifiedCoordOfValuesToHighlight(
-				textPlain,
-				param,
-				dateForParameterValuesSearch,
-			)
-			if (simplifiedCoordToHighlight.length > 0) {
-				simplifiedCoordToHighlight.forEach(
-					(coord: { start: number; stop: number }) => {
-						let existingKey = null
-						for (const [key] of simplifiedCoordWithParameters) {
-							if (key.start === coord.start && key.stop === coord.stop) {
-								existingKey = key
-								break
-							}
-						}
-
-						if (
-							existingKey &&
-							!simplifiedCoordWithParameters
-								.get(existingKey)!
-								.includes(param.name!)
-						) {
-							simplifiedCoordWithParameters.get(existingKey)!.push(param.name!)
-						} else {
-							simplifiedCoordWithParameters.set(coord, [param.name!])
-						}
-					},
-				)
-			}
-		})
-
-		const sortedSimplifiedCoord = simplifiedCoordWithParameters
-			.keys()
-			.toArray()
-			.filter(
-				(item, index, self) =>
-					index ===
-					self.findIndex((r) => r.start === item.start && r.stop === item.stop),
-			)
-			.sort((a, b) => a.start - b.start)
-		const originalPositionsIterator =
-			newReverseTransformationsMergedFromPositionsIterator(simplified)
-		const coordsInOriginal: FragmentReverseTransformation[] = []
-		for (const simplifiedCoord of sortedSimplifiedCoord) {
-			const result = originalPositionsIterator.next(simplifiedCoord)
-			coordsInOriginal.push(result.value!)
-		}
-
-		if (sortedSimplifiedCoord.length > 0) {
-			sortedSimplifiedCoord.forEach((coord, index) => {
-				coordsToHighlight.set(
-					{
-						simplifiedStart: coord.start,
-						simplifiedStop: coord.stop,
-						originalStart: coordsInOriginal[index].position.start,
-						originalStop: coordsInOriginal[index].position.stop,
-						innerPrefix: coordsInOriginal[index].innerPrefix,
-						outerPrefix: coordsInOriginal[index].outerPrefix,
-						innerSuffix: coordsInOriginal[index].innerSuffix,
-						outerSuffix: coordsInOriginal[index].outerSuffix,
-					},
-					{ parameters: simplifiedCoordWithParameters.get(coord)! },
-				)
-			})
-		}
-		if (coordsToHighlight.size > 0) {
-			processedHtml = injectHighlightsIntoHtml(articleText, coordsToHighlight)
-		}
-
-		return processedHtml
 	}
 
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
-	let historyIsOpen = $state(false)
-	let citationsIsOpen = $state(false)
 
-	const allVersions =
-		articleInfo.versions !== undefined && articleInfo.versions.length > 1
-			? new Set(articleInfo.versions.map((article) => article.legi_id_lien))
-			: new Set(articleInfo.article?.legi_id)
-
-	const articleParameterReferences = Array.from(
-		new Set(
-			Array.from(parameterReferences.entries())
-				.filter(([key]) => allVersions.has(key))
-				.flatMap(([, values]) => values),
-		),
-	)
+	onMount(() => {
+		scrollToCitationLink()
+	})
 </script>
 
 <div
 	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
-	{#if articleInfo.article}
+	{#if citingArticleInfo.article}
 		<!--Sommaire-->
-		<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+		<ArticleSummary articleInfo={citingArticleInfo} date={dateForSelect}
+		></ArticleSummary>
 
 		<!--En-tête-->
 		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
@@ -889,16 +654,20 @@
 					icon="ri:book-marked-fill"
 				>
 				</iconify-icon>
-				{#if articleInfo.article.num !== undefined}
-					<span class="text-nowrap">Article {articleInfo.article.num}</span>
+				{#if citingArticleInfo.article.num !== undefined}
+					<span class="text-nowrap"
+						>Article {citingArticleInfo.article.num}</span
+					>
 				{/if} ·
-				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
+				<span class=""
+					>{citingArticleInfo.textTitle?.replaceAll("\\n", " ")}</span
+				>
 			</div>
 			<div class="flex w-full justify-end md:mt-1 md:w-min">
 				<a
 					class="lx-link-simple text-right text-nowrap text-gray-500"
-					href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
-						.legi_id}"
+					href="https://www.legifrance.gouv.fr/loda/id/{citingArticleInfo
+						.article.legi_id}"
 					target="_blank"
 					>Légifrance<iconify-icon
 						class="ml-0.5 align-[-0.15rem] text-sm"
@@ -908,14 +677,8 @@
 			</div>
 		</div>
 
-		<div
-			class="mb-2"
-			class:border-b={historyIsOpen}
-			class:shadow-bottom-extralight={historyIsOpen}
-			class:border-gray-200={historyIsOpen}
-		></div>
-		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-			{#if articleInfo.versions}
+		<div class="my-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
+			{#if citingArticleInfo.versions}
 				<select
 					name="versions"
 					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
@@ -933,14 +696,16 @@
 					}}
 					bind:value={selectedVersion}
 				>
-					{#each articleInfo.versions as version (version.legi_id_lien)}
+					{#each citingArticleInfo.versions as version (version.legi_id_lien)}
 						<option
+							disabled
 							value={version}
-							selected={articleInfo.article.legi_id === version.legi_id_lien}
+							selected={citingArticleInfo.article.legi_id ===
+								version.legi_id_lien}
 						>
 							{#if version.debut}
 								{#if version.legi_id_lien.startsWith("JORF")}Journal officiel du {formatDateFr(
-										articleInfo.jorfTextDatePubli!,
+										citingArticleInfo.jorfTextDatePubli!,
 									)}
 								{:else if version.debut === "2999-01-01"}
 									Version de versement
@@ -961,7 +726,7 @@
 							type="checkbox"
 							bind:checked={showDiff}
 						/>
-						{#if articleInfo.versions.length > 1}
+						{#if citingArticleInfo.versions.length > 1}
 							<div
 								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 							></div>
@@ -983,9 +748,7 @@
 			</div>
 		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
 			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html highlightParameterValuesInArticleHTML(
-					articleParameterReferences,
-				)}</span
+				>{@html currentBlocTextuel}</span
 			>
 		{/if}
 	{:else}

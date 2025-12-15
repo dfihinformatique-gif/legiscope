@@ -150,9 +150,8 @@
 					<p>Erreur: {citingArticleError.message}</p>
 				{:else}
 					<ArticleCitant
-						articleInfo={citingArticleInfo}
-						pjlDate={shared.pjlDate}
-						{showParameterModal}
+						{citingArticleInfo}
+						versionsArticle={articleInfo!.versions}
 						{parametersToVariables}
 					></ArticleCitant>
 				{/if}
@@ -225,9 +224,8 @@
 				<p>Erreur: {citingArticleError.message}</p>
 			{:else if citingArticleInfo}
 				<ArticleCitant
-					articleInfo={citingArticleInfo}
-					pjlDate={shared.pjlDate}
-					{showParameterModal}
+					{citingArticleInfo}
+					versionsArticle={articleInfo!.versions}
 					{parametersToVariables}
 				></ArticleCitant>
 			{:else}
