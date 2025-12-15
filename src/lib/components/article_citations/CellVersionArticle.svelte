@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state"
+	import { shared } from "$lib/shared.svelte"
 
 	interface Props {
 		data?: {
@@ -83,6 +84,9 @@
 				href="/pjl/{page.params.pjl}?article={page.url.searchParams.get(
 					'article',
 				)}&citant={data?.legi_id}"
+				onclick={() => {
+					shared.showCitingDesktop = true
+				}}
 				class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
 				>{labelVersion}</a
 			>
