@@ -873,6 +873,7 @@
 <div
 	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
+	style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 >
 	{#if articleInfo.article}
 		<!--Sommaire-->
