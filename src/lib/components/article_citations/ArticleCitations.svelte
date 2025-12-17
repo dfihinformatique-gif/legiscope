@@ -33,16 +33,17 @@
 	let { articleInfo }: Props = $props()
 	let citationsData: CitationsData | undefined = $state(undefined)
 	let error = $state(false)
-
-	fetch(`/api/citations/${articleInfo.article?.legi_id}`)
-		.then((res) => (res.ok ? res.json() : null))
-		.then((data) => {
-			citationsData = data
-		})
-		.catch(() => {
-			citationsData = undefined
-			error = true
-		})
+	$effect(() => {
+		fetch(`/api/citations/${articleInfo.article?.legi_id}`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => {
+				citationsData = data
+			})
+			.catch(() => {
+				citationsData = undefined
+				error = true
+			})
+	})
 
 	let grouping = $state<string[]>([
 		"article_citant_texte_nature",
