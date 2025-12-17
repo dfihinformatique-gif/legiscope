@@ -634,11 +634,14 @@
 >
 	{#if citingArticleInfo.article}
 		<!--Sommaire-->
-		<ArticleSummary articleInfo={citingArticleInfo} date={dateForSelect}
+		<ArticleSummary
+			articleInfo={citingArticleInfo}
+			date={dateForSelect}
+			isSummaryOfCitingArticle={true}
 		></ArticleSummary>
 
 		<!--En-tête-->
-		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+		{@const articleFromUrl = page.url.searchParams.get("citant") ?? ""}
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
 			Premier article :
 		{/if}
