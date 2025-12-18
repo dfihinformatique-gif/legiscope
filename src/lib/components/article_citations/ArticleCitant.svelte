@@ -613,7 +613,6 @@
 
 	const scrollToCitationLink = () => {
 		const element = document.getElementById("lien_citation")
-		console.log(element)
 		if (element) {
 			element.scrollIntoView({ behavior: "smooth", block: "center" })
 		}
