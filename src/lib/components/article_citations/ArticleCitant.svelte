@@ -628,11 +628,12 @@
 </script>
 
 <div
-	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
+	class="relative mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
 	<button
-		class="float-right cursor-pointer"
+		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-2 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
+		title="Fermer le volet citations"
 		onclick={() => {
 			const searchParams = new URLSearchParams(page.url.searchParams)
 			searchParams.delete("citant")
@@ -640,8 +641,18 @@
 				replaceState: true,
 				noScroll: true,
 			})
-		}}>Close</button
+		}}
 	>
+		<iconify-icon class="align-[-0.4rem] text-3xl" icon="ri-close-large-line"
+		></iconify-icon></button
+	>
+	<div
+		class="pointer-events-none absolute inset-0 z-40
+         bg-gradient-to-r from-transparent to-transparent
+         transition
+         peer-hover:from-transparent
+         peer-hover:to-blue-100"
+	></div>
 	{#if citingArticleInfo.article}
 		<!--Sommaire-->
 		<ArticleSummary
