@@ -632,6 +632,17 @@
 	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
 >
+	<button
+		class="float-right cursor-pointer"
+		onclick={() => {
+			const searchParams = new URLSearchParams(page.url.searchParams)
+			searchParams.delete("citant")
+			goto(`${page.url.pathname}?${searchParams.toString()}`, {
+				replaceState: true,
+				noScroll: true,
+			})
+		}}>Close</button
+	>
 	{#if citingArticleInfo.article}
 		<!--Sommaire-->
 		<ArticleSummary
