@@ -9,6 +9,9 @@
 	let openTexte2141plfss2026 = $state(false)
 	let openTexte193plfss2026 = $state(true)
 	//let openTexte188plfss2026 = $state(false)
+	let openTexteInitialpjlfraude = $state(false)
+	let openTextecommissionSenatpjlfraude = $state(false)
+	let openTextecommissionAssembleepjlfraude = $state(true)
 </script>
 
 <!--Retrait de la hauteur maximale h-[70vh] en attendant de mettre une barre de recherche -->
@@ -43,7 +46,7 @@
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
 						<h2 class="font-serif">Projet de loi de finances 2026 :</h2>
 						<div class="flex flex-col justify-start p-1 text-base">
-							<!--texte initial-->
+							<!--texte initial PLF-->
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() =>
@@ -94,7 +97,7 @@
 								</div>
 							{/if}
 						</div>
-						<!--texte initial-->
+						<!--texte 2247 PLF-->
 						<div class="flex flex-col justify-start p-1 text-base">
 							<button
 								class="flex items-center gap-1 text-left"
@@ -388,84 +391,152 @@
 							{/if}
 						</div>-->
 					</div>
-
-					<h2 class="mt-12 font-serif">
-						Projet de loi relatif à la lutte contre les fraudes sociales et
-						fiscales :
-					</h2>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="pjl/pjl25-024"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							Projet de loi n°24 <span
-								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Version initiale, déposée au Sénat le 14/10/2925, pour première
-								lecture en commission</span
+					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
+						<h2 class="font-serif">
+							Projet de loi relatif à la lutte contre les fraudes sociales et
+							fiscales : :
+						</h2>
+						<div class="flex flex-col justify-start p-1 text-base">
+							<!--texte initial PJL-->
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTexteInitialpjlfraude = !openTexteInitialpjlfraude)}
+								aria-expanded={openTexteInitialpjlfraude}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/pjl25-112"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							Projet de loi n°24 <span
-								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Version de la commission Sénat, déposée le 05/11/2025, pour
-								première lecture en séance</span
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									class:rotate-90={openTexteInitialpjlfraude}
+									icon="ri-arrow-right-s-line"
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="pjl/pjl25-024"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte initial n°24
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexteInitialpjlfraude}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé au Sénat le 14/10/2025 </span>
+										<span class="">proposé par le Gouvernement</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond au Sénat</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<!--texte PJL Sénat-->
+						<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTextecommissionSenatpjlfraude =
+										!openTextecommissionSenatpjlfraude)}
+								aria-expanded={openTextecommissionSenatpjlfraude}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B2115"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							Projet de loi n°24 <span
-								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Version déposée à l'Assemblée nationale, le 18/11/2025, pour
-								première lecture en commission</span
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTextecommissionSenatpjlfraude}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/pjl25-112"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte de la commission (n°24) n°112
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTextecommissionSenatpjlfraude}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé à la séance le 05/11/2025 </span>
+										<span class=""
+											>modifié par la commission des affaires sociales du Sénat</span
+										>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en séance au Sénat pour première lecture
+										</span>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<!--texte 2247 PLF Sénat-->
+						<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTextecommissionAssembleepjlfraude =
+										!openTextecommissionAssembleepjlfraude)}
+								aria-expanded={openTextecommissionAssembleepjlfraude}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTextecommissionAssembleepjlfraude}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/PRJLANR5L17B2115"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°2115
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTextecommissionAssembleepjlfraude}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class=""
+											>déposé à l'Assemblée nationale le 18/11/2025
+										</span>
+										<span class="">modifié par le Sénat</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales de
+											l'Assemblée nationale saisie au fond
+										</span>
+									</div>
+								</div>
+							{/if}
+						</div>
 					</div>
-					<!--
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B2115"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							Projet de loi n°24 <span
-								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Version de la commission Assemblée, déposée le 05/01/2026, pour première lecture en séance</span
-							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					-->
 				{/if}
 			</div>
 		</div>
