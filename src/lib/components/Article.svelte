@@ -873,6 +873,7 @@
 <div
 	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
 	class:md:p-16={!shared.showBillDesktop}
+	style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 >
 	{#if articleInfo.article}
 		<!--Sommaire-->
@@ -883,12 +884,10 @@
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
 			Premier article :
 		{/if}
-		<div
-			class="mt-2 flex flex-col items-start justify-between gap-x-5 md:flex-row"
-		>
+		<div class="mt-2 flex flex-col items-start justify-between gap-x-5">
 			<!--Titre-->
 			<div
-				class="text-le-gris-dispositif-dark flex-wrap text-left font-sans text-2xl"
+				class="text-le-gris-dispositif-dark max-w-md flex-wrap text-left font-sans text-2xl"
 			>
 				<iconify-icon
 					class="align-[-0.2rem] text-2xl"
@@ -900,18 +899,16 @@
 				{/if} ·
 				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 			</div>
-			<div class="flex w-full justify-end md:mt-1 md:w-min">
-				<a
-					class="lx-link-simple text-right text-nowrap text-gray-500"
-					href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
-						.legi_id}"
-					target="_blank"
-					>Légifrance<iconify-icon
-						class="ml-0.5 align-[-0.15rem] text-sm"
-						icon="ri:external-link-line"
-					></iconify-icon></a
-				>
-			</div>
+			<a
+				class="lx-link-simple ml-auto text-gray-500"
+				href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
+					.legi_id}"
+				target="_blank"
+				>Légifrance<iconify-icon
+					class="ml-0.5 align-[-0.15rem] text-sm"
+					icon="ri:external-link-line"
+				></iconify-icon></a
+			>
 		</div>
 
 		<div

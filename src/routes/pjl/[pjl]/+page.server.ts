@@ -134,10 +134,21 @@ async function getArticle(
 				if (associatedTextOutOfBoundaries.length === 1) {
 					output.text = associatedTextOutOfBoundaries[0].associated_text
 				} else if (associatedTextOutOfBoundaries.length > 1) {
-					throw error(
-						422,
-						`Could not find text associated to ${requestedArticle} for date ${requestedDate}`,
-					)
+					const refinedAssociatedTextOutOfBoundaries = await dbConnection`
+					select distinct subltree(s.chemin, 0, 1) as associated_text
+					from scta s
+					where dernier_segment = ${requestedArticle}
+					and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)`
+
+					if (refinedAssociatedTextOutOfBoundaries.length === 1) {
+						output.text =
+							refinedAssociatedTextOutOfBoundaries[0].associated_text
+					} else {
+						throw error(
+							422,
+							`Could not find text associated to ${requestedArticle} for date ${requestedDate}`,
+						)
+					}
 				} else {
 					throw error(
 						422,
@@ -384,23 +395,29 @@ export const load: PageServerLoad = async ({
 	url,
 }): Promise<{
 	articleInfoPromise: Promise<ArticleInfo> | undefined
+	citingArticleInfoPromise: Promise<ArticleInfo> | undefined
 }> => {
 	const lawArticle = url.searchParams.get("article")
+	const citingLawArticle = url.searchParams.get("citant")
 	const urlDate = url.searchParams.get("date")
 	const requestedDate = urlDate ?? shared.pjlDate
+	let articleInfoPromise = undefined
+	let citingArticleInfoPromise = undefined
 
 	try {
 		if (lawArticle !== undefined && lawArticle !== null) {
-			return { articleInfoPromise: getArticle(lawArticle, requestedDate) }
-		} else {
-			return {
-				articleInfoPromise: undefined,
-			}
+			articleInfoPromise = getArticle(lawArticle, requestedDate)
+		}
+		if (citingLawArticle !== undefined && citingLawArticle !== null) {
+			citingArticleInfoPromise = getArticle(citingLawArticle, requestedDate)
 		}
 	} catch (error) {
-		console.error("Error:", error)
+		console.error("Erreur dans la récupération des articles de loi : ", error)
 		return {
 			articleInfoPromise: undefined,
+			citingArticleInfoPromise: undefined,
 		}
 	}
+
+	return { articleInfoPromise, citingArticleInfoPromise }
 }

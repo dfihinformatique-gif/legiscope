@@ -6,10 +6,13 @@
 	interface Props {
 		articleInfo: ArticleInfo
 		date: string
+		isSummaryOfCitingArticle?: boolean
 	}
-	let { articleInfo, date }: Props = $props()
+	let { articleInfo, date, isSummaryOfCitingArticle }: Props = $props()
 
-	const requestedId = page.url.searchParams.get("article")
+	const requestedId = isSummaryOfCitingArticle
+		? page.url.searchParams.get("citant")
+		: page.url.searchParams.get("article")
 
 	let tocIsOpen = $state(
 		requestedId !== null &&

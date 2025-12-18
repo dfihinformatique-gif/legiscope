@@ -1,9 +1,10 @@
 export interface Shared {
 	screenWidth: number
 	isMobilePhone: boolean
-	activePanelMobile: "bill" | "law"
+	activePanelMobile: "bill" | "law" | "citing"
 	showBillDesktop: boolean
 	showLawDesktop: boolean
+	showCitingDesktop: boolean
 	pjlDate: string
 }
 
@@ -13,5 +14,6 @@ export const shared: Shared = $state({
 	activePanelMobile: "bill",
 	showBillDesktop: true,
 	showLawDesktop: true,
+	showCitingDesktop: false,
 	pjlDate: "2025-10-01",
 })

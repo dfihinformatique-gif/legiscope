@@ -33,16 +33,17 @@
 	let { articleInfo }: Props = $props()
 	let citationsData: CitationsData | undefined = $state(undefined)
 	let error = $state(false)
-
-	fetch(`/api/citations/${articleInfo.article?.legi_id}`)
-		.then((res) => (res.ok ? res.json() : null))
-		.then((data) => {
-			citationsData = data
-		})
-		.catch(() => {
-			citationsData = undefined
-			error = true
-		})
+	$effect(() => {
+		fetch(`/api/citations/${articleInfo.article?.legi_id}`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => {
+				citationsData = data
+			})
+			.catch(() => {
+				citationsData = undefined
+				error = true
+			})
+	})
 
 	let grouping = $state<string[]>([
 		"article_citant_texte_nature",
@@ -797,7 +798,9 @@
 					<div
 						class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 					></div>
-					<span class="ms-3 text-sm font-medium text-gray-900 sm:text-sm">
+					<span
+						class="ms-3 text-left text-sm font-medium text-gray-900 sm:text-sm"
+					>
 						En vigueur seulement
 					</span>
 				</label>
