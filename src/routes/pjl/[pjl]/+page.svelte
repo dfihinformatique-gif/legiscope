@@ -32,6 +32,7 @@
 		if (
 			shared.activePanelMobile === "law" &&
 			lawContainer !== undefined &&
+			lawContainer !== null &&
 			articleInfo
 		) {
 			lawContainer.scrollTo({ top: 0, behavior: "auto" })

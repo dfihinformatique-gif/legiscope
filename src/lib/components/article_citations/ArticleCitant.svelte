@@ -233,45 +233,48 @@
 
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const currentBlocTextuel = citingArticleInfo.article?.bloc_textuel
-		? citingArticleInfo.article.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
-				(_match, p1, p2) => {
-					const lawArticle = p1.replace(".md", "")
-					if (
-						versionsArticle &&
-						versionsArticle.some(
-							(version) => version.legi_id_lien === lawArticle,
-						)
-					) {
-						return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune">${p2}</a>`
-					} else {
-						return p2
-					}
-				},
-			)
-		: undefined
+	const currentBlocTextuel = $derived(
+		citingArticleInfo && citingArticleInfo?.article?.bloc_textuel
+			? citingArticleInfo.article.bloc_textuel.replace(
+					/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
+					(_match, p1, p2) => {
+						const lawArticle = p1.replace(".md", "")
+						if (
+							versionsArticle &&
+							versionsArticle.some(
+								(version) => version.legi_id_lien === lawArticle,
+							)
+						) {
+							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune">${p2}</a>`
+						} else {
+							return p2
+						}
+					},
+				)
+			: undefined,
+	)
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const previousBlocTextuel = citingArticleInfo.articlePreviousVersion
-		?.bloc_textuel
-		? citingArticleInfo.articlePreviousVersion?.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
-				(_match, p1, p2) => {
-					const lawArticle = p1.replace(".md", "")
-					if (
-						versionsArticle &&
-						versionsArticle.some(
-							(version) => version.legi_id_lien === lawArticle,
-						)
-					) {
-						return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune lien_citation">${p2}</a>`
-					} else {
-						return p2
-					}
-				},
-			)
-		: undefined
+	const previousBlocTextuel = $derived(
+		citingArticleInfo && citingArticleInfo?.articlePreviousVersion?.bloc_textuel
+			? citingArticleInfo.articlePreviousVersion?.bloc_textuel.replace(
+					/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
+					(_match, p1, p2) => {
+						const lawArticle = p1.replace(".md", "")
+						if (
+							versionsArticle &&
+							versionsArticle.some(
+								(version) => version.legi_id_lien === lawArticle,
+							)
+						) {
+							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune lien_citation">${p2}</a>`
+						} else {
+							return p2
+						}
+					},
+				)
+			: undefined,
+	)
 
 	let showDiff = $state(false)
 	const generateHtmlSplitDiff = (
@@ -654,7 +657,7 @@
          peer-hover:from-transparent
          peer-hover:to-blue-100"
 	></div>
-	{#if citingArticleInfo.article}
+	{#if citingArticleInfo && citingArticleInfo.article}
 		<!--Sommaire-->
 		<ArticleSummary
 			articleInfo={citingArticleInfo}
@@ -677,13 +680,13 @@
 					icon="ri:book-marked-fill"
 				>
 				</iconify-icon>
-				{#if citingArticleInfo.article.num !== undefined}
+				{#if citingArticleInfo !== undefined && citingArticleInfo.article.num !== undefined}
 					<span class="text-nowrap"
 						>Article {citingArticleInfo.article.num}</span
 					>
 				{/if} ·
 				<span class=""
-					>{citingArticleInfo.textTitle?.replaceAll("\\n", " ")}</span
+					>{citingArticleInfo!.textTitle?.replaceAll("\\n", " ")}</span
 				>
 			</div>
 			<a
@@ -699,7 +702,7 @@
 		</div>
 
 		<div class="my-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-			{#if citingArticleInfo.versions}
+			{#if citingArticleInfo?.versions}
 				<select
 					name="versions"
 					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
@@ -717,7 +720,7 @@
 					}}
 					bind:value={selectedVersion}
 				>
-					{#each citingArticleInfo.versions as version (version.legi_id_lien)}
+					{#each citingArticleInfo?.versions ?? [] as version (version.legi_id_lien)}
 						<option
 							disabled
 							value={version}
@@ -747,7 +750,7 @@
 							type="checkbox"
 							bind:checked={showDiff}
 						/>
-						{#if citingArticleInfo.versions.length > 1}
+						{#if citingArticleInfo?.versions && citingArticleInfo.versions.length > 1}
 							<div
 								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 							></div>
