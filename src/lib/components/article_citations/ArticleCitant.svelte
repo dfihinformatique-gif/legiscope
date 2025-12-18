@@ -637,6 +637,7 @@
 		onclick={() => {
 			const searchParams = new URLSearchParams(page.url.searchParams)
 			searchParams.delete("citant")
+			shared.activePanelMobile = "law"
 			goto(`${page.url.pathname}?${searchParams.toString()}`, {
 				replaceState: true,
 				noScroll: true,
