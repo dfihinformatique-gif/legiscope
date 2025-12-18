@@ -29,7 +29,11 @@
 	let currentCitingArticleId = $state<string | undefined>(undefined)
 
 	$effect(() => {
-		if (shared.activePanelMobile === "law" && lawContainer !== undefined) {
+		if (
+			shared.activePanelMobile === "law" &&
+			lawContainer !== undefined &&
+			articleInfo
+		) {
 			lawContainer.scrollTo({ top: 0, behavior: "auto" })
 		}
 	})
