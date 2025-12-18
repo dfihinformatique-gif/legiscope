@@ -4,6 +4,11 @@
 
 	let openTexteInitialplf2026 = $state(false)
 	let openTexte2247plf2026 = $state(true)
+	let openTexteInitialplfss2026 = $state(false)
+	let openTexte122plfss2026 = $state(false)
+	let openTexte2141plfss2026 = $state(false)
+	let openTexte193plfss2026 = $state(true)
+	//let openTexte188plfss2026 = $state(false)
 </script>
 
 <!--Retrait de la hauteur maximale h-[70vh] en attendant de mettre une barre de recherche -->
@@ -39,58 +44,55 @@
 						<h2 class="font-serif">Projet de loi de finances 2026 :</h2>
 						<div class="flex flex-col justify-start p-1 text-base">
 							<!--texte initial-->
-							<div>
-								<button
-									class="flex items-center gap-1 text-left"
-									onclick={() =>
-										(openTexteInitialplf2026 = !openTexteInitialplf2026)}
-									aria-expanded={openTexteInitialplf2026}
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTexteInitialplf2026 = !openTexteInitialplf2026)}
+								aria-expanded={openTexteInitialplf2026}
+							>
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									class:rotate-90={openTexteInitialplf2026}
+									icon="ri-arrow-right-s-line"
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/PRJLANR5L17B1906"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
 								>
 									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte initial n°1906
+									<iconify-icon
 										class=" align-[-0.3rem] text-xl"
-										class:rotate-90={openTexteInitialplf2026}
-										icon="ri-arrow-right-s-line"
-									></iconify-icon>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B1906"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte initial n°1906
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
-										></iconify-icon></a
-									>
-								</button>
-								{#if openTexteInitialplf2026}
-									<div class="ml-2 border-l-2 pl-3">
-										<div class="flex flex-wrap gap-x-2 text-neutral-600">
-											<span class=""
-												>déposé à l'Assemblée nationale le 14/10/2025
-											</span>
-											<span class="">proposé par le Gouvernement</span>
-										</div>
-										<div class="flex flex-col">
-											<span
-												>examiné en commission des finances saisie au fond à
-												l'Assemblée nationale</span
-											>
-											<span
-												>examiné en séance en première lecture à l'Assemblée
-												nationale - Texte rejeté</span
-											>
-											<span>examiné en séance en première lecture au Sénat</span
-											>
-										</div>
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexteInitialplf2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class=""
+											>déposé à l'Assemblée nationale le 14/10/2025
+										</span>
+										<span class="">proposé par le Gouvernement</span>
 									</div>
-								{/if}
-							</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des finances saisie au fond à
+											l'Assemblée nationale</span
+										>
+										<span
+											>examiné en séance en première lecture à l'Assemblée
+											nationale - Texte rejeté</span
+										>
+										<span>examiné en séance en première lecture au Sénat</span>
+									</div>
+								</div>
+							{/if}
 						</div>
 						<!--texte initial-->
 						<div class="flex flex-col justify-start p-1 text-base">
@@ -136,78 +138,255 @@
 							{/if}
 						</div>
 					</div>
-					<h2 class="mt-12 font-serif">
-						Projet de loi de financement de la sécurité sociale :
-					</h2>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B1907"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Version initiale déposée à l'Assemblée, le 14/10/2025, pour
-								première lecture</span
+					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
+						<h2 class="font-serif">
+							Projet de loi de financement de la sécurité sociale 2026 :
+						</h2>
+						<div class="flex flex-col justify-start p-1 text-base">
+							<!--PLFSS texte initial-->
+
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTexteInitialplfss2026 = !openTexteInitialplfss2026)}
+								aria-expanded={openTexteInitialplfss2026}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/pjl25-122"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Version déposée au Sénat, le 13/11/2025, pour première lecture</span
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									class:rotate-90={openTexteInitialplfss2026}
+									icon="ri-arrow-right-s-line"
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/PRJLANR5L17B1907"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte initial n°1907
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexteInitialplfss2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class=""
+											>déposé à l'Assemblée nationale le 14/10/2025
+										</span>
+										<span class="">proposé par le Gouvernement</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond à l'Assemblée nationale</span
+										>
+										<span
+											>examiné en séance en première lecture à l'Assemblée
+											nationale</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<!--PLFSS texte déposé au Sénat 122-->
+						<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() => (openTexte122plfss2026 = !openTexte122plfss2026)}
+								aria-expanded={openTexte122plfss2026}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/PRJLANR5L17B2141"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-blue-200 p-1 text-sm font-normal tracking-normal"
-								>Version déposée à l'Assemblée nationale, le 26/11/2025 pour
-								nouvelle lecture</span
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTexte122plfss2026}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/pjl25-122"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°122
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexte122plfss2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé au Sénat le 13/11/2025 </span>
+										<!--	<span class="">proposé par le Gouvernement</span>-->
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond du Sénat</span
+										>
+										<span
+											>examiné en séance en première lecture au Sénat - Text
+											adopté</span
+										>
+										<span
+											>examiné en commission mixte paritaire (CMP)- Désaccord</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() =>
+									(openTexte2141plfss2026 = !openTexte2141plfss2026)}
+								aria-expanded={openTexte2141plfss2026}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
-					</div>
-					<div class="flex justify-start">
-						<a
-							class="hover:border-le-gris-dispositif-dark mt-5 items-center gap-2 rounded-md border-2 border-black bg-white px-5 py-2 font-sans text-lg font-bold tracking-[0.085em] text-black shadow-lg hover:text-blue-950 active:bg-neutral-200"
-							href="/pjl/pjl25-193"
-							onclick={() => (isLoadingPjl = true)}
-							title="Vers le projet de loi"
-						>
-							PLFSS 2026 <span
-								class="rounded-md border bg-red-200 p-1 text-sm font-normal tracking-normal"
-								>Version déposée au Sénat le 09/12/2025 pour nouvelle lecture</span
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTexte2141plfss2026}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/PRJLANR5L17B2141"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°2141
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexte2141plfss2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé à l'Assemblée le 26/11/2025 </span>
+										<span class="">modifié par le Sénat"</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond à l'Assemblée nationale</span
+										>
+										<span
+											>examiné pour nouvelle lecture en séance à l'Assemblée
+											nationale - Text adopté</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() => (openTexte193plfss2026 = !openTexte193plfss2026)}
+								aria-expanded={openTexte193plfss2026}
 							>
-							<iconify-icon
-								class="ml-2 align-[-0.4rem] text-2xl"
-								icon="ri-arrow-right-line"
-							></iconify-icon>
-						</a>
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTexte193plfss2026}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="/pjl/pjl25-193"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°193
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexte193plfss2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé au Sénat le 09/12/2025 </span>
+										<span class="">adopté par l'Assemblée nationale"</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond à l'Assemblée nationale</span
+										>
+										<span
+											>examiné pour nouvelle lecture en séance à l'Assemblée
+											nationale - Text adopté</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<!--<div class="flex flex-col justify-start p-1 text-base">
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() => (openTexte188plfss2026 = !openTexte188plfss2026)}
+								aria-expanded={openTexte188plfss2026}
+							>
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									icon="ri-arrow-right-s-line"
+									class:rotate-90={openTexte188plfss2026}
+								></iconify-icon>
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="TODO"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°188
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexte188plfss2026}
+								<div class="ml-2 border-l-2 pl-3">
+									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+										<span class="">déposé XXX</span>
+										<span class="">modifié par XXX"</span>
+									</div>
+									<div class="flex flex-col">
+										<span
+											>examiné en commission des affaires sociales saisie au
+											fond à l'Assemblée nationale</span
+										>
+										<span
+											>examiné pour lecture définitive en séance à l'Assemblée
+											nationale - Text adopté</span
+										>
+									</div>
+								</div>
+							{/if}
+						</div>-->
 					</div>
 
 					<h2 class="mt-12 font-serif">
