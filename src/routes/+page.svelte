@@ -84,23 +84,27 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon></a
 									>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										14/10/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											14/10/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 							{#if openTexteInitialplf2026}
@@ -170,23 +174,26 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon></a
 									>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										24/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Sénat
+										<div>
+											24/11/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 							{#if openTexte138plf2026}
@@ -280,23 +287,28 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon></a
 									>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										15/12/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											15/12/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 							{#if openTexte2247plf2026}
@@ -367,23 +379,28 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										14/10/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											14/10/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -453,23 +470,26 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										13/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Sénat
+										<div>
+											13/11/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -565,23 +585,28 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										26/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											26/11/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -651,23 +676,26 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										09/12/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Sénat
+										<div>
+											09/12/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -737,23 +765,27 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										12/12/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											12/12/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
 											></iconify-icon><iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -849,20 +881,22 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										14/10/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Sénat
+										<div>
+											14/10/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -932,20 +966,22 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										105/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Sénat
+										<div>
+											05/11/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="streamline:rainbow-solid"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
@@ -1014,20 +1050,23 @@
 											icon="ri-arrow-right-line"
 										></iconify-icon>
 									</a>
-									<span
-										class="mt-1 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+
+									<div
+										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
 									>
-										18/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:inbox-archive-line"
-										></iconify-icon><span class="tracking-wider"
-											>Assemblée
+										<div>
+											18/11/25・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider">Sénat</span>
+										</div>
+										<div>
 											<iconify-icon
 												class="align-[-0.18em] text-base"
 												icon="tabler:users-group"
-											></iconify-icon></span
-										>
-									</span>
+											></iconify-icon>
+										</div>
+									</div>
 								</div>
 							</button>
 
