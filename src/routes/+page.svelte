@@ -3,6 +3,7 @@
 	let isLoadingPjl = $state(false)
 
 	let openTexteInitialplf2026 = $state(false)
+	let openTexte138plf2026 = $state(false)
 	let openTexte2247plf2026 = $state(true)
 	let openTexteInitialplfss2026 = $state(false)
 	let openTexte122plfss2026 = $state(false)
@@ -44,9 +45,17 @@
 					</div>
 				{:else}
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
-						<h2 class="font-serif">Projet de loi de finances 2026 :</h2>
-						<div class="flex flex-col justify-start p-1 text-base">
-							<!--texte initial PLF-->
+						<h2 class="mb-3 font-serif font-medium">
+							Projet de loi de finances 2026 :
+						</h2>
+
+						<!--texte initial PLF déposé à l'AN-->
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTexteInitialplf2026}
+							class:border-neutral-200={openTexteInitialplf2026}
+							class:bg-neutral-50={openTexteInitialplf2026}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() =>
@@ -58,6 +67,16 @@
 									class:rotate-90={openTexteInitialplf2026}
 									icon="ri-arrow-right-s-line"
 								></iconify-icon>
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs no-underline"
+									><iconify-icon
+										class="mr-0.5 align-[-0.18em] text-base"
+										icon="ri:inbox-archive-line"
+									></iconify-icon>14/10/25 ・<span
+										class="text-xs tracking-widest">Assemblée</span
+									>
+								</span>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="/pjl/PRJLANR5L17B1906"
@@ -76,29 +95,115 @@
 								>
 							</button>
 							{#if openTexteInitialplf2026}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
+									<div class="flex flex-col gap-x-2 text-neutral-600">
 										<span class=""
-											>déposé à l'Assemblée nationale le 14/10/2025
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé à l'Assemblée nationale le
+											14/10/2025
 										</span>
-										<span class="">proposé par le Gouvernement</span>
-									</div>
-									<div class="flex flex-col">
-										<span
-											>examiné en commission des finances saisie au fond à
-											l'Assemblée nationale</span
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:quill-pen-line"
+											></iconify-icon>Proposé par le Gouvernement</span
 										>
-										<span
-											>examiné en séance en première lecture à l'Assemblée
-											nationale - Texte rejeté</span
-										>
-										<span>examiné en séance en première lecture au Sénat</span>
 									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des finances saisie au fond à
+											l'Assemblée nationale
+										</li>
+										<li>
+											examiné en séance en première lecture à l'Assemblée
+											nationale - ❌ Texte rejeté
+										</li>
+									</ul>
+								</div>
+							{/if}
+						</div>
+						<!--Texte initial PLF rejeté par l'AN / déposé au Sénat-->
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTexte138plf2026}
+							class:border-neutral-200={openTexte138plf2026}
+							class:bg-neutral-50={openTexte138plf2026}
+						>
+							<button
+								class="flex items-center gap-1 text-left"
+								onclick={() => (openTexte138plf2026 = !openTexte138plf2026)}
+								aria-expanded={openTexte138plf2026}
+							>
+								<iconify-icon
+									class=" align-[-0.3rem] text-xl"
+									class:rotate-90={openTexte138plf2026}
+									icon="ri-arrow-right-s-line"
+								></iconify-icon>
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs no-underline"
+									><iconify-icon
+										class="mr-1 align-[-0.18em] text-base"
+										icon="ri:inbox-archive-line"
+									></iconify-icon>24/11/25・<span
+										class="text-xs tracking-widest">Sénat</span
+									>
+								</span>
+
+								<a
+									class="lx-link-simple font-serif text-lg"
+									href="TODO"
+									onclick={() => (isLoadingPjl = true)}
+									title="Vers le projet de loi"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°138
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon></a
+								>
+							</button>
+							{#if openTexte138plf2026}
+								<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+									<div class="ml-1 flex flex-col gap-x-2 text-neutral-600">
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé au Sénat le 24/11/2025
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:quill-pen-line"
+											></iconify-icon>Proposé par le Gouvernement suite au rejet
+											du texte par l'Assemblée nationale</span
+										>
+									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des finances saisie au fond au Sénat
+										</li>
+										<li>
+											examiné en séance en première lecture au Sénat nationale -
+											✅ Texte adopté
+										</li>
+									</ul>
 								</div>
 							{/if}
 						</div>
 						<!--texte 2247 PLF-->
-						<div class="flex flex-col justify-start p-1 text-base">
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTexte2247plf2026}
+							class:border-neutral-200={openTexte2247plf2026}
+							class:bg-neutral-50={openTexte2247plf2026}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() => (openTexte2247plf2026 = !openTexte2247plf2026)}
@@ -109,6 +214,16 @@
 									icon="ri-arrow-right-s-line"
 									class:rotate-90={openTexte2247plf2026}
 								></iconify-icon>
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs no-underline"
+									><iconify-icon
+										class="mr-1 align-[-0.18em] text-base"
+										icon="ri:inbox-archive-line"
+									></iconify-icon>15/12/25・<span class="text-xs tracking-wider"
+										>Assemblée</span
+									></span
+								>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="/pjl/PRJLANR5L17B2247"
@@ -127,22 +242,35 @@
 								>
 							</button>
 							{#if openTexte2247plf2026}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
+								<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+									<div class="ml-1 flex flex-col gap-x-2 text-neutral-600">
 										<span class=""
-											>déposé à l'Assemblée nationale le 14/10/2025
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé à l'Assemblée nationale le
+											15/12/2025
 										</span>
-										<span class="">adopté par le Sénat</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:quill-pen-line"
+											></iconify-icon>Proposé par le Sénat</span
+										>
 									</div>
-									<div class="flex flex-col">
-										<span>examiné commission mixte paritaire (CMP)</span>
-									</div>
+
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des finances saisie au fond à
+											l'Assemblée nationale
+										</li>
+									</ul>
 								</div>
 							{/if}
 						</div>
 					</div>
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
-						<h2 class="font-serif">
+						<h2 class="font-serif font-medium">
 							Projet de loi de financement de la sécurité sociale 2026 :
 						</h2>
 						<div class="flex flex-col justify-start p-1 text-base">
@@ -392,7 +520,7 @@
 						</div>-->
 					</div>
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
-						<h2 class="font-serif">
+						<h2 class="font-serif font-medium">
 							Projet de loi relatif à la lutte contre les fraudes sociales et
 							fiscales : :
 						</h2>
