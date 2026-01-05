@@ -371,10 +371,14 @@
 									class="lx-link-simple font-serif text-lg"
 									href="/pjl/pjl25-122"
 								>
-									<iconify-icon class="mr-1" icon="ri:book-marked-fill"
-									></iconify-icon>
-									Texte n°122
-									<iconify-icon class="text-xl" icon="ri-arrow-right-line"
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°122
+									<iconify-icon
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
 									></iconify-icon>
 								</a>
 							</button>
@@ -438,10 +442,10 @@
 									<iconify-icon
 										class="mr-1 align-[-0.18em]"
 										icon="ri:book-marked-fill"
-									></iconify-icon>
-									Texte n°2141
+									>
+									</iconify-icon>Texte n°2141
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class=" align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
 									></iconify-icon>
 								</a>
@@ -503,10 +507,10 @@
 									<iconify-icon
 										class="mr-1 align-[-0.18em]"
 										icon="ri:book-marked-fill"
-									></iconify-icon>
-									Texte n°193
+									>
+									</iconify-icon>Texte n°193
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class=" align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
 									></iconify-icon>
 								</a>
@@ -563,13 +567,15 @@
 									onclick={() => (isLoadingPjl = true)}
 									title="Vers le projet de loi"
 								>
-									<iconify-icon
+								<iconify-icon
 										class="mr-1 align-[-0.18em]"
-										icon="ri:book-marked-fill"></iconify-icon>
-									Texte n°188
+										icon="ri:book-marked-fill"
+									>
+									</iconify-icon>Texte n°188
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
-										icon="ri-arrow-right-line"></iconify-icon>
+										class=" align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"
+									></iconify-icon>
 								</a>
 							</button>
 
@@ -596,12 +602,18 @@
 					</div>
 
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
-						<h2 class="font-serif font-medium">
+						<h2 class="mb-3 font-serif font-medium">
 							Projet de loi relatif à la lutte contre les fraudes sociales et
-							fiscales : :
+							fiscales :
 						</h2>
-						<div class="flex flex-col justify-start p-1 text-base">
-							<!--texte initial PJL-->
+
+						<!-- Texte initial PJL -->
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTexteInitialpjlfraude}
+							class:border-neutral-200={openTexteInitialpjlfraude}
+							class:bg-neutral-50={openTexteInitialpjlfraude}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() =>
@@ -609,10 +621,21 @@
 								aria-expanded={openTexteInitialpjlfraude}
 							>
 								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
+									class="align-[-0.3rem] text-xl"
 									class:rotate-90={openTexteInitialpjlfraude}
 									icon="ri-arrow-right-s-line"
 								></iconify-icon>
+
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:inbox-archive-line"
+									></iconify-icon>
+									14/10/25 ・<span class="tracking-widest">Sénat</span>
+								</span>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="pjl/pjl25-024"
@@ -623,30 +646,37 @@
 										class="mr-1 align-[-0.18em]"
 										icon="ri:book-marked-fill"
 									>
-									</iconify-icon>Texte initial n°24
+									</iconify-icon>Texte n°24
 									<iconify-icon
 										class=" align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
-									></iconify-icon></a
-								>
+									></iconify-icon>
+								</a>
 							</button>
+
 							{#if openTexteInitialpjlfraude}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
-										<span class="">déposé au Sénat le 14/10/2025 </span>
-										<span class="">proposé par le Gouvernement</span>
+								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
+									<div class="flex flex-col text-neutral-600">
+										<span>déposé au Sénat le 14/10/2025</span>
+										<span>proposé par le Gouvernement</span>
 									</div>
-									<div class="flex flex-col">
-										<span
-											>examiné en commission des affaires sociales saisie au
-											fond au Sénat</span
-										>
-									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des affaires sociales saisie au fond
+											au Sénat
+										</li>
+									</ul>
 								</div>
 							{/if}
 						</div>
-						<!--texte PJL Sénat-->
-						<div class="flex flex-col justify-start p-1 text-base">
+
+						<!-- Texte de la commission Sénat -->
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTextecommissionSenatpjlfraude}
+							class:border-neutral-200={openTextecommissionSenatpjlfraude}
+							class:bg-neutral-50={openTextecommissionSenatpjlfraude}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() =>
@@ -655,10 +685,19 @@
 								aria-expanded={openTextecommissionSenatpjlfraude}
 							>
 								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									icon="ri-arrow-right-s-line"
+									class="align-[-0.3rem] text-xl"
 									class:rotate-90={openTextecommissionSenatpjlfraude}
+									icon="ri-arrow-right-s-line"
 								></iconify-icon>
+
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs"
+								>
+									<iconify-icon class="mr-1" icon="ri:inbox-archive-line"
+									></iconify-icon>
+									05/11/25 ・<span class="tracking-widest">Sénat</span>
+								</span>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="/pjl/pjl25-112"
@@ -669,31 +708,36 @@
 										class="mr-1 align-[-0.18em]"
 										icon="ri:book-marked-fill"
 									>
-									</iconify-icon>Texte de la commission (n°24) n°112
+									</iconify-icon>Texte n°112
 									<iconify-icon
 										class=" align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
-									></iconify-icon></a
-								>
+									></iconify-icon>
+								</a>
 							</button>
+
 							{#if openTextecommissionSenatpjlfraude}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
-										<span class="">déposé à la séance le 05/11/2025 </span>
-										<span class=""
-											>modifié par la commission des affaires sociales du Sénat</span
-										>
-									</div>
-									<div class="flex flex-col">
-										<span
-											>examiné en séance au Sénat pour première lecture
+								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
+									<div class="flex flex-col text-neutral-600">
+										<span>déposé à la séance du Sénat le 05/11/2025</span>
+										<span>
+											modifié par la commission des affaires sociales du Sénat
 										</span>
 									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>examiné en séance au Sénat pour première lecture</li>
+									</ul>
 								</div>
 							{/if}
 						</div>
-						<!--texte 2247 PLF Sénat-->
-						<div class="flex flex-col justify-start p-1 text-base">
+
+						<!-- Texte Assemblée nationale -->
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTextecommissionAssembleepjlfraude}
+							class:border-neutral-200={openTextecommissionAssembleepjlfraude}
+							class:bg-neutral-50={openTextecommissionAssembleepjlfraude}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() =>
@@ -702,10 +746,19 @@
 								aria-expanded={openTextecommissionAssembleepjlfraude}
 							>
 								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									icon="ri-arrow-right-s-line"
+									class="align-[-0.3rem] text-xl"
 									class:rotate-90={openTextecommissionAssembleepjlfraude}
+									icon="ri-arrow-right-s-line"
 								></iconify-icon>
+
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs"
+								>
+									<iconify-icon class="mr-1" icon="ri:inbox-archive-line"
+									></iconify-icon>
+									18/11/25 ・<span class="tracking-widest">Assemblée</span>
+								</span>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="/pjl/PRJLANR5L17B2115"
@@ -720,23 +773,22 @@
 									<iconify-icon
 										class=" align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-line"
-									></iconify-icon></a
-								>
+									></iconify-icon>
+								</a>
 							</button>
+
 							{#if openTextecommissionAssembleepjlfraude}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
-										<span class=""
-											>déposé à l'Assemblée nationale le 18/11/2025
-										</span>
-										<span class="">modifié par le Sénat</span>
+								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
+									<div class="flex flex-col text-neutral-600">
+										<span> déposé à l'Assemblée nationale le 18/11/2025 </span>
+										<span>modifié par le Sénat</span>
 									</div>
-									<div class="flex flex-col">
-										<span
-											>examiné en commission des affaires sociales de
-											l'Assemblée nationale saisie au fond
-										</span>
-									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des affaires sociales de l'Assemblée
+											nationale saisie au fond
+										</li>
+									</ul>
 								</div>
 							{/if}
 						</div>
