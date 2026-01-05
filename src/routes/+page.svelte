@@ -156,7 +156,7 @@
 
 								<a
 									class="lx-link-simple font-serif text-lg"
-									href="TODO"
+									href="/pjl/pjl25-138"
 									onclick={() => (isLoadingPjl = true)}
 									title="Vers le projet de loi"
 								>
