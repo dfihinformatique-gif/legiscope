@@ -60,32 +60,34 @@
 									(openTexteInitialplf2026 = !openTexteInitialplf2026)}
 								aria-expanded={openTexteInitialplf2026}
 							>
-								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									class:rotate-90={openTexteInitialplf2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B1906"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte initial n°1906
+									<div>
 										<iconify-icon
 											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
-										></iconify-icon></a
-									>
+											class:rotate-90={openTexteInitialplf2026}
+											icon="ri-arrow-right-s-line"
+										></iconify-icon>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17B1906"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte initial n°1906
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon></a
+										>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											14/10/25・<iconify-icon
@@ -150,33 +152,35 @@
 								onclick={() => (openTexte138plf2026 = !openTexte138plf2026)}
 								aria-expanded={openTexte138plf2026}
 							>
-								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									class:rotate-90={openTexte138plf2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/pjl25-138"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°138
+									<div>
 										<iconify-icon
 											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
-										></iconify-icon></a
-									>
+											class:rotate-90={openTexte138plf2026}
+											icon="ri-arrow-right-s-line"
+										></iconify-icon>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/pjl25-138"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°138
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon></a
+										>
+									</div>
 
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											24/11/25・<iconify-icon
@@ -230,27 +234,25 @@
 						</div>
 						<!--CMP - désaccord-->
 						<div class="flex items-center">
-							<span class="mr-1 ml-3 text-xs">●</span>
 							<div
-								class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+								class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 							>
-								<div class="ml-2 flex items-center">
-									<span class="font-serif text-sm text-neutral-700 italic"
-										>Commission mixte paritaire : <iconify-icon
-											class=" align-[-0.25em] text-lg"
-											icon="ri:close-line"
-										></iconify-icon>Désaccord</span
-									>
+								<div class="font-serif text-sm text-neutral-700 italic">
+									<span class="mr-2 ml-3 text-xs">●</span>Commission mixte
+									paritaire :
+									<iconify-icon
+										class=" align-[-0.25em] text-lg"
+										icon="ri:close-line"
+									></iconify-icon>Désaccord
 								</div>
-								<div class="flex w-50 justify-center sm:justify-start">
-									<span
-										class="mt-1 ml-0.5 rounded-sm border bg-amber-50 px-0.5 text-xs"
-										>15/12/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:p2p-fill"
-										></iconify-icon><span class="tracking-wider">CMP</span>
-									</span>
-								</div>
+
+								<span
+									class="mt-1 mr-1.5 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									>15/12/25・<iconify-icon
+										class="mr-1 align-[-0.18em] text-base"
+										icon="ri:p2p-fill"
+									></iconify-icon><span class="tracking-wider">CMP</span>
+								</span>
 							</div>
 						</div>
 						<!--texte 2247 PLF-->
@@ -263,33 +265,34 @@
 								onclick={() => (openTexte2247plf2026 = !openTexte2247plf2026)}
 								aria-expanded={openTexte2247plf2026}
 							>
-								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									icon="ri-arrow-right-s-line"
-									class:rotate-90={openTexte2247plf2026}
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B2247"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°2247
+									<div>
 										<iconify-icon
 											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
-										></iconify-icon></a
-									>
-
+											icon="ri-arrow-right-s-line"
+											class:rotate-90={openTexte2247plf2026}
+										></iconify-icon>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17B2247"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°2247
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon></a
+										>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											15/12/25・<iconify-icon
@@ -356,32 +359,34 @@
 									(openTexteInitialplfss2026 = !openTexteInitialplfss2026)}
 								aria-expanded={openTexteInitialplfss2026}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexteInitialplfss2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B1907"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										></iconify-icon>Texte initial n°1907
+									<div>
 										<iconify-icon
 											class="align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class:rotate-90={openTexteInitialplfss2026}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17B1907"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											></iconify-icon>Texte initial n°1907
+											<iconify-icon
+												class="align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											14/10/25・<iconify-icon
@@ -448,31 +453,32 @@
 								onclick={() => (openTexte122plfss2026 = !openTexte122plfss2026)}
 								aria-expanded={openTexte122plfss2026}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexte122plfss2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/pjl25-122"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°122
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTexte122plfss2026}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
-
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/pjl25-122"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°122
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											13/11/25・<iconify-icon
@@ -527,29 +533,28 @@
 
 						<!--CMP - désaccord-->
 						<div class="flex items-center">
-							<span class="mr-1 ml-3 text-xs">●</span>
 							<div
-								class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+								class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 							>
-								<div class="ml-2 flex items-center">
-									<span class="font-serif text-sm text-neutral-700 italic"
-										>Commission mixte paritaire : <iconify-icon
-											class=" align-[-0.25em] text-lg"
-											icon="ri:close-line"
-										></iconify-icon>Désaccord</span
-									>
+								<div class="font-serif text-sm text-neutral-700 italic">
+									<span class="mr-2 ml-3 text-xs">●</span>Commission mixte
+									paritaire :
+									<iconify-icon
+										class=" align-[-0.25em] text-lg"
+										icon="ri:close-line"
+									></iconify-icon>Désaccord
 								</div>
-								<div class="flex w-50 justify-center sm:justify-start">
-									<span
-										class="mt-1 ml-0.5 rounded-sm border bg-amber-50 px-0.5 text-xs"
-										>26/11/25・<iconify-icon
-											class="mr-1 align-[-0.18em] text-base"
-											icon="ri:p2p-fill"
-										></iconify-icon><span class="tracking-wider">CMP</span>
-									</span>
-								</div>
+
+								<span
+									class="mt-1 mr-1.5 w-48 rounded-sm border bg-amber-50 px-0.5 text-xs"
+									>26/11/25・<iconify-icon
+										class="mr-1 align-[-0.18em] text-base"
+										icon="ri:p2p-fill"
+									></iconify-icon><span class="tracking-wider">CMP</span>
+								</span>
 							</div>
 						</div>
+
 						<!-- Texte n°2141 Assemblée -->
 						<div
 							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
@@ -561,33 +566,35 @@
 									(openTexte2141plfss2026 = !openTexte2141plfss2026)}
 								aria-expanded={openTexte2141plfss2026}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexte2141plfss2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B2141"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°2141
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTexte2141plfss2026}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17B2141"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°2141
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											26/11/25・<iconify-icon
@@ -652,33 +659,35 @@
 								onclick={() => (openTexte193plfss2026 = !openTexte193plfss2026)}
 								aria-expanded={openTexte193plfss2026}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexte193plfss2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/pjl25-193"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°193
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTexte193plfss2026}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/pjl25-193"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°193
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											09/12/25・<iconify-icon
@@ -740,33 +749,35 @@
 								onclick={() => (openTexte188plfss2026 = !openTexte188plfss2026)}
 								aria-expanded={openTexte188plfss2026}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexte188plfss2026}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										type="button"
-										class="lx-link-simple cursor-not-allowed font-serif text-lg opacity-50"
-										aria-disabled="true"
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°188
-										<span class="text-xs">(texte non disponible)</span>
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTexte188plfss2026}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											type="button"
+											class="lx-link-simple cursor-not-allowed font-serif text-lg opacity-50"
+											aria-disabled="true"
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°188
+											<span class="text-xs">(texte non disponible)</span>
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											12/12/25・<iconify-icon
@@ -857,32 +868,34 @@
 									(openTexteInitialpjlfraude = !openTexteInitialpjlfraude)}
 								aria-expanded={openTexteInitialpjlfraude}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTexteInitialpjlfraude}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="pjl/pjl25-024"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°24
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTexteInitialpjlfraude}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="pjl/pjl25-024"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°24
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											14/10/25・<iconify-icon
@@ -942,32 +955,34 @@
 										!openTextecommissionSenatpjlfraude)}
 								aria-expanded={openTextecommissionSenatpjlfraude}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTextecommissionSenatpjlfraude}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/pjl25-112"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°112
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTextecommissionSenatpjlfraude}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/pjl25-112"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°112
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											05/11/25・<iconify-icon
@@ -1026,33 +1041,35 @@
 										!openTextecommissionAssembleepjlfraude)}
 								aria-expanded={openTextecommissionAssembleepjlfraude}
 							>
-								<iconify-icon
-									class="align-[-0.3rem] text-xl"
-									class:rotate-90={openTextecommissionAssembleepjlfraude}
-									icon="ri-arrow-right-s-line"
-								></iconify-icon>
 								<div
-									class="flex w-full flex-col-reverse items-center sm:flex-row sm:justify-between"
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
 								>
-									<a
-										class="lx-link-simple font-serif text-lg"
-										href="/pjl/PRJLANR5L17B2115"
-										onclick={() => (isLoadingPjl = true)}
-										title="Vers le projet de loi"
-									>
+									<div>
 										<iconify-icon
-											class="mr-1 align-[-0.18em]"
-											icon="ri:book-marked-fill"
-										>
-										</iconify-icon>Texte n°2115
-										<iconify-icon
-											class=" align-[-0.3rem] text-xl"
-											icon="ri-arrow-right-line"
+											class="align-[-0.3rem] text-xl"
+											class:rotate-90={openTextecommissionAssembleepjlfraude}
+											icon="ri-arrow-right-s-line"
 										></iconify-icon>
-									</a>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17B2115"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°2115
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon>
+										</a>
+									</div>
 
 									<div
-										class="mt-1 flex w-48 items-center justify-between rounded-sm border bg-amber-50 px-0.5 text-xs"
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
 									>
 										<div>
 											18/11/25・<iconify-icon
