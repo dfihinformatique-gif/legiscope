@@ -9,7 +9,7 @@
 	let openTexte122plfss2026 = $state(false)
 	let openTexte2141plfss2026 = $state(false)
 	let openTexte193plfss2026 = $state(true)
-	//let openTexte188plfss2026 = $state(false)
+	let openTexte188plfss2026 = $state(false)
 	let openTexteInitialpjlfraude = $state(false)
 	let openTextecommissionSenatpjlfraude = $state(false)
 	let openTextecommissionAssembleepjlfraude = $state(true)
@@ -531,18 +531,32 @@
 								</div>
 							{/if}
 						</div>
-
-						<!--<div class="flex flex-col justify-start p-1 text-base">
+						<!--
+						<div
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
+							class:border-white={!openTexte188plfss2026}
+							class:border-neutral-200={openTexte188plfss2026}
+							class:bg-neutral-50={openTexte188plfss2026}
+						>
 							<button
 								class="flex items-center gap-1 text-left"
 								onclick={() => (openTexte188plfss2026 = !openTexte188plfss2026)}
 								aria-expanded={openTexte188plfss2026}
 							>
 								<iconify-icon
-									class=" align-[-0.3rem] text-xl"
-									icon="ri-arrow-right-s-line"
+									class="align-[-0.3rem] text-xl"
 									class:rotate-90={openTexte188plfss2026}
-								></iconify-icon>
+									icon="ri-arrow-right-s-line"></iconify-icon>
+
+								<span
+									class="mt-1 w-40 rounded-sm border bg-amber-50 px-0.5 font-sans text-xs"
+								>
+									<iconify-icon
+										class="mr-1 align-[-0.18em]"
+										icon="ri:inbox-archive-line"></iconify-icon>
+									XXX ・<span class="tracking-widest">Assemblée</span>
+								</span>
+
 								<a
 									class="lx-link-simple font-serif text-lg"
 									href="TODO"
@@ -551,34 +565,34 @@
 								>
 									<iconify-icon
 										class="mr-1 align-[-0.18em]"
-										icon="ri:book-marked-fill"
-									>
-									</iconify-icon>Texte n°188
+										icon="ri:book-marked-fill"></iconify-icon>
+									Texte n°188
 									<iconify-icon
-										class=" align-[-0.3rem] text-xl"
-										icon="ri-arrow-right-line"
-									></iconify-icon></a
-								>
+										class="align-[-0.3rem] text-xl"
+										icon="ri-arrow-right-line"></iconify-icon>
+								</a>
 							</button>
+
 							{#if openTexte188plfss2026}
-								<div class="ml-2 border-l-2 pl-3">
-									<div class="flex flex-wrap gap-x-2 text-neutral-600">
-										<span class="">déposé XXX</span>
-										<span class="">modifié par XXX"</span>
+								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
+									<div class="flex flex-col text-neutral-600">
+										<span>déposé XXX</span>
+										<span>modifié par XXX"</span>
 									</div>
-									<div class="flex flex-col">
-										<span
-											>examiné en commission des affaires sociales saisie au
-											fond à l'Assemblée nationale</span
-										>
-										<span
-											>examiné pour lecture définitive en séance à l'Assemblée
-											nationale - Text adopté</span
-										>
-									</div>
+									<ul class="ml-1 list-inside list-disc">
+										<li>
+											examiné en commission des affaires sociales saisie au fond
+											à l'Assemblée nationale
+										</li>
+										<li>
+											examiné pour lecture définitive en séance à l'Assemblée
+											nationale - ✅ Texte adopté
+										</li>
+									</ul>
 								</div>
 							{/if}
-						</div>-->
+						</div>
+					-->
 					</div>
 
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
