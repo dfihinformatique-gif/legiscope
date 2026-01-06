@@ -1119,7 +1119,7 @@
 														class="mr-1 align-[-0.18em]"
 														icon="ri:book-marked-fill"
 													>
-													</iconify-icon>Texte adopté n°2550
+													</iconify-icon>Texte adopté n°2250
 													<iconify-icon
 														class=" align-[-0.3rem] text-xl"
 														icon="ri-arrow-right-line"
