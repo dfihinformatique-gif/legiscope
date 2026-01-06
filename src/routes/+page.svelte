@@ -1109,7 +1109,22 @@
 											examiné en commission des affaires sociales de l'Assemblée
 											nationale saisie au fond <span
 												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
+												><a
+													class="lx-link-simple font-serif text-base"
+													href="pjl/PRJLANR5L17BTC2250"
+													onclick={() => (isLoadingPjl = true)}
+													title="Vers le projet de loi"
+												>
+													<iconify-icon
+														class="mr-1 align-[-0.18em]"
+														icon="ri:book-marked-fill"
+													>
+													</iconify-icon>Texte adopté n°2550
+													<iconify-icon
+														class=" align-[-0.3rem] text-xl"
+														icon="ri-arrow-right-line"
+													></iconify-icon>
+												</a></span
 											>
 										</li>
 									</ul>
