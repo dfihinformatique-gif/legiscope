@@ -44,6 +44,7 @@
 						</iconify-icon>
 					</div>
 				{:else}
+					<!--PLF 2026-->
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
 						<h2 class="mb-3 font-serif font-medium">
 							Projet de loi de finances 2026 :
@@ -343,6 +344,7 @@
 							{/if}
 						</div>
 					</div>
+					<!--PLFSS 2026-->
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
 						<h2 class="mb-3 font-serif font-medium">
 							Projet de loi de financement de la sécurité sociale 2026 :
@@ -852,7 +854,7 @@
 							{/if}
 						</div>
 					</div>
-
+					<!--PROJET DE LOI LUTTE FRAUDE-->
 					<div class="mt-8 w-full rounded-md bg-white px-4 py-2">
 						<h2 class="mb-3 font-serif font-medium">
 							Projet de loi relatif à la lutte contre les fraudes sociales et
@@ -935,10 +937,7 @@
 									<ul class="ml-1 list-inside list-disc">
 										<li>
 											examiné en commission des affaires sociales saisie au fond
-											au Sénat <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
-											>
+											au Sénat
 										</li>
 									</ul>
 								</div>
@@ -1110,7 +1109,7 @@
 										<li>
 											examiné en commission des affaires sociales de l'Assemblée
 											nationale saisie au fond <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
+												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
 												><a
 													class="lx-link-simple font-serif text-base"
 													href="pjl/PRJLANR5L17BTC2250"
@@ -1121,7 +1120,7 @@
 														class="mr-1 align-[-0.18em]"
 														icon="ri:book-marked-fill"
 													>
-													</iconify-icon>Texte adopté n°2250
+													</iconify-icon>Texte de la commission, n°2250
 													<iconify-icon
 														class=" align-[-0.3rem] text-xl"
 														icon="ri-arrow-right-line"
