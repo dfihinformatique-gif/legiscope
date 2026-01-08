@@ -465,6 +465,8 @@
 										<a
 											class="lx-link-simple font-serif text-lg"
 											href="/pjl/pjl25-122"
+											onclick={() => (isLoadingPjl = true)}
+											title="Vers le projet de loi"
 										>
 											<iconify-icon
 												class="mr-1 align-[-0.18em]"
