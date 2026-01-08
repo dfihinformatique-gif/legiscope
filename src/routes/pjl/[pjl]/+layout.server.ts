@@ -263,12 +263,38 @@ export const load: LayoutServerLoad = async ({
 
 	try {
 		const html = await fs.readFile(filePath, "utf-8")
-		const pjlDate =
-			pjl === "plf-2026-Cplt_avec_liens" ||
-			pjl === "pre-plfss_2026" ||
-			pjl === "PRJLANR5L17B1906"
-				? new Date("2025-10-14").toISOString().split("T")[0]
-				: new Date("2024-10-10").toISOString().split("T")[0]
+
+		let pjlDate = new Date().toISOString().split("T")[0]
+
+		switch (pjl) {
+			case "PRJLANR5L17B1906":
+			case "PRJLANR5L17B1907":
+			case "pjl25-024":
+				pjlDate = new Date("2025-10-14").toISOString().split("T")[0]
+				break
+			case "pjl25-138":
+				pjlDate = new Date("2025-11-24").toISOString().split("T")[0]
+				break
+			case "PRJLANR5L17B2247":
+				pjlDate = new Date("2025-12-15").toISOString().split("T")[0]
+				break
+			case "pjl25-122":
+				pjlDate = new Date("2025-11-13").toISOString().split("T")[0]
+				break
+			case "PRJLANR5L17B2141":
+				pjlDate = new Date("2025-11-26").toISOString().split("T")[0]
+				break
+			case "pjl25-193":
+				pjlDate = new Date("2025-12-09").toISOString().split("T")[0]
+				break
+			case "pjl25-112":
+				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
+				break
+			case "PRJLANR5L17B2115":
+				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
+				break
+		}
+
 		shared.pjlDate = pjlDate
 
 		const currentParameterReferences = await getCurrentLegiIds(
