@@ -386,8 +386,7 @@
 					})
 			}
 
-			shadow.innerHTML = `
-				<style>
+			const style = `
 						/* STYLES POUR RENDRE LISIBLE LE HTML */
 
 					 	:host {
@@ -566,10 +565,14 @@
 						color: #2f406a !important;
 						line-height: 1.3 !important;
 					}
+				`
 
-				</style>
-				<div class="content-wrapper">${cleanedHTML}</div>
-      `
+			shadow.innerHTML = `
+				<style>${style}</style>
+				<div class="content-wrapper"></div>
+			`
+
+			shadow.querySelector(".content-wrapper")!.innerHTML = cleanedHTML
 
 			// Style les liens qui ouvrent la vue Article
 			cleanAndStyleLienTexteExterne(shadow)
