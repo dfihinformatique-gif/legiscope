@@ -39,7 +39,7 @@
 	let { pjlHTML, showParameterModal, parametersToVariables }: Props = $props()
 	let resizeObserver: ResizeObserver
 
-	const adjustSizes = (shadowRoot: ShadowRoot) => {
+	const adjustImgSizes = (shadowRoot: ShadowRoot) => {
 		if (!shadowRoot) return
 
 		// Ajuste les images au max 100% de leur conteneur
@@ -62,8 +62,20 @@
 
 		const id = hash.substring(1) // Remove #
 		const element = shadowRoot.getElementById(id)
-		if (element) {
-			element.scrollIntoView({ behavior: "smooth" })
+
+		const host = shadowRoot.host as HTMLElement
+
+		if (element && host) {
+			const elementRect = element.getBoundingClientRect().top
+			const hostRect = host.getBoundingClientRect().top
+
+			// On ajoute le scrollTop actuel pour compenser si on a déjà scrollé
+			const finalPosition = elementRect - hostRect + host.scrollTop
+
+			host.scrollTo({
+				top: finalPosition,
+				behavior: "smooth",
+			})
 		}
 	}
 
@@ -631,9 +643,9 @@
 
 			disableJustify(shadow)
 
-			resizeObserver = new ResizeObserver(() => adjustSizes(shadow))
+			resizeObserver = new ResizeObserver(() => adjustImgSizes(shadow))
 			resizeObserver.observe(container)
-			requestAnimationFrame(() => adjustSizes(shadow))
+			requestAnimationFrame(() => adjustImgSizes(shadow))
 
 			scrollToAnchor(window.location.hash, shadow)
 			shadow.addEventListener("click", (e) => {
@@ -806,7 +818,7 @@
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1 overflow-auto pb-52"
+		class="w-full flex-1"
 		class:md:p-10={!shared.showLawDesktop}
 	></div>
 </div>
