@@ -1013,7 +1013,11 @@
 								{:else if version.debut === "2999-01-01"}
 									Version de versement
 								{:else if version.fin === "2999-01-01"}
-									Version en vigueur depuis le {formatDateFr(version.debut)}
+									{#if version.debut === "2222-02-22"}
+										Version en vigueur différée ou article mort-né
+									{:else}
+										Version en vigueur depuis le {formatDateFr(version.debut)}
+									{/if}
 								{:else}
 									Version du {formatDateFr(version.debut)}
 									au {formatDateFr(version.fin)}
