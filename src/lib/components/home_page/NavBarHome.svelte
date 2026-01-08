@@ -1,131 +1,150 @@
 <script lang="ts">
 	import { DropdownMenu } from "bits-ui"
 
-	let isMobileMenuDropdownOpen = $state(false)
+	let isAccueilMobileMenuDropdownOpen = $state(false)
+	let isAccueilDesktopDropdownOpen = $state(false)
 </script>
 
-<nav class="fixed z-50 w-full md:top-0">
+<nav class="fixed top-0 z-50 w-full">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
 		<!-- UI DESKTOP -->
 		<div class="hidden h-full justify-between md:flex">
-			<!-- Bloc gauche pour le logo AN  -->
-			<div
-				class="flex h-full basis-1/3 items-center justify-between gap-2 xl:gap-5"
-			>
-				<div class="flex items-center gap-2">
-					<img
-						class="ml-2 h-14 items-start self-start pb-2"
-						src="/logo-assemblee-nationale-blanc-blanc.png"
-						alt="Logo de l'Assemblée nationale"
-					/>
-				</div>
+			<!-- Bloc gauche -->
+			<div class="flex h-full basis-1/3 items-center gap-2 xl:gap-5">
+				<img
+					class="ml-2 self-start md:h-11 2xl:h-12"
+					src="/logo-assemblee-nationale-blanc-blanc.png"
+					alt="Logo de l'Assemblée nationale"
+				/>
+
+				<!-- Accueil Dropdown -->
+				<DropdownMenu.Root bind:open={isAccueilDesktopDropdownOpen}>
+					<DropdownMenu.Trigger
+						class="cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900"
+					>
+						<div
+							class="flex items-center gap-1.5 py-2 pr-3 pl-2 lg:pl-4"
+							class:bg-blue-950={isAccueilDesktopDropdownOpen}
+						>
+							<span class="text-sm tracking-widest">Accueil</span>
+
+							<iconify-icon
+								class="text-2xl transition-transform"
+								class:rotate-180={isAccueilDesktopDropdownOpen}
+								icon="ri:arrow-down-s-line"
+							></iconify-icon>
+						</div>
+					</DropdownMenu.Trigger>
+
+					<DropdownMenu.Content
+						class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
+					>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a
+									{...props}
+									class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
+									href="/"
+								>
+									Accueil Légiscope
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a
+									{...props}
+									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+									href="https://leximpact.an.fr/"
+									target="_blank"
+								>
+									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+									></iconify-icon>
+									LexImpact
+									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+									></iconify-icon>
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a
+									{...props}
+									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+									href="https://www.assemblee-nationale.fr/"
+									target="_blank"
+								>
+									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+									></iconify-icon>
+									Assemblée nationale
+									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+									></iconify-icon>
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</div>
 
-			<!-- Deuxième section pour le logo LexImpat-->
-			<div class="flex">
-				<div
-					class="flex h-full flex-1 flex-col items-center rounded p-1 text-white uppercase"
-				>
-					<span class="leading-4 font-light">LexImpact</span>
-					<span class="text-lg leading-5 tracking-wider"
-						>Légiscope<iconify-icon
+			<!-- Centre -->
+			<div class="flex h-full items-center text-white uppercase">
+				<div class="flex flex-col items-center p-1">
+					<span class="text-sm leading-4 font-light 2xl:text-base"
+						>LexImpact</span
+					>
+					<span class="text-lg leading-5 tracking-wider">
+						Légiscope
+						<iconify-icon
 							class="pl-0.5 align-[-0.18em]"
 							icon="ri:book-marked-fill"
-						></iconify-icon></span
-					>
+						></iconify-icon>
+					</span>
 				</div>
 			</div>
 
-			<!-- Bloc droite pour les commandes avancées-->
-			<div class="flex basis-1/3 items-center justify-end gap-2 pr-2 xl:gap-5">
-				<!-- Accueil LexImpact -->
-
-				<a
-					class="cursor-pointer overflow-hidden rounded-lg px-4 py-3 text-center text-sm text-white uppercase hover:bg-blue-950 focus:outline-none"
-					href="https://leximpact.an.fr/"
-					target="_blank"
-				>
-					<iconify-icon
-						class="mr-1 align-[-0.2rem] text-lg"
-						icon="ri:home-2-line"
-					></iconify-icon>Accueil LexImpact
-				</a>
-			</div>
+			<!-- Droite -->
+			<div
+				class="flex basis-1/3 items-center justify-end gap-2 pr-2 xl:gap-5"
+			></div>
 		</div>
 
-		<!--UI MOBILE-->
+		<!-- UI MOBILE -->
 		<div class="flex flex-col md:hidden">
 			<div class="flex h-12 items-center justify-between">
-				<!-- Première section pour le logo AN-->
-				<div class="flex flex-1 self-start">
-					<!-- logo assemblee nationale -->
-					<div class="w-16">
-						<img
-							class="items-start object-scale-down px-2 pt-0 pb-1"
-							src="/logo-assemblee-nationale-blanc-blanc.png"
-							alt="Logo de l'Assemblée nationale"
-						/>
-					</div>
+				<img
+					class="h-12 self-start px-2 pb-1"
+					src="/logo-assemblee-nationale-blanc-blanc.png"
+					alt="Logo de l'Assemblée nationale"
+				/>
+
+				<div class="flex flex-col items-center p-1 text-white uppercase">
+					<span class="text-sm leading-4 font-light">LexImpact</span>
+					<span class="text-lg leading-5">
+						Légiscope
+						<iconify-icon
+							class="pl-0.5 align-[-0.18em]"
+							icon="ri:book-marked-fill"
+						></iconify-icon>
+					</span>
 				</div>
 
-				<!-- Deuxième section pour le logo LexImpat-->
-				<div class="flex">
-					<div
-						class="flex h-full flex-1 flex-col items-center rounded p-1 text-white uppercase"
+				<DropdownMenu.Root bind:open={isAccueilMobileMenuDropdownOpen}>
+					<DropdownMenu.Trigger
+						class="rounded-lg p-2 text-white hover:bg-gray-400/20 focus:outline-none active:bg-gray-400/40"
 					>
-						<span class="leading-4 font-light">LexImpact</span>
-						<span class="text-lg leading-5"
-							>Légiscope<iconify-icon
-								class="pl-0.5 align-[-0.18em]"
-								icon="ri:book-marked-fill"
-							></iconify-icon></span
-						>
-					</div>
-				</div>
+						<iconify-icon class="text-2xl" icon="ri-menu-line"></iconify-icon>
+					</DropdownMenu.Trigger>
 
-				<!-- Troisième section pour le bouton menu-->
-
-				<div class="flex flex-1 justify-end gap-3">
-					<DropdownMenu.Root bind:open={isMobileMenuDropdownOpen}>
-						<DropdownMenu.Trigger
-							class="hover:bg-opacity-20 active:bg-opacity-40 mt-0 cursor-pointer overflow-hidden rounded-lg text-sm text-white uppercase hover:bg-gray-400 focus:outline-none active:bg-gray-400"
-						>
-							<div
-								class="py-2 pr-3 pl-4"
-								class:bg-gray-400={isMobileMenuDropdownOpen}
-								class:bg-opacity-40={isMobileMenuDropdownOpen}
-							>
-								<iconify-icon
-									class="align-[-0.2rem] text-2xl"
-									icon="ri-menu-line"
-								></iconify-icon>
-							</div>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content
-							class="ring-opacity-5 z-50 mt-[0.25rem] w-screen rounded bg-white text-center text-black shadow-xl ring-1 ring-black focus:outline-none"
-						>
-							<DropdownMenu.Item>
-								{#snippet child({ props })}
-									<a
-										{...props}
-										class="block cursor-pointer border-b px-4 py-3 hover:bg-gray-100"
-										href="https://leximpact.an.fr/"
-									>
-										<iconify-icon
-											class="mr-1 align-[-0.2rem] text-lg"
-											icon="ri:home-2-line"
-										></iconify-icon>Accueil LexImpact<iconify-icon
-											class="align-[-0.25rem] text-xl"
-											icon="ri:arrow-right-up-line"
-										></iconify-icon>
-									</a>
-								{/snippet}
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-				</div>
+					<DropdownMenu.Content
+						class="z-50 mt-1 w-screen rounded bg-white text-center text-black shadow-xl ring-1 ring-black focus:outline-none"
+					>
+						<!-- mêmes items que desktop -->
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 			</div>
 		</div>
 	</div>

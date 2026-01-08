@@ -8,7 +8,7 @@
 
 {#if !shared.isMobilePhone}
 	<div
-		class="bg-le-gris-dispositif-dark fixed bottom-8 flex h-16 w-full flex-row flex-nowrap items-center overflow-hidden py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+		class="fixed bottom-8 flex h-12 w-full flex-row flex-nowrap items-center overflow-hidden bg-neutral-300 py-5 text-center 2xl:h-14"
 	>
 		<div class="flex-1">
 			<button
