@@ -10,16 +10,6 @@
 	<div
 		class="bg-le-gris-dispositif-dark fixed bottom-8 flex h-16 w-full flex-row flex-nowrap items-center overflow-hidden py-5 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 	>
-		<!-- Bloc gauche pour le logo AN  -->
-
-		<div class="absolute bottom-2 left-3">
-			<img
-				class="ml-2 h-14 items-start self-start pb-2"
-				src="/logo-assemblee-nationale-blanc-blanc.png"
-				alt="Logo de l'Assemblée nationale"
-			/>
-		</div>
-
 		<div class="flex-1">
 			<button
 				class="
@@ -100,37 +90,12 @@
 			</div>
 		{/if}
 	</div>
-	<div class="absolute right-3 bottom-9.5">
-		<a
-			class="border-le-gris-dispositif-dark flex cursor-pointer overflow-hidden border-t-4 px-4 py-1.5 text-center text-sm text-neutral-200 uppercase hover:border-neutral-200"
-			href="/"
-			><span>
-				<iconify-icon
-					class="mr-1 align-[-0.4rem] text-xl"
-					icon="ri-information-2-fill"
-				></iconify-icon>Accueil<br />
-				<span class="tracking-wider">Légiscope</span>
-			</span></a
-		>
-	</div>
 {:else}
 	<div
 		class="bg-le-gris-dispositif-dark fixed bottom-8 flex w-full justify-between"
 	>
-		<!-- Bloc gauche pour le logo AN  -->
-
-		<div class="flex h-12 w-1/12 items-center pt-2 pl-2.5">
-			<div>
-				<img
-					class="w-10"
-					src="/logo-assemblee-nationale-blanc-blanc.png"
-					alt="Logo de l'Assemblée nationale"
-				/>
-			</div>
-		</div>
-
 		<div
-			class="mt-2 flex h-12 w-9/12 flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+			class="mt-2 flex h-12 w-full flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 		>
 			<div class="flex h-full flex-1">
 				<button
@@ -172,17 +137,6 @@
 				</div>
 			{/if}
 		</div>
-
-		<a
-			class="flex w-1/12 cursor-pointer items-center justify-center overflow-hidden rounded-lg text-white uppercase hover:text-gray-200 focus:outline-none active:text-gray-800"
-			href="/"
-			aria-label="Accueil"
-		>
-			<iconify-icon
-				class="mr-2 align-[-0.2rem] text-2xl"
-				icon="ri-information-2-fill"
-			></iconify-icon>
-		</a>
 	</div>
 {/if}
 <div
