@@ -26,10 +26,10 @@
 </svelte:head>
 
 {#if page.url.pathname === "/"}
-	<NavBarHome></NavBarHome>
+	<NavBarHome />
 	<main class="">{@render children()}</main>
 {:else}
-	<NavBarHome></NavBarHome>
+	<NavBarHome />
 	<!-- Zone principale -->
 	<main
 		class="absolute inset-0 min-h-full overflow-hidden bg-neutral-200 md:mt-12 2xl:mt-14"
@@ -37,5 +37,5 @@
 		{@render children()}
 	</main>
 	<!-- Navbar -->
-	<NavBar></NavBar>
+	<NavBar />
 {/if}

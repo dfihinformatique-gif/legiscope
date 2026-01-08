@@ -25,7 +25,7 @@
 						class="cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900"
 					>
 						<div
-							class="flex items-center gap-1.5 py-2 pr-3 pl-2 lg:pl-4"
+							class="flex items-center gap-1.5 rounded-lg py-2 pr-3 pl-2 lg:pl-4"
 							class:bg-blue-950={isAccueilDesktopDropdownOpen}
 						>
 							<span class="text-sm tracking-widest">Accueil</span>
@@ -39,6 +39,7 @@
 					</DropdownMenu.Trigger>
 
 					<DropdownMenu.Content
+						preventScroll={false}
 						class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
 					>
 						<DropdownMenu.Item>
@@ -140,6 +141,7 @@
 					</DropdownMenu.Trigger>
 
 					<DropdownMenu.Content
+						preventScroll={false}
 						class="z-50  w-screen rounded bg-white text-center text-black shadow-xl ring-1 ring-black focus:outline-none"
 					>
 						<DropdownMenu.Item>
