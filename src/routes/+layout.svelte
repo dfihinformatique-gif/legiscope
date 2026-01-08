@@ -29,6 +29,7 @@
 	<NavBarHome></NavBarHome>
 	<main class="">{@render children()}</main>
 {:else}
+	<NavBarHome></NavBarHome>
 	<!-- Zone principale -->
 	<main class="absolute inset-0 min-h-full overflow-hidden">
 		{@render children()}
