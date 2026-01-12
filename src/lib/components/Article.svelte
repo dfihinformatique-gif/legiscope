@@ -877,9 +877,20 @@
 	style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 >
 	{#if articleInfo.article}
-		<!--Sommaire-->
-		<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
-
+		<div class="mb-4 flex flex-wrap items-center justify-between">
+			<!--Sommaire-->
+			<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+			<a
+				class="lx-link-simple text-sm text-gray-500"
+				href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
+					.legi_id}"
+				target="_blank"
+				>Légifrance<iconify-icon
+					class="ml-0.5 align-[-0.15rem] text-sm"
+					icon="ri:external-link-line"
+				></iconify-icon></a
+			>
+		</div>
 		<!--En-tête-->
 		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
@@ -900,16 +911,6 @@
 				{/if} ·
 				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 			</div>
-			<a
-				class="lx-link-simple ml-auto text-gray-500"
-				href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
-					.legi_id}"
-				target="_blank"
-				>Légifrance<iconify-icon
-					class="ml-0.5 align-[-0.15rem] text-sm"
-					icon="ri:external-link-line"
-				></iconify-icon></a
-			>
 		</div>
 
 		<div
