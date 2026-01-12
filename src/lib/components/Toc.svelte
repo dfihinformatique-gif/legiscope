@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
+	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -116,13 +117,12 @@
 </script>
 
 {#if articleIsNotInValidSection}
-	<p>
-		<span class="text-red-600"
-			>Les données disponibles ne permettent pas d'afficher le contexte de cet
-			article à la date du {formatDateFr(date)}</span
-		>
-	</p>
-	<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
+	<AlertDatabaseMessage>
+		Les données disponibles ne permettent pas d'afficher le contexte de cet
+		article à la date du {formatDateFr(date)}
+
+		<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
+	</AlertDatabaseMessage>
 {/if}
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}

@@ -28,6 +28,7 @@
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
+	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -959,20 +960,14 @@
 					class:border-gray-200={citationsIsOpen}
 				>
 					<ArticleCitations {articleInfo}></ArticleCitations>
-					<div
-						class="mt-4 rounded-sm border-2 border-yellow-600 bg-amber-50 p-2 text-sm text-yellow-900"
-					>
-						<iconify-icon
-							icon="ri-information-fill"
-							class="mr-1 align-[-0.2rem] text-base text-yellow-600"
-						></iconify-icon>
+					<AlertDatabaseMessage>
 						<b
 							>Certaines versions ne citent pas cet article ? Il manque des
 							citations ?</b
 						>
 						Le Légiscope s'appuie sur la liste des citations mise à disposition par
 						Légifrance. Cette liste peut contenir des erreurs ou des manques.
-					</div>
+					</AlertDatabaseMessage>
 				</div>
 			{/if}
 
