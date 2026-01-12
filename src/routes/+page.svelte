@@ -763,9 +763,9 @@
 											icon="ri-arrow-right-s-line"
 										></iconify-icon>
 										<a
-											type="button"
-											class="lx-link-simple cursor-not-allowed font-serif text-lg opacity-50"
-											aria-disabled="true"
+											class="lx-link-simple font-serif text-lg"
+											href="/pjl/PRJLANR5L17BTA0188"
+											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
 											<iconify-icon
@@ -773,7 +773,6 @@
 												icon="ri:book-marked-fill"
 											>
 											</iconify-icon>Texte n°188
-											<span class="text-xs">(texte non disponible)</span>
 											<iconify-icon
 												class=" align-[-0.3rem] text-xl"
 												icon="ri-arrow-right-line"
