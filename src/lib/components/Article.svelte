@@ -854,6 +854,12 @@
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
+
+	const ongletsArticle = [
+		{ id: "content", label: "Texte" },
+		{ id: "history", label: "Historique" },
+		{ id: "citations", label: "Articles citant cet article" },
+	]
 	let activeTab = $state("content")
 
 	const allVersions =
@@ -900,48 +906,22 @@
 		</div>
 
 		<div class="mx-6 flex items-end gap-x-1">
-			<button
-				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
-				class:bg-blue-50={activeTab === "content"}
-				class:bg-[#C9D7ED]={activeTab !== "content"}
-				class:cursor-pointer={activeTab !== "content"}
-				class:text-neutral-700={activeTab === "content"}
-				class:text-le-gris-dispositif={activeTab !== "content"}
-				class:hover:text-le-gris-dispositif-dark={activeTab !== "content"}
-				onclick={() => {
-					activeTab = "content"
-				}}
-			>
-				Texte
-			</button>
-			<button
-				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
-				class:bg-blue-50={activeTab === "history"}
-				class:bg-[#C9D7ED]={activeTab !== "history"}
-				class:cursor-pointer={activeTab !== "history"}
-				class:text-neutral-700={activeTab === "history"}
-				class:text-le-gris-dispositif={activeTab !== "history"}
-				class:hover:text-le-gris-dispositif-dark={activeTab !== "history"}
-				onclick={() => {
-					activeTab = "history"
-				}}
-			>
-				Historique
-			</button>
-			<button
-				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
-				class:bg-blue-50={activeTab === "citations"}
-				class:bg-[#C9D7ED]={activeTab !== "citations"}
-				class:cursor-pointer={activeTab !== "citations"}
-				class:text-neutral-700={activeTab === "citations"}
-				class:text-le-gris-dispositif={activeTab !== "citations"}
-				class:hover:text-le-gris-dispositif-dark={activeTab !== "citations"}
-				onclick={() => {
-					activeTab = "citations"
-				}}
-			>
-				Articles citant cet article
-			</button>
+			{#each ongletsArticle as tab}
+				<button
+					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
+					class:bg-blue-50={activeTab === tab.id}
+					class:bg-[#C9D7ED]={activeTab !== tab.id}
+					class:cursor-pointer={activeTab !== tab.id}
+					class:text-neutral-700={activeTab === tab.id}
+					class:text-le-gris-dispositif={activeTab !== tab.id}
+					class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
+					onclick={() => {
+						activeTab = tab.id
+					}}
+				>
+					{tab.label}
+				</button>
+			{/each}
 		</div>
 
 		<section
