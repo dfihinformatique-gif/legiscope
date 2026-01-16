@@ -429,7 +429,7 @@ async function getArticle(
 				from articles_liens al
 				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
 				left join jorftext jt on (jt.legi_id = al.cidtexte)
-				where al.legi_id = 'LEGIARTI000051682572'
+				where al.legi_id = ${article.legi_id}
 				and (al.typelien, al.cible) in
 					(
 						('CODIFICATION', false),
