@@ -134,6 +134,7 @@ async function getArticle(
 						from scta s
 						where dernier_segment = ${requestedArticle}
 						and ${requestedDate}::date <@ s.parents_valid_period
+						limit 1
 						)
 					`
 				output.sectionTitle = lastSectionTitle[0].section_title
@@ -151,6 +152,7 @@ async function getArticle(
 						select distinct subpath(s.chemin, -2, 1)::text
 						from scta s
 						where dernier_segment = ${requestedArticle}
+						limit 1
 						)
 					`
 					output.sectionTitle = lastSectionTitle[0].section_title
@@ -213,6 +215,7 @@ async function getArticle(
 						select distinct subpath(s.chemin, -2, 1)::text
 						from scta s
 						where dernier_segment = ${requestedArticle}
+						limit 1
 						)
 					`
 				output.sectionTitle = lastSectionTitle[0].section_title
