@@ -960,12 +960,12 @@
 	>
 		{#if activeTab === "content"}
 			<!--Version : selection et contexte-->
-			<section class="mb-10 flex flex-col gap-y-5">
+			<section class="mb-8 flex flex-col gap-y-5">
 				<h2 class="sr-only">Version de l'article</h2>
 				{#if articleInfo.versions}
 					<select
 						name="versions"
-						class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-sm font-medium text-black italic sm:text-base"
+						class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-base text-black italic sm:text-lg"
 						onchange={() => {
 							const urlToNavigate = new URL(page.url)
 							urlToNavigate.searchParams.set(
@@ -1005,21 +1005,28 @@
 						{/each}
 					</select>
 				{/if}
+				{#if articleInfo.historyLinks && articleInfo.historyLinks.length > 0}
+					<ul>
+						{#each articleInfo.historyLinks as link}
+							{@const urlToNavigate = new URL(page.url)}
+							{urlToNavigate.searchParams.set("article", link.cidtexte)}
 
+							<li class="line-clamp-2 pb-1 text-xs text-neutral-600 italic">
+								<span
+									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
+									>Suite à {link.typelien} par</span
+								>
+								<a class="lx-link-text" href={urlToNavigate.href}
+									>{link.titre_texte}</a
+								>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 				<!--Sommaire-->
 				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 			</section>
-			{#each articleInfo.historyLinks as link}
-				{@const urlToNavigate = new URL(page.url)}
-				{urlToNavigate.searchParams.set("article", link.cidtexte)}
-				<span
-					class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
-					>Suite à {link.typelien} par</span
-				>
-				<a class="lx-link-text font" href={urlToNavigate.href}
-					>{link.titre_texte}</a
-				>
-			{/each}
+
 			<!--Texte de la version-->
 			<section>
 				<h2 class="sr-only">Texte de l’article</h2>

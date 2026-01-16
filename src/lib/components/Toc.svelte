@@ -124,10 +124,14 @@
 		<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
 	</AlertDatabaseMessage>
 {/if}
-<span
-	class="text-le-gris-dispositif-dark my-0.5 -ml-1 text-left font-bold xl:text-lg"
-	>{articleInfo.textTitle}</span
+<p
+	class="my-0.5 mt-4 -ml-1 cursor-default text-left text-neutral-700 xl:text-lg"
 >
+	<iconify-icon
+		class="mr-2 align-[-0.2rem] text-lg no-underline"
+		icon="ri-book-2-fill"
+	></iconify-icon>{articleInfo.textTitle}
+</p>
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
 		{#each topLevelItems as item}
