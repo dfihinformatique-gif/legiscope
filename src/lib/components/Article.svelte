@@ -876,128 +876,124 @@
 	)
 </script>
 
-<div class=" flex flex-col">
-	{#if articleInfo.article}
-		<!--Titre-->
-		<div
-			class="mx-6 my-3 flex flex-col items-center justify-between gap-x-5 md:flex-row"
+{#if articleInfo.article}
+	<!--Titre-->
+	<div
+		class="mx-6 my-3 flex flex-col items-center justify-between gap-x-5 md:flex-row"
+	>
+		<div class="flex-wrap text-left font-sans text-2xl text-neutral-900">
+			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
+			</iconify-icon>
+			{#if articleInfo.article.num !== undefined}
+				<span class="text-nowrap">Article {articleInfo.article.num}</span>
+			{/if} ·
+			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
+		</div>
+		<a
+			class="lx-link-simple text-sm text-gray-500"
+			href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
+				.legi_id}"
+			target="_blank"
+			>Légifrance<iconify-icon
+				class="ml-0.5 align-[-0.15rem] text-sm"
+				icon="ri:external-link-line"
+			></iconify-icon></a
 		>
-			<div class="flex-wrap text-left font-sans text-2xl text-neutral-900">
-				<iconify-icon
-					class="align-[-0.2rem] text-2xl"
-					icon="ri:book-marked-fill"
-				>
-				</iconify-icon>
-				{#if articleInfo.article.num !== undefined}
-					<span class="text-nowrap">Article {articleInfo.article.num}</span>
-				{/if} ·
-				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
-			</div>
-			<a
-				class="lx-link-simple text-sm text-gray-500"
-				href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
-					.legi_id}"
-				target="_blank"
-				>Légifrance<iconify-icon
-					class="ml-0.5 align-[-0.15rem] text-sm"
-					icon="ri:external-link-line"
-				></iconify-icon></a
+	</div>
+
+	<div class="mx-6 flex items-end gap-x-1">
+		{#each ongletsArticle as tab}
+			<button
+				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
+				class:bg-blue-50={activeTab === tab.id}
+				class:bg-[#C9D7ED]={activeTab !== tab.id}
+				class:cursor-pointer={activeTab !== tab.id}
+				class:text-neutral-700={activeTab === tab.id}
+				class:text-le-gris-dispositif={activeTab !== tab.id}
+				class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
+				onclick={() => {
+					activeTab = tab.id
+				}}
 			>
-		</div>
+				{tab.label}
+			</button>
+		{/each}
+	</div>
 
-		<div class="mx-6 flex items-end gap-x-1">
-			{#each ongletsArticle as tab}
-				<button
-					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
-					class:bg-blue-50={activeTab === tab.id}
-					class:bg-[#C9D7ED]={activeTab !== tab.id}
-					class:cursor-pointer={activeTab !== tab.id}
-					class:text-neutral-700={activeTab === tab.id}
-					class:text-le-gris-dispositif={activeTab !== tab.id}
-					class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
-					onclick={() => {
-						activeTab = tab.id
-					}}
-				>
-					{tab.label}
-				</button>
-			{/each}
-		</div>
-
-		<section
-			class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
-			class:md:p-16={!shared.showBillDesktop}
-			style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
-		>
-			{#if activeTab === "content"}
-				<div class="mb-4 flex flex-wrap items-center justify-between">
-					<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-						{#if articleInfo.versions}
-							<select
-								name="versions"
-								class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
-								onchange={() => {
-									const urlToNavigate = new URL(page.url)
-									urlToNavigate.searchParams.set(
-										"article",
-										selectedVersion!.legi_id_lien,
-									)
-									urlToNavigate.searchParams.set(
-										"date",
+	<section
+		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md"
+		class:md:p-16={!shared.showBillDesktop}
+		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
+	>
+		{#if activeTab === "content"}
+			<div class="mb-4 flex flex-wrap items-center justify-between">
+				<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
+					{#if articleInfo.versions}
+						<select
+							name="versions"
+							class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
+							onchange={() => {
+								const urlToNavigate = new URL(page.url)
+								urlToNavigate.searchParams.set(
+									"article",
+									selectedVersion!.legi_id_lien,
+								)
+								urlToNavigate.searchParams.set(
+									"date",
 									new Date(selectedVersion!.debut).toISOString().split("T")[0],
-									)
-									goto(urlToNavigate, { replaceState: false })
-								}}
-								bind:value={selectedVersion}
-							>
-								{#each articleInfo.versions as version (version.legi_id_lien)}
-									<option
-										value={version}
-										selected={articleInfo.article.legi_id ===
-											version.legi_id_lien}
-									>
-										{#if version.debut}
-											{#if version.legi_id_lien.startsWith("JORF")}Journal
+								)
+								goto(urlToNavigate, { replaceState: false })
+							}}
+							bind:value={selectedVersion}
+						>
+							{#each articleInfo.versions as version (version.legi_id_lien)}
+								<option
+									value={version}
+									selected={articleInfo.article.legi_id ===
+										version.legi_id_lien}
+								>
+									{#if version.debut}
+										{#if version.legi_id_lien.startsWith("JORF")}Journal
 											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
-											{:else if version.debut === "2999-01-01"}
-												Version de versement
-											{:else if version.fin === "2999-01-01"}
-												{#if version.debut === "2222-02-22"}
-													Version en vigueur différée ou article mort-né
-												{:else}
-													Version en vigueur depuis le {formatDateFr(
-														version.debut,
-													)}
-												{/if}
+										{:else if version.debut === "2999-01-01"}
+											Version de versement
+										{:else if version.fin === "2999-01-01"}
+											{#if version.debut === "2222-02-22"}
+												Version en vigueur différée ou article mort-né
 											{:else}
-												Version du {formatDateFr(version.debut)}
-												au {formatDateFr(version.fin)}
+												Version en vigueur depuis le {formatDateFr(
+													version.debut,
+												)}
 											{/if}
+										{:else}
+											Version du {formatDateFr(version.debut)}
+											au {formatDateFr(version.fin)}
 										{/if}
-									</option>
-								{/each}
-							</select>
-							<div class="text-left">
-								<label class="inline-flex cursor-pointer items-center">
-									<input
-										class="peer sr-only"
-										type="checkbox"
-										bind:checked={showDiff}
-									/>
-									{#if articleInfo.versions.length > 1}
-										<div
-											class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-										></div>
-										<span
-											class="ms-3 text-xs font-medium text-gray-900 sm:text-sm"
-										>
-											Voir les changements apportés <br /> à la version précédente
-										</span>
 									{/if}
-								</label>
-							</div>
-						{/if}
-						<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
+								</option>
+							{/each}
+						</select>
+						<div class="text-left">
+							<label class="inline-flex cursor-pointer items-center">
+								<input
+									class="peer sr-only"
+									type="checkbox"
+									bind:checked={showDiff}
+								/>
+								{#if articleInfo.versions.length > 1}
+									<div
+										class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+									></div>
+									<span
+										class="ms-3 text-xs font-medium text-gray-900 sm:text-sm"
+									>
+										Voir les changements apportés <br /> à la version précédente
+									</span>
+								{/if}
+							</label>
+						</div>
+					{/if}
+					<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
 				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
 					>Discussions parlementaires</a
 				>
@@ -1008,64 +1004,64 @@
 					>Jurisprudence</a
 				>
 			</div> -->
-					</div>
-
-					<!--Sommaire-->
-					<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 				</div>
-				<!--En-tête-->
-				{#if articleInfo.article}
-					{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
 
-					{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-						Premier article :
-					{/if}
+				<!--Sommaire-->
+				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+			</div>
+			<!--En-tête-->
+			{#if articleInfo.article}
+				{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
 
-					<!-- reste du template -->
+				{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+					Premier article :
 				{/if}
 
-				<!--Article-->
-				{#if showDiff === true}
-					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
-						<span class="font-serif text-lg leading-8 md:text-left">
-							{@html diffContent}
-						</span>
-					</div>
-				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-					<span class="font-serif text-lg leading-8 md:text-left"
-						>{@html highlightParameterValuesInArticleHTML(
-							articleParameterReferences,
-						)}</span
-					>
-				{/if}
-			{:else if activeTab === "history"}
-				<ArticleHistory {articleInfo}></ArticleHistory>
-			{:else if activeTab === "citations"}
-				<ArticleCitations {articleInfo}></ArticleCitations>
-				<AlertDatabaseMessage>
-					<b
-						>Certaines versions ne citent pas cet article ? Il manque des
-						citations ?</b
-					>
-					Le Légiscope s'appuie sur la liste des citations mise à disposition par
-					Légifrance. Cette liste peut contenir des erreurs ou des manques.
-				</AlertDatabaseMessage>
+				<!-- reste du template -->
 			{/if}
-		</section>
-	{:else}
-		<div class="flex h-screen w-full flex-col justify-center">
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
-			></iconify-icon>
-			<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
-			<p class="text-center font-medium text-gray-500 uppercase">
-				est introuvable
-			</p>
 
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
-			></iconify-icon>
-		</div>
-	{/if}
-</div>
+			<!--Article-->
+			{#if showDiff === true}
+				<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+					<span class="font-serif text-lg leading-8 md:text-left">
+						{@html diffContent}
+					</span>
+				</div>
+			{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
+				<span class="font-serif text-lg leading-8 md:text-left"
+					>{@html highlightParameterValuesInArticleHTML(
+						articleParameterReferences,
+					)}</span
+				>
+			{/if}
+		{:else if activeTab === "history"}
+			<ArticleHistory {articleInfo}></ArticleHistory>
+		{:else if activeTab === "citations"}
+			<ArticleCitations {articleInfo}></ArticleCitations>
+			<AlertDatabaseMessage>
+				<b
+					>Certaines versions ne citent pas cet article ? Il manque des
+					citations ?</b
+				>
+				Le Légiscope s'appuie sur la liste des citations mise à disposition par Légifrance.
+				Cette liste peut contenir des erreurs ou des manques.
+			</AlertDatabaseMessage>
+		{/if}
+	</section>
+{:else}
+	<div class="flex h-screen w-full flex-col justify-center">
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
+		></iconify-icon>
+		<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
+		<p class="text-center font-medium text-gray-500 uppercase">
+			est introuvable
+		</p>
+
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
+		></iconify-icon>
+	</div>
+{/if}
+
 <ParameterLinkModal
 	bind:showParameterModal
 	{clickedParameterButtons}
