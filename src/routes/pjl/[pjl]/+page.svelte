@@ -110,14 +110,14 @@
 
 {#if !shared.isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
-		<div
+		<section
 			class={`z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
 			class:hidden={!shared.showBillDesktop}
 		>
 			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
-		</div>
+		</section>
 
-		<div
+		<section
 			class={`flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
 			class:hidden={!shared.showLawDesktop}
 		>
@@ -142,10 +142,10 @@
 					></iconify-icon>
 				</div>
 			{/if}
-		</div>
+		</section>
 
 		{#if citingArticleInfo}
-			<div
+			<aside
 				class={`flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
 				class:hidden={!shared.showCitingDesktop}
 			>
@@ -160,7 +160,7 @@
 						{parametersToVariables}
 					></ArticleCitant>
 				{/if}
-			</div>
+			</aside>
 		{/if}
 	</div>
 {:else}

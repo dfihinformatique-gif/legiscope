@@ -895,17 +895,21 @@
 
 {#if articleInfo.article}
 	<!--Titre-->
-	<div
+	<header
 		class="my-3 flex flex-col items-center justify-between gap-x-5 px-4 md:flex-row lg:px-0"
 	>
-		<div class="flex-wrap text-left font-sans text-2xl text-neutral-900">
-			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
+		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
+			<iconify-icon
+				class="align-[-0.2rem] text-2xl"
+				icon="ri:book-marked-fill"
+				aria-hidden="true"
+			>
 			</iconify-icon>
 			{#if articleInfo.article.num !== undefined}
 				<span class="text-nowrap">Article {articleInfo.article.num}</span>
 			{/if} ·
 			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
-		</div>
+		</h1>
 		<a
 			class="lx-link-simple text-sm text-nowrap text-gray-500"
 			href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
@@ -916,9 +920,9 @@
 				icon="ri:external-link-line"
 			></iconify-icon></a
 		>
-	</div>
+	</header>
 
-	<div class="relative">
+	<nav class="relative" aria-label="Navigation de l’article">
 		<div
 			bind:this={tabsContainer}
 			onscroll={checkScroll}
@@ -947,7 +951,7 @@
 				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-blue-900/10 to-transparent"
 			></div>
 		{/if}
-	</div>
+	</nav>
 
 	<div
 		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
@@ -957,6 +961,7 @@
 		{#if activeTab === "content"}
 			<!--Version : selection et contexte-->
 			<section class="mb-10 flex flex-col gap-y-5">
+				<h2 class="sr-only">Version de l'article</h2>
 				{#if articleInfo.versions}
 					<select
 						name="versions"
@@ -1005,7 +1010,8 @@
 			</section>
 
 			<!--Texte de la version-->
-			<article>
+			<section>
+				<h2 class="sr-only">Texte de l’article</h2>
 				<!--En-tête-->
 				{#if articleInfo.article}
 					{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
@@ -1047,7 +1053,7 @@
 						)}</span
 					>
 				{/if}
-			</article>
+			</section>
 		{:else if activeTab === "history"}
 			<ArticleHistory {articleInfo}></ArticleHistory>
 		{:else if activeTab === "citations"}

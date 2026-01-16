@@ -5,7 +5,7 @@
 	let isAccueilDesktopDropdownOpen = $state(false)
 </script>
 
-<nav class="fixed top-0 z-50 w-full">
+<header class="fixed top-0 z-50 w-full">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
@@ -194,4 +194,4 @@
 			</div>
 		</div>
 	</div>
-</nav>
+</header>
