@@ -118,7 +118,7 @@
 		</div>
 
 		<div
-			class={`flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 md:px-6`}
+			class={`flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
 			class:hidden={!shared.showLawDesktop}
 		>
 			{#if isLoadingArticle}
