@@ -815,6 +815,7 @@
 </script>
 
 <div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
+	<h1 class="sr-only">Projet de loi</h1>
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
