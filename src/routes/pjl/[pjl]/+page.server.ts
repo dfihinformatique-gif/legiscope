@@ -33,6 +33,7 @@ async function getArticle(
 		articlePreviousVersion: undefined,
 		text: undefined,
 		textTitle: undefined,
+		sectionTitle: undefined,
 		jorfTextDatePubli: undefined,
 		versions: undefined,
 	}

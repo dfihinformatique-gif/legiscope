@@ -124,6 +124,10 @@
 		<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
 	</AlertDatabaseMessage>
 {/if}
+<span
+	class="text-le-gris-dispositif-dark my-0.5 -ml-1 text-left font-bold xl:text-lg"
+	>{articleInfo.textTitle}</span
+>
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
 		{#each topLevelItems as item}
