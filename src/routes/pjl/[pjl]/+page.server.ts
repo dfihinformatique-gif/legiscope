@@ -357,7 +357,7 @@ async function getArticle(
 		// Récupération du titre du texte et de la date de publication JO le cas échéant
 		if (output.text) {
 			const textTitle = await dbConnection`
-				select coalesce(titre, titre_full) as titre
+				select regexp_replace(coalesce(titre, titre_full), '\\(1\\)\\s*$', '') as titre
 				from (
 					select legi_id, titre, titre_full from legitext
 					union
@@ -425,7 +425,7 @@ async function getArticle(
 
 			const historyLinks: HistoryData = await dbConnection`
 			with creat_modif as (
-				select al.cidtexte, jt.titre_full titre_texte, jt.date_publi, al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
+				select al.cidtexte, regexp_replace(jt.titre_full, '\\(1\\)\\s*$', '') titre_texte, jt.date_publi, al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
 				from articles_liens al
 				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
 				left join jorftext jt on (jt.legi_id = al.cidtexte)
@@ -455,7 +455,7 @@ async function getArticle(
 					else 3
 				end ordinalite
 			from creat_modif cm
-			order by date_publi desc`
+			order by ordinalite`
 
 			output.historyLinks = historyLinks
 
