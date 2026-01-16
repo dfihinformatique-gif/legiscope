@@ -125,6 +125,16 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						and ${requestedDate}::date <@ s.parents_valid_period
+						)
+					`
+				output.sectionTitle = lastSectionTitle[0].section_title
 			} else if (associatedText.length === 0) {
 				const associatedTextOutOfBoundaries = await dbConnection`
 				select distinct subltree(s.chemin, 0, 1) as associated_text
@@ -133,14 +143,33 @@ async function getArticle(
 
 				if (associatedTextOutOfBoundaries.length === 1) {
 					output.text = associatedTextOutOfBoundaries[0].associated_text
+					const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						)
+					`
+					output.sectionTitle = lastSectionTitle[0].section_title
 				} else if (associatedTextOutOfBoundaries.length > 1) {
 					const refinedAssociatedTextOutOfBoundaries = await dbConnection`
-					select distinct subltree(s.chemin, 0, 1) as associated_text
-					from scta s
-					where dernier_segment = ${requestedArticle}
-					and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)`
+						select distinct subltree(s.chemin, 0, 1) as associated_text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)`
 
 					if (refinedAssociatedTextOutOfBoundaries.length === 1) {
+						const lastSectionTitle = await dbConnection`
+							select titre as section_title from scta s2 where s2.dernier_segment =
+								(
+								select distinct subltree(s.chemin, 0, 1) as associated_text
+								from scta s
+								where dernier_segment = ${requestedArticle}
+								and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)
+								)
+							`
+						output.sectionTitle = lastSectionTitle[0].section_title
 						output.text =
 							refinedAssociatedTextOutOfBoundaries[0].associated_text
 					} else {
@@ -176,6 +205,15 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						)
+					`
+				output.sectionTitle = lastSectionTitle[0].section_title
 			} else if (associatedText.length === 0) {
 				throw error(
 					422,
@@ -203,6 +241,9 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment = ${requestedArticle}`
+				output.sectionTitle = lastSectionTitle[0].section_title
 			} else if (associatedText.length === 0) {
 				throw error(
 					422,

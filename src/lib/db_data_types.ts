@@ -90,6 +90,7 @@ export type ArticleInfo = {
 	articlePreviousVersion: Legiarti | undefined
 	text: string | undefined
 	textTitle: string | undefined
+	sectionTitle: string | undefined
 	versions: VersionArticle[] | undefined
 	jorfTextDatePubli: string | undefined
 }
