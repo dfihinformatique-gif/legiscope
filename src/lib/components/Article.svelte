@@ -907,7 +907,7 @@
 			</iconify-icon>
 			{#if articleInfo.article.num !== undefined}
 				<span class="text-nowrap">Article {articleInfo.article.num}</span>
-			{/if} ·
+			{/if} <span aria-hidden="true">·</span>
 			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 		</h1>
 		<a

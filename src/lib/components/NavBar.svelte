@@ -8,6 +8,7 @@
 
 {#if !shared.isMobilePhone}
 	<nav
+		aria-label="Navigation principale"
 		class="fixed bottom-8 flex h-12 w-full flex-row flex-nowrap items-center overflow-hidden bg-neutral-300 py-5 text-center 2xl:h-14"
 	>
 		<div class="flex-1">
