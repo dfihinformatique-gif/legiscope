@@ -88,6 +88,7 @@ export type VersionArticle = {
 export type ArticleInfo = {
 	article: Legiarti | undefined
 	articlePreviousVersion: Legiarti | undefined
+	historyLinks: HistoryData | undefined
 	text: string | undefined
 	textTitle: string | undefined
 	sectionTitle: string | undefined

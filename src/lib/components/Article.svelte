@@ -1005,10 +1005,21 @@
 						{/each}
 					</select>
 				{/if}
+
 				<!--Sommaire-->
 				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
 			</section>
-
+			{#each articleInfo.historyLinks as link}
+				{@const urlToNavigate = new URL(page.url)}
+				{urlToNavigate.searchParams.set("article", link.cidtexte)}
+				<span
+					class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
+					>Suite à {link.typelien} par</span
+				>
+				<a class="lx-link-text font" href={urlToNavigate.href}
+					>{link.titre_texte}</a
+				>
+			{/each}
 			<!--Texte de la version-->
 			<section>
 				<h2 class="sr-only">Texte de l’article</h2>

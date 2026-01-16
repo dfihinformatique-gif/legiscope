@@ -1,4 +1,4 @@
-import type { ArticleInfo, Legiarti } from "$lib/db_data_types"
+import type { ArticleInfo, HistoryData, Legiarti } from "$lib/db_data_types"
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import { error } from "@sveltejs/kit"
@@ -31,6 +31,7 @@ async function getArticle(
 	const output: ArticleInfo = {
 		article: undefined,
 		articlePreviousVersion: undefined,
+		historyLinks: undefined,
 		text: undefined,
 		textTitle: undefined,
 		sectionTitle: undefined,
@@ -421,6 +422,42 @@ async function getArticle(
 					.split("T")[0]
 				output.articlePreviousVersion = articlePreviousVersion
 			}
+
+			const historyLinks: HistoryData = await dbConnection`
+			with creat_modif as (
+				select al.cidtexte, jt.titre_full titre_texte, jt.date_publi, al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
+				from articles_liens al
+				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
+				left join jorftext jt on (jt.legi_id = al.cidtexte)
+				where al.legi_id = 'LEGIARTI000051682572'
+				and (al.typelien, al.cible) in
+					(
+						('CODIFICATION', false),
+						('CODIFIE', true),
+						('CREATION', false),
+						('CREE', true),
+						('MODIFICATION', false),
+						('MODIFIE', true),
+						('TRANSFERT', false),
+						('TRANSFERE', true))
+					)
+			select distinct cm.cidtexte, cm.titre_texte, cm.article_jorf, num,
+				case
+				when typelien = 'CODIFIE' then 'CODIFICATION'
+				when typelien = 'CREE' then 'CREATION'
+				when typelien = 'MODIFIE' then 'MODIFICATION'
+				when typelien = 'TRANSFERE' then 'TRANSFERT'
+				else typelien
+				end typelien, date_publi,
+				case
+					when typelien in ('CREATION', 'CREE', 'MODIFIE', 'MODIFICATION') then 1
+					when typelien in ('CODIFICATION', 'CODIFIE', 'TRANSFERT', 'TRANSFERE') then 2
+					else 3
+				end ordinalite
+			from creat_modif cm
+			order by date_publi desc`
+
+			output.historyLinks = historyLinks
 
 			return output
 		} else if (articleFromDb.length === 0) {
