@@ -1,5 +1,5 @@
 <script>
-	let { icon = "ri-information-fill" } = $props()
+	let { icon = "ri-information-fill", children } = $props()
 </script>
 
 <div
@@ -7,5 +7,5 @@
 >
 	<iconify-icon {icon} class="mr-1 align-[-0.2rem] text-base text-yellow-600"
 	></iconify-icon>
-	<slot />
+	{@render children?.()}
 </div>
