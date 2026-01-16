@@ -949,120 +949,105 @@
 		{/if}
 	</div>
 
-	<section
-		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md"
+	<div
+		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
 		class:md:p-16={!shared.showBillDesktop}
 		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 	>
 		{#if activeTab === "content"}
-			<div class="mb-4 flex flex-wrap items-center justify-between">
-				<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-					{#if articleInfo.versions}
-						<select
-							name="versions"
-							class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
-							onchange={() => {
-								const urlToNavigate = new URL(page.url)
-								urlToNavigate.searchParams.set(
-									"article",
-									selectedVersion!.legi_id_lien,
-								)
-								urlToNavigate.searchParams.set(
-									"date",
-									new Date(selectedVersion!.debut).toISOString().split("T")[0],
-								)
-								goto(urlToNavigate, { replaceState: false })
-							}}
-							bind:value={selectedVersion}
-						>
-							{#each articleInfo.versions as version (version.legi_id_lien)}
-								<option
-									value={version}
-									selected={articleInfo.article.legi_id ===
-										version.legi_id_lien}
-								>
-									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}Journal
-											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
-										{:else if version.debut === "2999-01-01"}
-											Version de versement
-										{:else if version.fin === "2999-01-01"}
-											{#if version.debut === "2222-02-22"}
-												Version en vigueur différée ou article mort-né
-											{:else}
-												Version en vigueur depuis le {formatDateFr(
-													version.debut,
-												)}
-											{/if}
+			<!--Version : selection et contexte-->
+			<section class="mb-10 flex flex-col gap-y-5">
+				{#if articleInfo.versions}
+					<select
+						name="versions"
+						class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-sm font-medium text-black italic sm:text-base"
+						onchange={() => {
+							const urlToNavigate = new URL(page.url)
+							urlToNavigate.searchParams.set(
+								"article",
+								selectedVersion!.legi_id_lien,
+							)
+							urlToNavigate.searchParams.set(
+								"date",
+								new Date(selectedVersion!.debut).toISOString().split("T")[0],
+							)
+							goto(urlToNavigate, { replaceState: false })
+						}}
+						bind:value={selectedVersion}
+					>
+						{#each articleInfo.versions as version (version.legi_id_lien)}
+							<option
+								value={version}
+								selected={articleInfo.article.legi_id === version.legi_id_lien}
+							>
+								{#if version.debut}
+									{#if version.legi_id_lien.startsWith("JORF")}Journal officiel
+										du {formatDateFr(articleInfo.jorfTextDatePubli!)}
+									{:else if version.debut === "2999-01-01"}
+										Version de versement
+									{:else if version.fin === "2999-01-01"}
+										{#if version.debut === "2222-02-22"}
+											Version en vigueur différée ou article mort-né
 										{:else}
-											Version du {formatDateFr(version.debut)}
-											au {formatDateFr(version.fin)}
+											Version en vigueur depuis le {formatDateFr(version.debut)}
 										{/if}
+									{:else}
+										Version du {formatDateFr(version.debut)}
+										au {formatDateFr(version.fin)}
 									{/if}
-								</option>
-							{/each}
-						</select>
-						<div class="text-left">
-							<label class="inline-flex cursor-pointer items-center">
-								<input
-									class="peer sr-only"
-									type="checkbox"
-									bind:checked={showDiff}
-								/>
-								{#if articleInfo.versions.length > 1}
-									<div
-										class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-									></div>
-									<span
-										class="ms-3 text-xs font-medium text-gray-900 sm:text-sm"
-									>
-										Voir les changements apportés <br /> à la version précédente
-									</span>
 								{/if}
-							</label>
-						</div>
-					{/if}
-					<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Discussions parlementaires</a
-				>
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Liens relatifs</a
-				>
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Jurisprudence</a
-				>
-			</div> -->
-				</div>
-
+							</option>
+						{/each}
+					</select>
+				{/if}
 				<!--Sommaire-->
 				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
-			</div>
-			<!--En-tête-->
-			{#if articleInfo.article}
-				{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+			</section>
 
-				{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-					Premier article :
+			<!--Texte de la version-->
+			<article>
+				<!--En-tête-->
+				{#if articleInfo.article}
+					{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+
+					{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+						Premier article :
+					{/if}
+				{/if}
+				{#if articleInfo.versions}
+					<div class="my-4 flex w-full justify-end text-left">
+						<label class="inline-flex cursor-pointer items-center">
+							<input
+								class="peer sr-only"
+								type="checkbox"
+								bind:checked={showDiff}
+							/>
+							{#if articleInfo.versions.length > 1}
+								<div
+									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+								></div>
+								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+									Voir les changements apportés <br /> à la version précédente
+								</span>
+							{/if}
+						</label>
+					</div>
 				{/if}
 
-				<!-- reste du template -->
-			{/if}
-
-			<!--Article-->
-			{#if showDiff === true}
-				<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
-					<span class="font-serif text-lg leading-8 md:text-left">
-						{@html diffContent}
-					</span>
-				</div>
-			{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-				<span class="font-serif text-lg leading-8 md:text-left"
-					>{@html highlightParameterValuesInArticleHTML(
-						articleParameterReferences,
-					)}</span
-				>
-			{/if}
+				{#if showDiff === true}
+					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+						<span class="font-serif text-lg leading-8 md:text-left">
+							{@html diffContent}
+						</span>
+					</div>
+				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
+					<span class="font-serif text-lg leading-8 md:text-left"
+						>{@html highlightParameterValuesInArticleHTML(
+							articleParameterReferences,
+						)}</span
+					>
+				{/if}
+			</article>
 		{:else if activeTab === "history"}
 			<ArticleHistory {articleInfo}></ArticleHistory>
 		{:else if activeTab === "citations"}
@@ -1076,7 +1061,7 @@
 				Cette liste peut contenir des erreurs ou des manques.
 			</AlertDatabaseMessage>
 		{/if}
-	</section>
+	</div>
 {:else}
 	<div class="flex h-screen w-full flex-col justify-center">
 		<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"

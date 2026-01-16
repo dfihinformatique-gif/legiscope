@@ -32,7 +32,7 @@
 	class:border-gray-200={tocIsOpen}
 >
 	<button
-		class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
+		class="text-le-gris-dispositif-dark lx-link-text cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
 		onclick={() => {
 			tocIsOpen = !tocIsOpen
 		}}
