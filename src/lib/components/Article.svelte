@@ -861,6 +861,23 @@
 		{ id: "citations", label: "Articles citant cet article" },
 	]
 	let activeTab = $state("content")
+	let tabsContainer = $state<HTMLElement | undefined>(undefined)
+	let showRightScrollShadow = $state(false)
+	// Pour rendre les onglets scrollables à l'horizontal
+	function checkScroll() {
+		if (!tabsContainer) return
+		const { scrollLeft, scrollWidth, clientWidth } = tabsContainer
+		showRightScrollShadow = scrollLeft + clientWidth < scrollWidth - 1
+	}
+
+	$effect(() => {
+		if (tabsContainer) {
+			checkScroll()
+			const resizeObserver = new ResizeObserver(() => checkScroll())
+			resizeObserver.observe(tabsContainer)
+			return () => resizeObserver.disconnect()
+		}
+	})
 
 	const allVersions =
 		articleInfo.versions !== undefined && articleInfo.versions.length > 1
@@ -879,7 +896,7 @@
 {#if articleInfo.article}
 	<!--Titre-->
 	<div
-		class="my-3 flex flex-col items-center justify-between gap-x-5 md:flex-row"
+		class="my-3 flex flex-col items-center justify-between gap-x-5 px-4 md:flex-row lg:px-0"
 	>
 		<div class="flex-wrap text-left font-sans text-2xl text-neutral-900">
 			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
@@ -901,23 +918,35 @@
 		>
 	</div>
 
-	<div class="flex items-end gap-x-1">
-		{#each ongletsArticle as tab}
-			<button
-				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
-				class:bg-blue-50={activeTab === tab.id}
-				class:bg-[#C9D7ED]={activeTab !== tab.id}
-				class:cursor-pointer={activeTab !== tab.id}
-				class:text-neutral-700={activeTab === tab.id}
-				class:text-le-gris-dispositif={activeTab !== tab.id}
-				class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
-				onclick={() => {
-					activeTab = tab.id
-				}}
-			>
-				{tab.label}
-			</button>
-		{/each}
+	<div class="relative">
+		<div
+			bind:this={tabsContainer}
+			onscroll={checkScroll}
+			class="scrollbar-hide flex items-end gap-x-1 overflow-x-auto pr-1 whitespace-nowrap"
+		>
+			{#each ongletsArticle as tab}
+				<button
+					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
+					class:bg-blue-50={activeTab === tab.id}
+					class:bg-[#C9D7ED]={activeTab !== tab.id}
+					class:cursor-pointer={activeTab !== tab.id}
+					class:text-neutral-700={activeTab === tab.id}
+					class:text-le-gris-dispositif={activeTab !== tab.id}
+					class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
+					class:shrink-0={true}
+					onclick={() => {
+						activeTab = tab.id
+					}}
+				>
+					{tab.label}
+				</button>
+			{/each}
+		</div>
+		{#if showRightScrollShadow}
+			<div
+				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-blue-900/10 to-transparent"
+			></div>
+		{/if}
 	</div>
 
 	<section
