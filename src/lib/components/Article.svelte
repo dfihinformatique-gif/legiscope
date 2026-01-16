@@ -896,7 +896,7 @@
 {#if articleInfo.article}
 	<!--Titre-->
 	<header
-		class="my-3 flex flex-col items-center justify-between gap-x-5 px-4 md:flex-row lg:px-0"
+		class="my-5 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
 	>
 		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
 			<iconify-icon
@@ -911,7 +911,7 @@
 			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 		</h1>
 		<a
-			class="lx-link-simple text-sm text-nowrap text-gray-500"
+			class="lx-link-simple self-end text-sm text-nowrap text-gray-500 md:self-auto"
 			href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
 				.legi_id}"
 			target="_blank"
