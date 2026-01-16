@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
+	import {
+		historyDataToHistoryByText,
+		type ArticleInfo,
+		type VersionArticle,
+	} from "$lib/db_data_types"
 	import {
 		decodeParametersToVariables,
 		encodeParametersToVariables,
@@ -891,6 +895,10 @@
 				.flatMap(([, values]) => values),
 		),
 	)
+
+	const historyByText = articleInfo.historyLinks
+		? historyDataToHistoryByText(articleInfo.historyLinks)
+		: undefined
 </script>
 
 {#if articleInfo.article}
@@ -1005,20 +1013,39 @@
 						{/each}
 					</select>
 				{/if}
-				{#if articleInfo.historyLinks && articleInfo.historyLinks.length > 0}
+				{#if historyByText && historyByText.length > 0}
 					<ul>
-						{#each articleInfo.historyLinks as link}
-							{@const urlToNavigate = new URL(page.url)}
-							{urlToNavigate.searchParams.set("article", link.cidtexte)}
-
+						{#each historyByText as historyText}
 							<li class="line-clamp-2 pb-1 text-xs text-neutral-600 italic">
 								<span
 									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
-									>Suite à {link.typelien} par</span
-								>
-								<a class="lx-link-text" href={urlToNavigate.href}
-									>{link.titre_texte}</a
-								>
+									>Suite à {historyText.typelien} par</span
+								>{historyText.titre_texte} (
+								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
+									{#each historyText.articles_jorf as historyArticle, index}
+										{@const urlToNavigate = new URL(page.url)}
+										{urlToNavigate.searchParams.set(
+											"article",
+											historyArticle.id,
+										)}
+										<a class="lx-link-text" href={urlToNavigate.href}>
+											{#if historyArticle.num !== undefined}
+												art. {historyArticle.num}
+											{/if}
+										</a>
+										{#if index < historyText.articles_jorf.length - 1}
+											,
+										{/if}
+									{/each}
+								{:else}
+									{@const urlToNavigate = new URL(page.url)}
+									{urlToNavigate.searchParams.set(
+										"article",
+										historyText.cidtexte,
+									)}
+									<a class="lx-link-text" href={urlToNavigate.href}>lien</a>
+								{/if}
+								)
 							</li>
 						{/each}
 					</ul>
