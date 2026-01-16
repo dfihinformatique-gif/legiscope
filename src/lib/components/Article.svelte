@@ -879,7 +879,7 @@
 {#if articleInfo.article}
 	<!--Titre-->
 	<div
-		class="mx-6 my-3 flex flex-col items-center justify-between gap-x-5 md:flex-row"
+		class="my-3 flex flex-col items-center justify-between gap-x-5 md:flex-row"
 	>
 		<div class="flex-wrap text-left font-sans text-2xl text-neutral-900">
 			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
@@ -890,7 +890,7 @@
 			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
 		</div>
 		<a
-			class="lx-link-simple text-sm text-gray-500"
+			class="lx-link-simple text-sm text-nowrap text-gray-500"
 			href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
 				.legi_id}"
 			target="_blank"
@@ -901,7 +901,7 @@
 		>
 	</div>
 
-	<div class="mx-6 flex items-end gap-x-1">
+	<div class="flex items-end gap-x-1">
 		{#each ongletsArticle as tab}
 			<button
 				class="rounded-t-xs px-4 py-2 font-sans transition-colors"
