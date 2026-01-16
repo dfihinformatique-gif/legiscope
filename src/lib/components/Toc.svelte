@@ -154,15 +154,16 @@
 				></iconify-icon>
 			{/if}
 			{#if item.chemin === activeArticleChemin}
-				<span class="rounded-md bg-white p-2 font-bold" bind:this={activeEl}
-					>{tocItem.title}</span
+				<span
+					class="rounded-md bg-white p-2 font-bold text-[#835454]"
+					bind:this={activeEl}>{tocItem.title}</span
 				>
 			{:else if item.chemin.includes("LEGIARTI") || item.chemin.includes("JORFARTI")}
 				<a href="{page.url.pathname}?article={item.dernier_segment}"
 					>{tocItem.title}</a
 				>
 			{:else}
-				<span>{tocItem.title}</span>
+				<span class:font-bold={tocItem.open}>{tocItem.title}</span>
 			{/if}
 		</button>
 
