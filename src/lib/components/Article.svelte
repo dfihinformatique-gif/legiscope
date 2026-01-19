@@ -1066,7 +1066,8 @@
 								<span
 									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
 									>Suite à {historyText.typelien} par</span
-								>{historyText.titre_texte} (
+								>
+								{historyText.titre_texte} (
 								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
 									{#each historyText.articles_jorf as historyArticle, index}
 										{@const urlToNavigate = new URL(page.url)}
@@ -1089,7 +1090,7 @@
 										"article",
 										historyText.cidtexte,
 									)}
-									<a class="lx-link-text" href={urlToNavigate.href}>lien</a>
+									<a class="lx-link-text" href={urlToNavigate.href}>Texte</a>
 								{/if}
 								)
 							</li>
