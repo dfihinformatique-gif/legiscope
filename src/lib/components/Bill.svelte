@@ -36,7 +36,11 @@
 	})
 
 	let container: HTMLDivElement | undefined = $state()
-	let { pjlHTML, showParameterModal, parametersToVariables }: Props = $props()
+	let {
+		pjlHTML,
+		showParameterModal,
+		parametersToVariables = $bindable(),
+	}: Props = $props()
 	let resizeObserver: ResizeObserver
 
 	const adjustImgSizes = (shadowRoot: ShadowRoot) => {

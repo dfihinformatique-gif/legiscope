@@ -114,7 +114,7 @@
 			class={`z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
 			class:hidden={!shared.showBillDesktop}
 		>
-			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
+			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
 		</section>
 
 		<section
@@ -169,7 +169,7 @@
 			class="z-10 h-screen w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
-			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
+			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
 		</div>
 
 		<div
