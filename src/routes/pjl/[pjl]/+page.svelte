@@ -19,7 +19,6 @@
 
 	let articleInfo = $state<ArticleInfo | undefined>(undefined)
 	let articleError = $state<Error | undefined>(undefined)
-
 	let isLoadingArticle = $derived(
 		page.url.searchParams.get("article") !== undefined &&
 			data.articleInfoPromise !== undefined &&
@@ -139,7 +138,7 @@
 					{showParameterModal}
 					bind:parametersToVariables
 				></Article>
-			{:else if page.url.searchParams.get("article") !== undefined}
+			{:else if page.url.searchParams.get("article") !== null}
 				<AlertDatabaseMessage>
 					<b
 						>Les données ne permettent pas l'affichage du contenu de cet
