@@ -130,7 +130,7 @@
 					{articleInfo}
 					pjlDate={shared.pjlDate}
 					{showParameterModal}
-					{parametersToVariables}
+					bind:parametersToVariables
 				></Article>
 			{:else}
 				<div

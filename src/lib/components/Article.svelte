@@ -44,7 +44,7 @@
 		articleInfo,
 		pjlDate,
 		showParameterModal,
-		parametersToVariables,
+		parametersToVariables = $bindable(),
 	}: Props = $props()
 
 	let parameterSimulatorlinksOpen = $state(false)
