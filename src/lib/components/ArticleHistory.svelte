@@ -95,44 +95,45 @@
 	{#each historyByYear as group}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
 			<div>
-				<span class="text-le-gris-dispositif">{group.year}</span>
+				<span class=" px-2 font-bold text-gray-400">{group.year}</span>
 			</div>
 			<div>
 				<ul class="list-disc">
 					{#each group.items as text}
 						{@const urlToNavigate = new URL(page.url)}
 						{urlToNavigate.searchParams.set("article", text.cidtexte)}
-						<li class="text-sm">
+
+						<li class="pb-4 text-left text-sm">
 							<span
 								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
-								>{formatTypeLien(text.typelien)} par</span
 							>
-							<a class="lx-link-text" href={urlToNavigate.href}
-								>{text.titre_texte}</a
-							>
-							{#if text.articles_jorf.filter((article) => {
-								return article.id !== ""
-							}).length > 0}
-								(
-								{#each text.articles_jorf as article, i}
-									{@const articleUrl = (() => {
-										const url = new URL(page.url)
-										url.searchParams.set("article", article.id)
-										return url.href
-									})()}
-									{#if article.id !== ""}
-										<a class="text-sm leading-4" href={articleUrl}
-											>art. n°{article.num !== ""
-												? article.num
-												: `non identifié ${i + 1}`}</a
-										>
-									{:else}
-										art. {article.num !== ""
-											? article.num
-											: `non identifié ${i + 1}`}
+								{formatTypeLien(text.typelien)} par
+							</span>
+							{text.titre_texte}
+							<span class="-mr-1 -ml-0.5" aria-hidden="true">・</span>
+
+							{#if text.articles_jorf && text.articles_jorf.length > 0}
+								{#each text.articles_jorf as article, index}
+									{@const articleUrl = new URL(page.url)}
+									{articleUrl.searchParams.set("article", article.id)}
+
+									<a class="lx-link-text text-nowrap" href={articleUrl.href}>
+										{#if (article.num ?? "").length > 0}
+											art. {article.num}
+										{:else}
+											article
+										{/if}
+									</a>
+
+									{#if index < text.articles_jorf.length - 1}
+										,
 									{/if}
 								{/each}
-								)
+							{:else}
+								{@const urlToNavigate = new URL(page.url)}
+								{urlToNavigate.searchParams.set("article", text.cidtexte)}
+
+								<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
 							{/if}
 						</li>
 					{/each}
