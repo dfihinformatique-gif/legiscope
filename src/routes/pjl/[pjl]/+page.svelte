@@ -141,7 +141,7 @@
 						Une version numérisée peut néanmoins être disponible sur <a
 							class="lx-link-text cursor-pointer font-bold"
 							href="https://www.legifrance.gouv.fr/loda/id/{requestedArticleId}"
-							>Legifrance</a
+							target="_blank">Legifrance</a
 						>
 					</p>
 				</AlertDatabaseMessage>
