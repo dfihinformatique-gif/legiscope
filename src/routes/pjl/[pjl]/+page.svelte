@@ -134,17 +134,23 @@
 					bind:parametersToVariables
 				></Article>
 			{:else if page.url.searchParams.get("article") !== undefined}
-				<AlertDatabaseMessage
-					><p>
-						Les données ne permettent pas l'affichage du contenu de cet article.
-					</p>
+				<AlertDatabaseMessage>
+					<b
+						>Les données ne permettent pas l'affichage du contenu de cet
+						article.</b
+					>
+
 					<p>
 						Une version numérisée peut néanmoins être disponible sur <a
 							class="lx-link-text cursor-pointer font-bold"
 							href="https://www.legifrance.gouv.fr/loda/id/{page.url.searchParams.get(
 								'article',
 							)}"
-							target="_blank">Legifrance</a
+							target="_blank"
+							>Légifrance<iconify-icon
+								class="pl-0.5 align-[-0.15rem]"
+								icon="ri:external-link-line"
+							></iconify-icon></a
 						>
 					</p>
 				</AlertDatabaseMessage>
