@@ -1,4 +1,4 @@
-import type { ArticleInfo, Legiarti } from "$lib/db_data_types"
+import type { ArticleInfo, HistoryData, Legiarti } from "$lib/db_data_types"
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import { error } from "@sveltejs/kit"
@@ -27,12 +27,14 @@ function getPreviousLegiIdLien(
 async function getArticle(
 	requestedArticle: string,
 	requestedDate: string,
-): Promise<ArticleInfo> {
+): Promise<ArticleInfo | undefined> {
 	const output: ArticleInfo = {
 		article: undefined,
 		articlePreviousVersion: undefined,
+		historyLinks: undefined,
 		text: undefined,
 		textTitle: undefined,
+		sectionTitle: undefined,
 		jorfTextDatePubli: undefined,
 		versions: undefined,
 	}
@@ -87,10 +89,7 @@ async function getArticle(
 					where l.legi_id = ${firstArticle.premier_article_id}::text
 					`
 			} else {
-				throw error(
-					404,
-					"First article found is not LEGIARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		} else if (requestedArticle.startsWith("JORFTEXT")) {
 			output.text = requestedArticle
@@ -111,10 +110,7 @@ async function getArticle(
 				where j.legi_id = ${firstArticle.premier_article_id}::text
 				`
 			} else {
-				throw error(
-					404,
-					"First article found is not JORFARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		} else if (requestedArticle.startsWith("LEGIARTI")) {
 			const associatedText = await dbConnection`
@@ -125,6 +121,17 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						and ${requestedDate}::date <@ s.parents_valid_period
+						limit 1
+						)
+					`
+				output.sectionTitle = lastSectionTitle[0]?.section_title ?? undefined
 			} else if (associatedText.length === 0) {
 				const associatedTextOutOfBoundaries = await dbConnection`
 				select distinct subltree(s.chemin, 0, 1) as associated_text
@@ -133,14 +140,34 @@ async function getArticle(
 
 				if (associatedTextOutOfBoundaries.length === 1) {
 					output.text = associatedTextOutOfBoundaries[0].associated_text
+					const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						limit 1
+						)
+					`
+					output.sectionTitle = lastSectionTitle[0]?.section_title ?? undefined
 				} else if (associatedTextOutOfBoundaries.length > 1) {
 					const refinedAssociatedTextOutOfBoundaries = await dbConnection`
-					select distinct subltree(s.chemin, 0, 1) as associated_text
-					from scta s
-					where dernier_segment = ${requestedArticle}
-					and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)`
+						select distinct subltree(s.chemin, 0, 1) as associated_text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)`
 
 					if (refinedAssociatedTextOutOfBoundaries.length === 1) {
+						const lastSectionTitle = await dbConnection`
+							select titre as section_title from scta s2 where s2.dernier_segment =
+								(
+								select distinct subltree(s.chemin, 0, 1) as associated_text
+								from scta s
+								where dernier_segment = ${requestedArticle}
+								and exists (select null from legitext where ${requestedDate}::date between date_debut and date_fin and legi_id = subltree(s.chemin, 0, 1)::text)
+								)
+							`
+						output.sectionTitle = lastSectionTitle[0].section_title
 						output.text =
 							refinedAssociatedTextOutOfBoundaries[0].associated_text
 					} else {
@@ -176,6 +203,18 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment =
+						(
+						select distinct subpath(s.chemin, -2, 1)::text
+						from scta s
+						where dernier_segment = ${requestedArticle}
+						limit 1
+						)
+					`
+				output.sectionTitle =
+					lastSectionTitle[0]?.section_title ??
+					associatedText[0].associated_text.titre
 			} else if (associatedText.length === 0) {
 				throw error(
 					422,
@@ -203,6 +242,9 @@ async function getArticle(
 
 			if (associatedText.length === 1) {
 				output.text = associatedText[0].associated_text
+				const lastSectionTitle = await dbConnection`
+					select titre as section_title from scta s2 where s2.dernier_segment = ${requestedArticle}`
+				output.sectionTitle = lastSectionTitle[0].section_title
 			} else if (associatedText.length === 0) {
 				throw error(
 					422,
@@ -262,30 +304,35 @@ async function getArticle(
 				where l.legi_id = ${firstArticle.premier_article_id}::text
 				`
 			} else {
-				throw error(
-					404,
-					"First article found is not LEGIARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		}
 
 		// Récupération des versions
-		const versionsResult: {
-			legi_id_lien: string
-			debut: string
-			fin: string
-		}[] = await dbConnection`
+		const versionsResult:
+			| {
+					legi_id_lien: string
+					debut: string
+					fin: string
+			  }[]
+			| undefined =
+			articleFromDb.length > 0
+				? ((await dbConnection`
 			select legi_id_lien, to_char(debut, 'YYYY-MM-DD') debut, to_char(fin, 'YYYY-MM-DD') fin
 			from versions
 			where legi_id = ${articleFromDb[0].legi_id}
 			and (debut < fin or legi_id_lien like 'JORF%')
-			order by debut desc`
+			order by debut desc`) as { legi_id_lien: string; debut: string; fin: string }[])
+				: undefined
 		output.versions = versionsResult
 
-		const previousVersionId = getPreviousLegiIdLien(
-			versionsResult,
-			new Date(articleFromDb[0].date_debut).toISOString().split("T")[0],
-		)
+		const previousVersionId =
+			articleFromDb.length > 0
+				? getPreviousLegiIdLien(
+						versionsResult!,
+						new Date(articleFromDb[0].date_debut).toISOString().split("T")[0],
+					)
+				: undefined
 
 		if (
 			previousVersionId !== undefined &&
@@ -314,7 +361,7 @@ async function getArticle(
 		// Récupération du titre du texte et de la date de publication JO le cas échéant
 		if (output.text) {
 			const textTitle = await dbConnection`
-				select coalesce(titre, titre_full) as titre
+				select regexp_replace(coalesce(titre, titre_full), '\\(1\\)\\s*$', '') as titre
 				from (
 					select legi_id, titre, titre_full from legitext
 					union
@@ -328,7 +375,7 @@ async function getArticle(
 
 			let jorfText: string | undefined = output.text
 			if (!jorfText.startsWith("JORFTEXT")) {
-				const jorfArti = output.versions.filter((version) =>
+				const jorfArti = output.versions?.filter((version) =>
 					version.legi_id_lien.startsWith("JORF"),
 				)[0]
 				if (jorfArti !== undefined) {
@@ -380,9 +427,47 @@ async function getArticle(
 				output.articlePreviousVersion = articlePreviousVersion
 			}
 
+			const historyLinks: HistoryData = await dbConnection`
+			with creat_modif as (
+				select al.cidtexte, regexp_replace(jt.titre_full, '\\(1\\)\\s*$', '') titre_texte, jt.date_publi, al.legi_id_lien legi_id_lien_al, al.typelien, v_lien.legi_id_lien article_jorf, v_lien.num
+				from articles_liens al
+				left join versions v_lien on (v_lien.legi_id = al.legi_id_lien and v_lien.legi_id_lien like 'JORFARTI%')
+				left join jorftext jt on (jt.legi_id = al.cidtexte)
+				where al.legi_id = ${article.legi_id}
+				and (al.typelien, al.cible) in
+					(
+						('CODIFICATION', false),
+						('CODIFIE', true),
+						('CREATION', false),
+						('CREE', true),
+						('MODIFICATION', false),
+						('MODIFIE', true),
+						('TRANSFERT', false),
+						('TRANSFERE', true))
+					)
+			select distinct cm.cidtexte, cm.titre_texte, cm.article_jorf, num,
+				case
+				when typelien = 'CODIFIE' then 'CODIFICATION'
+				when typelien = 'CREE' then 'CREATION'
+				when typelien = 'MODIFIE' then 'MODIFICATION'
+				when typelien = 'TRANSFERE' then 'TRANSFERT'
+				else typelien
+				end typelien, date_publi,
+				case
+					when typelien in ('CREATION', 'CREE', 'MODIFIE', 'MODIFICATION') then 1
+					when typelien in ('CODIFICATION', 'CODIFIE', 'TRANSFERT', 'TRANSFERE') then 2
+					else 3
+				end ordinalite
+			from creat_modif cm
+			order by ordinalite`
+
+			output.historyLinks = historyLinks
+
 			return output
 		} else if (articleFromDb.length === 0) {
-			throw error(404, "Article not found")
+			// throw error(404, "Article not found")
+			output.article = undefined
+			return undefined
 		} else {
 			throw error(422, "Error: article ID refers to multiple articles")
 		}
@@ -394,15 +479,17 @@ async function getArticle(
 export const load: PageServerLoad = async ({
 	url,
 }): Promise<{
-	articleInfoPromise: Promise<ArticleInfo> | undefined
-	citingArticleInfoPromise: Promise<ArticleInfo> | undefined
+	articleInfoPromise: Promise<ArticleInfo | undefined>
+	citingArticleInfoPromise: Promise<ArticleInfo | undefined>
 }> => {
 	const lawArticle = url.searchParams.get("article")
 	const citingLawArticle = url.searchParams.get("citant")
 	const urlDate = url.searchParams.get("date")
 	const requestedDate = urlDate ?? shared.pjlDate
-	let articleInfoPromise = undefined
-	let citingArticleInfoPromise = undefined
+	let articleInfoPromise: Promise<ArticleInfo | undefined> =
+		Promise.resolve(undefined)
+	let citingArticleInfoPromise: Promise<ArticleInfo | undefined> =
+		Promise.resolve(undefined)
 
 	try {
 		if (lawArticle !== undefined && lawArticle !== null) {
@@ -414,8 +501,8 @@ export const load: PageServerLoad = async ({
 	} catch (error) {
 		console.error("Erreur dans la récupération des articles de loi : ", error)
 		return {
-			articleInfoPromise: undefined,
-			citingArticleInfoPromise: undefined,
+			articleInfoPromise: Promise.resolve(undefined),
+			citingArticleInfoPromise: Promise.resolve(undefined),
 		}
 	}
 

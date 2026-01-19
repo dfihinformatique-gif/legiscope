@@ -2,7 +2,7 @@
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
-	import { shared } from "$lib/shared.svelte"
+	import { formatDateFr, shared } from "$lib/shared.svelte"
 	import {
 		assertNever,
 		reversePositionsSplitFromPositions,
@@ -602,17 +602,6 @@
 		}
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
 	})
-
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date
-			.toLocaleDateString("fr-FR", {
-				day: "numeric",
-				month: "long",
-				year: "numeric",
-			})
-			.replace(/^1 /, "1er ")
-	}
 
 	const scrollToCitationLink = () => {
 		const element = document.getElementById("lien_citation")

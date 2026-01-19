@@ -88,8 +88,10 @@ export type VersionArticle = {
 export type ArticleInfo = {
 	article: Legiarti | undefined
 	articlePreviousVersion: Legiarti | undefined
+	historyLinks: HistoryData | undefined
 	text: string | undefined
 	textTitle: string | undefined
+	sectionTitle: string | undefined
 	versions: VersionArticle[] | undefined
 	jorfTextDatePubli: string | undefined
 }
@@ -103,3 +105,44 @@ export interface HistoryDataRow {
 	date_publi: Date | null
 }
 export type HistoryData = HistoryDataRow[]
+
+export interface HistoryByTextRow {
+	cidtexte: string
+	titre_texte: string
+	articles_jorf: Array<{ id: string; num: string }>
+	typelien: string
+	date_publi: Date | null
+}
+export type HistoryByText = HistoryByTextRow[]
+
+export function historyDataToHistoryByText(
+	historyData: HistoryData,
+): HistoryByText {
+	const grouped = historyData.reduce(
+		(acc, row) => {
+			const key = `${row.cidtexte}_${row.typelien}`
+
+			if (!acc[key]) {
+				acc[key] = {
+					cidtexte: row.cidtexte,
+					titre_texte: row.titre_texte,
+					articles_jorf: [],
+					typelien: row.typelien,
+					date_publi: row.date_publi,
+				}
+			}
+
+			if (row.article_jorf) {
+				acc[key].articles_jorf.push({
+					id: row.article_jorf || "",
+					num: row.num || "",
+				})
+			}
+
+			return acc
+		},
+		{} as Record<string, HistoryByTextRow>,
+	)
+
+	return Object.values(grouped)
+}

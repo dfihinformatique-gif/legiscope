@@ -4,6 +4,7 @@
 	import ArticleCitant from "$lib/components/article_citations/ArticleCitant.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
+	import AlertDatabaseMessage from "$lib/components/ui_transverse_components/AlertDatabaseMessage.svelte"
 	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import type { PageProps } from "./$types"
@@ -14,11 +15,17 @@
 	let showParameterModal = $state(false)
 	let parametersToVariables = $state<Record<string, string[]>>({})
 
-	let lawContainer: HTMLDivElement | undefined = $state()
+	let lawContainer: HTMLElement | undefined = $state()
 
 	let articleInfo = $state<ArticleInfo | undefined>(undefined)
-	let isLoadingArticle = $state(false)
 	let articleError = $state<Error | undefined>(undefined)
+
+	let isLoadingArticle = $derived(
+		page.url.searchParams.get("article") !== undefined &&
+			data.articleInfoPromise !== undefined &&
+			articleInfo === undefined &&
+			articleError === undefined,
+	)
 
 	// Garder trace de l'article actuellement chargé
 	let currentArticleId = $state<string | undefined>(undefined)
@@ -110,15 +117,15 @@
 
 {#if !shared.isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
-		<div
-			class={`z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
+		<section
+			class={`@container/section-bill z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
 			class:hidden={!shared.showBillDesktop}
 		>
-			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
-		</div>
+			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
+		</section>
 
-		<div
-			class={`flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
+		<section
+			class={`@container/section-article flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
 			class:hidden={!shared.showLawDesktop}
 		>
 			{#if isLoadingArticle}
@@ -130,8 +137,29 @@
 					{articleInfo}
 					pjlDate={shared.pjlDate}
 					{showParameterModal}
-					{parametersToVariables}
+					bind:parametersToVariables
 				></Article>
+			{:else if page.url.searchParams.get("article") !== undefined}
+				<AlertDatabaseMessage>
+					<b
+						>Les données ne permettent pas l'affichage du contenu de cet
+						article.</b
+					>
+
+					<p>
+						Une version numérisée peut néanmoins être disponible sur <a
+							class="lx-link-text cursor-pointer font-bold"
+							href="https://www.legifrance.gouv.fr/loda/id/{page.url.searchParams.get(
+								'article',
+							)}"
+							target="_blank"
+							>Légifrance<iconify-icon
+								class="pl-0.5 align-[-0.15rem]"
+								icon="ri:external-link-line"
+							></iconify-icon></a
+						>
+					</p>
+				</AlertDatabaseMessage>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"
@@ -142,11 +170,11 @@
 					></iconify-icon>
 				</div>
 			{/if}
-		</div>
+		</section>
 
 		{#if citingArticleInfo}
-			<div
-				class={`flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
+			<aside
+				class={`@container/section-citations flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
 				class:hidden={!shared.showCitingDesktop}
 			>
 				{#if isLoadingCitingArticle}
@@ -160,21 +188,21 @@
 						{parametersToVariables}
 					></ArticleCitant>
 				{/if}
-			</div>
+			</aside>
 		{/if}
 	</div>
 {:else}
 	<div class="fixed flex min-h-full w-full flex-row overflow-x-hidden">
-		<div
-			class="z-10 h-screen w-full overflow-y-auto shadow-md"
+		<section
+			class="@container/section-bill z-10 h-screen w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
-			<Bill {pjlHTML} {showParameterModal} {parametersToVariables}></Bill>
-		</div>
+			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
+		</section>
 
-		<div
+		<section
 			bind:this={lawContainer}
-			class="h-screen w-full overflow-y-auto bg-blue-100"
+			class="@container/section-article h-screen w-full overflow-y-auto bg-blue-100"
 			class:hidden={shared.activePanelMobile !== "law"}
 		>
 			{#if isLoadingArticle}
@@ -185,7 +213,7 @@
 				</div>
 			{:else if articleError}
 				<p>Erreur: {articleError.message}</p>
-			{:else if articleInfo}
+			{:else if articleInfo !== undefined}
 				<Article
 					{articleInfo}
 					pjlDate={shared.pjlDate}
@@ -213,7 +241,7 @@
 					></iconify-icon>
 				</div>
 			{/if}
-		</div>
+		</section>
 
 		<div
 			class="h-screen w-full overflow-y-auto bg-blue-100"
@@ -234,8 +262,8 @@
 					{parametersToVariables}
 				></ArticleCitant>
 			{:else}
-				<div
-					class="flex h-screen flex-col items-center justify-center p-4 text-center"
+				<aside
+					class="@container/section-citations flex h-screen flex-col items-center justify-center p-4 text-center"
 				>
 					<iconify-icon
 						class="text-8xl text-gray-500"
@@ -252,7 +280,7 @@
 					</p>
 					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
 					></iconify-icon>
-				</div>
+				</aside>
 			{/if}
 		</div>
 	</div>

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
 	import { page } from "$app/state"
-	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
+	import {
+		historyDataToHistoryByText,
+		type ArticleInfo,
+		type VersionArticle,
+	} from "$lib/db_data_types"
 	import {
 		decodeParametersToVariables,
 		encodeParametersToVariables,
@@ -12,7 +16,11 @@
 		rootParameter,
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
-	import { shared } from "$lib/shared.svelte"
+	import {
+		formatDateFr,
+		formatDateFrNumerique,
+		shared,
+	} from "$lib/shared.svelte"
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	import {
 		assertNever,
@@ -29,6 +37,7 @@
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
+	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -40,7 +49,7 @@
 		articleInfo,
 		pjlDate,
 		showParameterModal,
-		parametersToVariables,
+		parametersToVariables = $bindable(),
 	}: Props = $props()
 
 	let parameterSimulatorlinksOpen = $state(false)
@@ -681,16 +690,6 @@
 		addEventListenersOnHighlighted()
 	})
 
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date
-			.toLocaleDateString("fr-FR", {
-				day: "numeric",
-				month: "long",
-				year: "numeric",
-			})
-			.replace(/^1 /, "1er ")
-	}
 	function injectHighlightsIntoHtml(
 		html: string,
 		coordsToHighlight: Map<
@@ -854,8 +853,30 @@
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
-	let historyIsOpen = $state(false)
-	let citationsIsOpen = $state(false)
+
+	const ongletsArticle = [
+		{ id: "content", label: "Texte" },
+		{ id: "history", label: "Historique" },
+		{ id: "citations", label: "Articles citant cet article" },
+	]
+	let activeTab = $state("content")
+	let tabsContainer = $state<HTMLElement | undefined>(undefined)
+	let showRightScrollShadow = $state(false)
+	// Pour rendre les onglets scrollables à l'horizontal
+	function checkScroll() {
+		if (!tabsContainer) return
+		const { scrollLeft, scrollWidth, clientWidth } = tabsContainer
+		showRightScrollShadow = scrollLeft + clientWidth < scrollWidth - 1
+	}
+
+	$effect(() => {
+		if (tabsContainer) {
+			checkScroll()
+			const resizeObserver = new ResizeObserver(() => checkScroll())
+			resizeObserver.observe(tabsContainer)
+			return () => resizeObserver.disconnect()
+		}
+	})
 
 	const allVersions =
 		articleInfo.versions !== undefined && articleInfo.versions.length > 1
@@ -869,218 +890,308 @@
 				.flatMap(([, values]) => values),
 		),
 	)
+
+	const historyByText = articleInfo.historyLinks
+		? historyDataToHistoryByText(articleInfo.historyLinks)
+		: undefined
 </script>
 
-<div
-	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify shadow-md md:mx-6"
-	class:md:p-16={!shared.showBillDesktop}
-	style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
->
-	{#if articleInfo.article}
-		<div class="mb-4 flex flex-wrap items-center justify-between">
-			<!--Sommaire-->
-			<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
-			<a
-				class="lx-link-simple text-sm text-gray-500"
-				href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
-					.legi_id}"
-				target="_blank"
-				>Légifrance<iconify-icon
-					class="ml-0.5 align-[-0.15rem] text-sm"
-					icon="ri:external-link-line"
-				></iconify-icon></a
-			>
-		</div>
-		<!--En-tête-->
-		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+{#if articleInfo.article}
+	<!--Message si affichage de l'article après clic sur section ou sur texte -->
+	{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+	<div class="px-4 lg:px-0">
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-			Premier article :
-		{/if}
-		<div class="mt-2 flex flex-col items-start justify-between gap-x-5">
-			<!--Titre-->
-			<div
-				class="text-le-gris-dispositif-dark max-w-md flex-wrap text-left font-sans text-2xl"
+			{@const sectionOrTextTitle =
+				articleFromUrl.startsWith("LEGITEXT") ||
+				articleFromUrl.startsWith("JORFTEXT")
+					? articleInfo.textTitle
+					: articleInfo.sectionTitle}
+			<InformationMessage
+				>Vous êtes sur le premier article de {#if articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+					la section
+				{/if}
+				{#if sectionOrTextTitle}
+					«&nbsp;{sectionOrTextTitle}&nbsp;».
+				{:else}.{/if}</InformationMessage
 			>
-				<iconify-icon
-					class="align-[-0.2rem] text-2xl"
-					icon="ri:book-marked-fill"
-				>
-				</iconify-icon>
-				{#if articleInfo.article.num !== undefined}
-					<span class="text-nowrap">Article {articleInfo.article.num}</span>
-				{/if} ·
-				<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
-			</div>
-		</div>
+		{/if}
+	</div>
+	<!--En-tête-->
 
-		<div
-			class="mb-2"
-			class:border-b={historyIsOpen}
-			class:shadow-bottom-extralight={historyIsOpen}
-			class:border-gray-200={historyIsOpen}
+	<header
+		class="my-5 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
+	>
+		<!--Titre-->
+		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
+			<iconify-icon
+				class="align-[-0.2rem] text-2xl"
+				icon="ri:book-marked-fill"
+				aria-hidden="true"
+			>
+			</iconify-icon>
+			{#if articleInfo.article.num !== undefined}
+				<span class="text-nowrap">Article {articleInfo.article.num}</span>
+			{/if} <span aria-hidden="true">·</span>
+			<span class="">{articleInfo.textTitle?.replaceAll("\\n", " ")}</span>
+		</h1>
+		<a
+			class="lx-link-simple self-end text-sm text-nowrap text-gray-500 md:self-auto"
+			href="https://www.legifrance.gouv.fr/loda/id/{articleInfo.article
+				.legi_id}"
+			target="_blank"
+			>Légifrance<iconify-icon
+				class="ml-0.5 align-[-0.15rem] text-sm"
+				icon="ri:external-link-line"
+			></iconify-icon></a
 		>
-			<button
-				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
-				class:font-bold={historyIsOpen}
-				onclick={() => {
-					historyIsOpen = !historyIsOpen
-				}}
-			>
-				<iconify-icon
-					class="align-[-0.3rem] text-xl"
-					icon={historyIsOpen
-						? "ri:arrow-down-s-line"
-						: "ri:arrow-right-s-line"}
-				>
-				</iconify-icon>
-				Historique
-			</button>
+	</header>
 
-			<button
-				class="text-le-gris-dispositif-dark lx-link-text my-2 cursor-pointer text-left font-sans xl:mt-5 xl:text-lg"
-				class:font-bold={citationsIsOpen}
-				onclick={() => {
-					citationsIsOpen = !citationsIsOpen
-				}}
-			>
-				<iconify-icon
-					class="align-[-0.3rem] text-xl"
-					icon={citationsIsOpen
-						? "ri:arrow-down-s-line"
-						: "ri:arrow-right-s-line"}
-				>
-				</iconify-icon>
-				Articles citant cet article
-			</button>
-			{#if citationsIsOpen}
-				<div
-					class="pb-10"
-					class:mb-10={citationsIsOpen}
-					class:border-b={citationsIsOpen}
-					class:shadow-bottom-extralight={citationsIsOpen}
-					class:border-gray-200={citationsIsOpen}
-				>
-					<ArticleCitations {articleInfo}></ArticleCitations>
-					<AlertDatabaseMessage>
-						<b
-							>Certaines versions ne citent pas cet article ? Il manque des
-							citations ?</b
-						>
-						Le Légiscope s'appuie sur la liste des citations mise à disposition par
-						Légifrance. Cette liste peut contenir des erreurs ou des manques.
-					</AlertDatabaseMessage>
-				</div>
-			{/if}
-
-			{#if historyIsOpen}
-				<div class=" bg-white p-4">
-					<ArticleHistory {articleInfo}></ArticleHistory>
-				</div>
-			{/if}
-		</div>
-		<div class="mb-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-			{#if articleInfo.versions}
-				<select
-					name="versions"
-					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
-					onchange={() => {
-						const urlToNavigate = new URL(page.url)
-						urlToNavigate.searchParams.set(
-							"article",
-							selectedVersion!.legi_id_lien,
-						)
-						urlToNavigate.searchParams.set(
-							"date",
-							new Date(selectedVersion!.debut).toISOString().split("T")[0],
-						)
-						goto(urlToNavigate, { replaceState: false })
+	<nav class="relative" aria-label="Navigation de l’article">
+		<div
+			bind:this={tabsContainer}
+			onscroll={checkScroll}
+			class="scrollbar-hide flex items-end gap-x-1 overflow-x-auto pr-1 whitespace-nowrap"
+		>
+			{#each ongletsArticle as tab}
+				<button
+					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
+					class:bg-blue-50={activeTab === tab.id}
+					class:bg-[#C9D7ED]={activeTab !== tab.id}
+					class:cursor-pointer={activeTab !== tab.id}
+					class:text-neutral-700={activeTab === tab.id}
+					class:text-le-gris-dispositif={activeTab !== tab.id}
+					class:hover:text-le-gris-dispositif-dark={activeTab !== tab.id}
+					class:shrink-0={true}
+					onclick={() => {
+						activeTab = tab.id
 					}}
-					bind:value={selectedVersion}
 				>
-					{#each articleInfo.versions as version (version.legi_id_lien)}
-						<option
-							value={version}
-							selected={articleInfo.article.legi_id === version.legi_id_lien}
-						>
-							{#if version.debut}
-								{#if version.legi_id_lien.startsWith("JORF")}Journal officiel du {formatDateFr(
-										articleInfo.jorfTextDatePubli!,
-									)}
-								{:else if version.debut === "2999-01-01"}
-									Version de versement
-								{:else if version.fin === "2999-01-01"}
-									{#if version.debut === "2222-02-22"}
-										Version en vigueur différée ou article mort-né
-									{:else}
-										Version en vigueur depuis le {formatDateFr(version.debut)}
-									{/if}
-								{:else}
-									Version du {formatDateFr(version.debut)}
-									au {formatDateFr(version.fin)}
-								{/if}
-							{/if}
-						</option>
-					{/each}
-				</select>
-				<div class="text-left">
-					<label class="inline-flex cursor-pointer items-center">
-						<input
-							class="peer sr-only"
-							type="checkbox"
-							bind:checked={showDiff}
-						/>
-						{#if articleInfo.versions.length > 1}
-							<div
-								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-							></div>
-							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
-								Voir les changements apportés <br /> à la version précédente
-							</span>
-						{/if}
-					</label>
-				</div>
-			{/if}
-			<!-- <div class="flex flex-wrap gap-x-3 gap-y-1">
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Discussions parlementaires</a
-				>
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Liens relatifs</a
-				>
-				<a class="lx-link-simple leading-5 text-gray-500" href="TODO"
-					>Jurisprudence</a
-				>
-			</div> -->
+					{tab.label}
+				</button>
+			{/each}
 		</div>
-
-		<!--Article-->
-		{#if showDiff === true}
-			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
-				<span class="font-serif text-lg leading-8 md:text-left">
-					{@html diffContent}
-				</span>
-			</div>
-		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html highlightParameterValuesInArticleHTML(
-					articleParameterReferences,
-				)}</span
-			>
+		{#if showRightScrollShadow}
+			<div
+				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-blue-900/10 to-transparent"
+			></div>
 		{/if}
-	{:else}
-		<div class="flex h-screen w-full flex-col justify-center">
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
-			></iconify-icon>
-			<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
-			<p class="text-center font-medium text-gray-500 uppercase">
-				est introuvable
-			</p>
+	</nav>
 
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
-			></iconify-icon>
-		</div>
-	{/if}
-</div>
+	<div
+		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
+		class:md:p-16={!shared.showBillDesktop}
+		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
+	>
+		{#if activeTab === "content"}
+			<!--Version : selection et contexte-->
+			<section class="mb-8 flex flex-col gap-y-5">
+				<h2 class="sr-only">Version de l'article</h2>
+				{#if articleInfo.versions}
+					<div class="hidden @sm/section-article:flex">
+						<select
+							name="versions"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-black italic @md/section-article:text-lg"
+							onchange={() => {
+								const urlToNavigate = new URL(page.url)
+								urlToNavigate.searchParams.set(
+									"article",
+									selectedVersion!.legi_id_lien,
+								)
+								urlToNavigate.searchParams.set(
+									"date",
+									new Date(selectedVersion!.debut).toISOString().split("T")[0],
+								)
+								goto(urlToNavigate, { replaceState: false })
+							}}
+							bind:value={selectedVersion}
+						>
+							{#each articleInfo.versions as version (version.legi_id_lien)}
+								<option
+									value={version}
+									selected={articleInfo.article.legi_id ===
+										version.legi_id_lien}
+								>
+									{#if version.debut}
+										{#if version.legi_id_lien.startsWith("JORF")}Journal
+											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
+										{:else if version.debut === "2999-01-01"}
+											Version de versement
+										{:else if version.fin === "2999-01-01"}
+											{#if version.debut === "2222-02-22"}
+												Version en vigueur différée ou article mort-né
+											{:else}
+												Version en vigueur depuis le {formatDateFr(
+													version.debut,
+												)}
+											{/if}
+										{:else}
+											Version du {formatDateFr(version.debut)}
+											au {formatDateFr(version.fin)}
+										{/if}
+									{/if}
+								</option>
+							{/each}
+						</select>
+					</div>
+					<div class="@sm/section-article:hidden">
+						<select
+							name="versions"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-base text-black italic @xs/section-article:text-lg"
+							onchange={() => {
+								const urlToNavigate = new URL(page.url)
+								urlToNavigate.searchParams.set(
+									"article",
+									selectedVersion!.legi_id_lien,
+								)
+								urlToNavigate.searchParams.set(
+									"date",
+									new Date(selectedVersion!.debut).toISOString().split("T")[0],
+								)
+								goto(urlToNavigate, { replaceState: false })
+							}}
+							bind:value={selectedVersion}
+						>
+							{#each articleInfo.versions as version (version.legi_id_lien)}
+								<option
+									value={version}
+									selected={articleInfo.article.legi_id ===
+										version.legi_id_lien}
+								>
+									{#if version.debut}
+										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatDateFrNumerique(
+												articleInfo.jorfTextDatePubli!,
+											)}
+										{:else if version.debut === "2999-01-01"}
+											Version de versement
+										{:else if version.fin === "2999-01-01"}
+											{#if version.debut === "2222-02-22"}
+												Version en vigueur différée ou article mort-né
+											{:else}
+												Version en vigueur depuis le {formatDateFrNumerique(
+													version.debut,
+												)}
+											{/if}
+										{:else}
+											Version du {formatDateFrNumerique(version.debut)}
+											au {formatDateFrNumerique(version.fin)}
+										{/if}
+									{/if}
+								</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+				{#if historyByText && historyByText.length > 0}
+					<ul>
+						{#each historyByText as historyText}
+							<li
+								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
+							>
+								<span
+									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
+									>Suite à {historyText.typelien} par</span
+								>
+
+								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
+									{#each historyText.articles_jorf as historyArticle, index}
+										{@const urlToNavigate = new URL(page.url)}
+										{urlToNavigate.searchParams.set(
+											"article",
+											historyArticle.id,
+										)}
+										<a class="lx-link-text" href={urlToNavigate.href}>
+											{#if (historyArticle.num ?? "").length > 0}
+												art. {historyArticle.num}
+											{:else}
+												article
+											{/if}
+										</a>
+										{#if index < historyText.articles_jorf.length - 1}
+											,
+										{/if}
+									{/each}
+								{:else}
+									{@const urlToNavigate = new URL(page.url)}
+									{urlToNavigate.searchParams.set(
+										"article",
+										historyText.cidtexte,
+									)}
+									<a class="lx-link-text" href={urlToNavigate.href}>articles</a>
+								{/if}
+								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
+								{historyText.titre_texte}
+							</li>
+						{/each}
+					</ul>
+				{/if}
+				<!--Sommaire-->
+				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+			</section>
+
+			<!--Texte de la version-->
+			<section>
+				<h2 class="sr-only">Texte de l’article</h2>
+				{#if articleInfo.versions}
+					<div class="my-4 flex w-full justify-end text-left">
+						<label class="inline-flex cursor-pointer items-center">
+							<input
+								class="peer sr-only"
+								type="checkbox"
+								bind:checked={showDiff}
+							/>
+							{#if articleInfo.versions.length > 1}
+								<div
+									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+								></div>
+								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+									Voir les changements apportés <br /> à la version précédente
+								</span>
+							{/if}
+						</label>
+					</div>
+				{/if}
+
+				{#if showDiff === true}
+					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+						<span class="font-serif text-lg leading-8 md:text-left">
+							{@html diffContent}
+						</span>
+					</div>
+				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
+					<span class="font-serif text-lg leading-8 md:text-left"
+						>{@html highlightParameterValuesInArticleHTML(
+							articleParameterReferences,
+						)}</span
+					>
+				{/if}
+			</section>
+		{:else if activeTab === "history"}
+			<ArticleHistory {articleInfo}></ArticleHistory>
+		{:else if activeTab === "citations"}
+			<ArticleCitations {articleInfo}></ArticleCitations>
+			<AlertDatabaseMessage>
+				<b
+					>Certaines versions ne citent pas cet article ? Il manque des
+					citations ?</b
+				>
+				Le Légiscope s'appuie sur la liste des citations mise à disposition par Légifrance.
+				Cette liste peut contenir des erreurs ou des manques.
+			</AlertDatabaseMessage>
+		{/if}
+	</div>
+{:else}
+	<div class="flex h-screen w-full flex-col justify-center">
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
+		></iconify-icon>
+		<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
+		<p class="text-center font-medium text-gray-500 uppercase">
+			est introuvable
+		</p>
+
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
+		></iconify-icon>
+	</div>
+{/if}
 
 <ParameterLinkModal
 	bind:showParameterModal

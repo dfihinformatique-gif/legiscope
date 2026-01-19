@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
+	import { formatDateFr } from "$lib/shared.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
@@ -105,15 +106,6 @@
 			(item) => item.dernier_segment === page.url.searchParams.get("article"),
 		)
 	}
-
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date.toLocaleDateString("fr-FR", {
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		})
-	}
 </script>
 
 {#if articleIsNotInValidSection}
@@ -124,6 +116,14 @@
 		<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
 	</AlertDatabaseMessage>
 {/if}
+<p
+	class="my-0.5 mt-4 -ml-1 cursor-default text-left text-neutral-700 xl:text-lg"
+>
+	<iconify-icon
+		class="mr-2 align-[-0.2rem] text-lg no-underline"
+		icon="ri-book-2-fill"
+	></iconify-icon>{articleInfo.textTitle}
+</p>
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
 		{#each topLevelItems as item}
@@ -154,15 +154,16 @@
 				></iconify-icon>
 			{/if}
 			{#if item.chemin === activeArticleChemin}
-				<span class="rounded-md bg-white p-2 font-bold" bind:this={activeEl}
-					>{tocItem.title}</span
+				<span
+					class="rounded-md bg-white p-2 font-bold text-[#835454]"
+					bind:this={activeEl}>{tocItem.title}</span
 				>
 			{:else if item.chemin.includes("LEGIARTI") || item.chemin.includes("JORFARTI")}
 				<a href="{page.url.pathname}?article={item.dernier_segment}"
 					>{tocItem.title}</a
 				>
 			{:else}
-				<span>{tocItem.title}</span>
+				<span class:font-bold={tocItem.open}>{tocItem.title}</span>
 			{/if}
 		</button>
 

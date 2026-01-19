@@ -5,7 +5,7 @@
 	let isAccueilDesktopDropdownOpen = $state(false)
 </script>
 
-<nav class="fixed top-0 z-50 w-full">
+<header class="fixed top-0 z-50 w-full">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
@@ -18,77 +18,78 @@
 					src="/logo-assemblee-nationale-blanc-blanc.png"
 					alt="Logo de l'Assemblée nationale"
 				/>
-
-				<!-- Accueil Dropdown -->
-				<DropdownMenu.Root bind:open={isAccueilDesktopDropdownOpen}>
-					<DropdownMenu.Trigger
-						class="cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900"
-					>
-						<div
-							class="flex items-center gap-1.5 rounded-lg py-2 pr-3 pl-2 lg:pl-4"
-							class:bg-blue-950={isAccueilDesktopDropdownOpen}
+				<nav aria-label="Navigation globale pour retourner à l'accueil">
+					<!-- Accueil Dropdown -->
+					<DropdownMenu.Root bind:open={isAccueilDesktopDropdownOpen}>
+						<DropdownMenu.Trigger
+							class="cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900"
 						>
-							<span class="text-sm tracking-widest">Accueil</span>
+							<div
+								class="flex items-center gap-1.5 rounded-lg py-2 pr-3 pl-2 lg:pl-4"
+								class:bg-blue-950={isAccueilDesktopDropdownOpen}
+							>
+								<span class="text-sm tracking-widest">Accueil</span>
 
-							<iconify-icon
-								class="text-2xl transition-transform"
-								class:rotate-180={isAccueilDesktopDropdownOpen}
-								icon="ri:arrow-down-s-line"
-							></iconify-icon>
-						</div>
-					</DropdownMenu.Trigger>
+								<iconify-icon
+									class="text-2xl transition-transform"
+									class:rotate-180={isAccueilDesktopDropdownOpen}
+									icon="ri:arrow-down-s-line"
+								></iconify-icon>
+							</div>
+						</DropdownMenu.Trigger>
 
-					<DropdownMenu.Content
-						preventScroll={false}
-						class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
-					>
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-									href="/"
-								>
-									Accueil Légiscope
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
+						<DropdownMenu.Content
+							preventScroll={false}
+							class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
+						>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
+										href="/"
+									>
+										Accueil Légiscope
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
 
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
-									href="https://leximpact.an.fr/"
-									target="_blank"
-								>
-									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
-									></iconify-icon>
-									LexImpact
-									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
-									></iconify-icon>
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+										href="https://leximpact.an.fr/"
+										target="_blank"
+									>
+										<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+										></iconify-icon>
+										LexImpact
+										<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+										></iconify-icon>
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
 
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
-									href="https://www.assemblee-nationale.fr/"
-									target="_blank"
-								>
-									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
-									></iconify-icon>
-									Assemblée nationale
-									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
-									></iconify-icon>
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+										href="https://www.assemblee-nationale.fr/"
+										target="_blank"
+									>
+										<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+										></iconify-icon>
+										Assemblée nationale
+										<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+										></iconify-icon>
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				</nav>
 			</div>
 
 			<!-- Centre -->
@@ -102,6 +103,7 @@
 						<iconify-icon
 							class="pl-0.5 align-[-0.18em]"
 							icon="ri:book-marked-fill"
+							aria-hidden="true"
 						></iconify-icon>
 					</span>
 				</div>
@@ -129,69 +131,71 @@
 						<iconify-icon
 							class="pl-0.5 align-[-0.18em]"
 							icon="ri:book-marked-fill"
+							aria-hidden="true"
 						></iconify-icon>
 					</span>
 				</div>
+				<nav aria-label="Navigation principale">
+					<DropdownMenu.Root bind:open={isAccueilMobileMenuDropdownOpen}>
+						<DropdownMenu.Trigger
+							class="rounded-lg p-2 text-white hover:bg-gray-400/20 focus:outline-none active:bg-gray-400/40"
+						>
+							<iconify-icon class="text-2xl" icon="ri-menu-line"></iconify-icon>
+						</DropdownMenu.Trigger>
 
-				<DropdownMenu.Root bind:open={isAccueilMobileMenuDropdownOpen}>
-					<DropdownMenu.Trigger
-						class="rounded-lg p-2 text-white hover:bg-gray-400/20 focus:outline-none active:bg-gray-400/40"
-					>
-						<iconify-icon class="text-2xl" icon="ri-menu-line"></iconify-icon>
-					</DropdownMenu.Trigger>
+						<DropdownMenu.Content
+							preventScroll={false}
+							class="z-50  w-screen rounded bg-white text-center text-black shadow-xl ring-1 ring-black focus:outline-none"
+						>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
+										href="/"
+									>
+										Accueil Légiscope
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
 
-					<DropdownMenu.Content
-						preventScroll={false}
-						class="z-50  w-screen rounded bg-white text-center text-black shadow-xl ring-1 ring-black focus:outline-none"
-					>
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-									href="/"
-								>
-									Accueil Légiscope
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+										href="https://leximpact.an.fr/"
+										target="_blank"
+									>
+										<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+										></iconify-icon>
+										LexImpact
+										<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+										></iconify-icon>
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
 
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
-									href="https://leximpact.an.fr/"
-									target="_blank"
-								>
-									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
-									></iconify-icon>
-									LexImpact
-									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
-									></iconify-icon>
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
-
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a
-									{...props}
-									class="block border-b px-4 py-3 text-center hover:bg-gray-100"
-									href="https://www.assemblee-nationale.fr/"
-									target="_blank"
-								>
-									<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
-									></iconify-icon>
-									Assemblée nationale
-									<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
-									></iconify-icon>
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
+							<DropdownMenu.Item>
+								{#snippet child({ props })}
+									<a
+										{...props}
+										class="block border-b px-4 py-3 text-center hover:bg-gray-100"
+										href="https://www.assemblee-nationale.fr/"
+										target="_blank"
+									>
+										<iconify-icon class="mr-1 text-lg" icon="ri:home-2-line"
+										></iconify-icon>
+										Assemblée nationale
+										<iconify-icon class="text-xl" icon="ri:arrow-right-up-line"
+										></iconify-icon>
+									</a>
+								{/snippet}
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				</nav>
 			</div>
 		</div>
 	</div>
-</nav>
+</header>

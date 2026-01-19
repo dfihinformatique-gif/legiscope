@@ -110,6 +110,16 @@
     text-decoration-color: rgba(255, 16, 16, 0.4);
     text-decoration-thickness: 2px;
   }
+
+  /* Cache la scrollbar pour Webkit, Firefox et IE */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 }
 
 @layer components {

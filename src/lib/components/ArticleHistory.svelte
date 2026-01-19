@@ -1,45 +1,16 @@
 <script lang="ts">
 	import { page } from "$app/state"
-	import type { ArticleInfo, HistoryData } from "$lib/db_data_types"
+	import {
+		historyDataToHistoryByText,
+		type ArticleInfo,
+		type HistoryByText,
+		type HistoryByTextRow,
+		type HistoryData,
+	} from "$lib/db_data_types"
+	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
-	}
-	interface HistoryByTextRow {
-		cidtexte: string
-		titre_texte: string
-		articles_jorf: Array<{ id: string; num: string }>
-		typelien: string
-		date_publi: Date | null
-	}
-	type HistoryByText = HistoryByTextRow[]
-
-	function historyDataToHistoryByText(historyData: HistoryData): HistoryByText {
-		const grouped = historyData.reduce(
-			(acc, row) => {
-				const key = `${row.cidtexte}_${row.typelien}`
-
-				if (!acc[key]) {
-					acc[key] = {
-						cidtexte: row.cidtexte,
-						titre_texte: row.titre_texte,
-						articles_jorf: [],
-						typelien: row.typelien,
-						date_publi: row.date_publi,
-					}
-				}
-
-				acc[key].articles_jorf.push({
-					id: row.article_jorf || "",
-					num: row.num || "",
-				})
-
-				return acc
-			},
-			{} as Record<string, HistoryByTextRow>,
-		)
-
-		return Object.values(grouped)
 	}
 
 	let { articleInfo }: Props = $props()
@@ -124,44 +95,44 @@
 	{#each historyByYear as group}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
 			<div>
-				<span class="text-le-gris-dispositif">{group.year}</span>
+				<span class=" px-2 font-bold text-gray-400">{group.year}</span>
 			</div>
 			<div>
 				<ul class="list-disc">
 					{#each group.items as text}
-						{@const urlToNavigate = new URL(page.url)}
-						{urlToNavigate.searchParams.set("article", text.cidtexte)}
-						<li class="text-sm">
+						<li class="pb-4 text-left text-sm">
 							<span
 								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
-								>{formatTypeLien(text.typelien)} par</span
 							>
-							<a class="lx-link-text" href={urlToNavigate.href}
-								>{text.titre_texte}</a
-							>
-							{#if text.articles_jorf.filter((article) => {
-								return article.id !== ""
-							}).length > 0}
-								(
-								{#each text.articles_jorf as article, i}
-									{@const articleUrl = (() => {
-										const url = new URL(page.url)
-										url.searchParams.set("article", article.id)
-										return url.href
-									})()}
-									{#if article.id !== ""}
-										<a class="text-sm leading-4" href={articleUrl}
-											>art. n°{article.num !== ""
-												? article.num
-												: `non identifié ${i + 1}`}</a
-										>
-									{:else}
-										art. {article.num !== ""
-											? article.num
-											: `non identifié ${i + 1}`}
+								{formatTypeLien(text.typelien)} par
+							</span>
+							{text.titre_texte}
+							<span class="-mr-1 -ml-0.5" aria-hidden="true">・</span>
+
+							{#if text.articles_jorf && text.articles_jorf.filter( (article) => {
+										return article.id !== ""
+									}, ).length > 0}
+								{#each text.articles_jorf as article, index}
+									{@const articleUrl = new URL(page.url)}
+									{articleUrl.searchParams.set("article", article.id)}
+
+									<a class="lx-link-text text-nowrap" href={articleUrl.href}>
+										{#if (article.num ?? "").length > 0}
+											art. {article.num}
+										{:else}
+											article
+										{/if}
+									</a>
+
+									{#if index < text.articles_jorf.length - 1}
+										,
 									{/if}
 								{/each}
-								)
+							{:else}
+								{@const urlToNavigate = new URL(page.url)}
+								{urlToNavigate.searchParams.set("article", text.cidtexte)}
+
+								<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
 							{/if}
 						</li>
 					{/each}
@@ -169,4 +140,8 @@
 			</div>
 		</section>
 	{/each}
+{:else}
+	<AlertDatabaseMessage
+		>Aucun élément d'historique n'est disponible pour cet article</AlertDatabaseMessage
+	>
 {/if}

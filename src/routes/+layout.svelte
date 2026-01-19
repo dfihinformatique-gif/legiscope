@@ -8,17 +8,17 @@
 	import { shared } from "$lib/shared.svelte"
 	import NavBar from "../lib/components/NavBar.svelte"
 
-	let outerWidth: number = $state(1024)
+	let innerWidth: number = $state(1024)
 
 	$effect(() => {
-		shared.screenWidth = outerWidth
-		shared.isMobilePhone = outerWidth < 768
+		shared.screenWidth = innerWidth
+		shared.isMobilePhone = innerWidth < 768
 	})
 
 	let { children } = $props()
 </script>
 
-<svelte:window bind:outerWidth />
+<svelte:window bind:innerWidth />
 
 <svelte:head>
 	<title>Assemblée nationale - LexImpact | Legi-UI</title>
