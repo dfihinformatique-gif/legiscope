@@ -18,8 +18,14 @@
 	let lawContainer: HTMLElement | undefined = $state()
 
 	let articleInfo = $state<ArticleInfo | undefined>(undefined)
-	let isLoadingArticle = $state(false)
 	let articleError = $state<Error | undefined>(undefined)
+
+	let isLoadingArticle = $derived(
+		page.url.searchParams.get("article") !== undefined &&
+			data.articleInfoPromise !== undefined &&
+			articleInfo === undefined &&
+			articleError === undefined,
+	)
 
 	// Garder trace de l'article actuellement chargé
 	let currentArticleId = $state<string | undefined>(undefined)
