@@ -15,7 +15,7 @@
 	let showParameterModal = $state(false)
 	let parametersToVariables = $state<Record<string, string[]>>({})
 
-	let lawContainer: HTMLDivElement | undefined = $state()
+	let lawContainer: HTMLElement | undefined = $state()
 
 	let articleInfo = $state<ArticleInfo | undefined>(undefined)
 	let isLoadingArticle = $state(false)
@@ -112,14 +112,14 @@
 {#if !shared.isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 		<section
-			class={`z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
+			class={`@container/section-bill z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
 			class:hidden={!shared.showBillDesktop}
 		>
 			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
 		</section>
 
 		<section
-			class={`flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
+			class={`@container/section-article flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
 			class:hidden={!shared.showLawDesktop}
 		>
 			{#if isLoadingArticle}
@@ -168,7 +168,7 @@
 
 		{#if citingArticleInfo}
 			<aside
-				class={`flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
+				class={`@container/section-citations flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
 				class:hidden={!shared.showCitingDesktop}
 			>
 				{#if isLoadingCitingArticle}
@@ -187,16 +187,16 @@
 	</div>
 {:else}
 	<div class="fixed flex min-h-full w-full flex-row overflow-x-hidden">
-		<div
-			class="z-10 h-screen w-full overflow-y-auto shadow-md"
+		<section
+			class="@container/section-bill z-10 h-screen w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
 			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
-		</div>
+		</section>
 
-		<div
+		<section
 			bind:this={lawContainer}
-			class="h-screen w-full overflow-y-auto bg-blue-100"
+			class="@container/section-article h-screen w-full overflow-y-auto bg-blue-100"
 			class:hidden={shared.activePanelMobile !== "law"}
 		>
 			{#if isLoadingArticle}
@@ -235,7 +235,7 @@
 					></iconify-icon>
 				</div>
 			{/if}
-		</div>
+		</section>
 
 		<div
 			class="h-screen w-full overflow-y-auto bg-blue-100"
@@ -256,8 +256,8 @@
 					{parametersToVariables}
 				></ArticleCitant>
 			{:else}
-				<div
-					class="flex h-screen flex-col items-center justify-center p-4 text-center"
+				<aside
+					class="@container/section-citations flex h-screen flex-col items-center justify-center p-4 text-center"
 				>
 					<iconify-icon
 						class="text-8xl text-gray-500"
@@ -274,7 +274,7 @@
 					</p>
 					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
 					></iconify-icon>
-				</div>
+				</aside>
 			{/if}
 		</div>
 	</div>

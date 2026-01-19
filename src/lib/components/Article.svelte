@@ -956,7 +956,7 @@
 	</nav>
 
 	<div
-		class="@container/version-title mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
+		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
 		class:md:p-16={!shared.showBillDesktop}
 		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 	>
@@ -965,10 +965,10 @@
 			<section class="mb-8 flex flex-col gap-y-5">
 				<h2 class="sr-only">Version de l'article</h2>
 				{#if articleInfo.versions}
-					<div class="hidden @sm/version-title:flex">
+					<div class="hidden @sm/section-article:flex">
 						<select
 							name="versions"
-							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-black italic @md/version-title:text-lg"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-black italic @md/section-article:text-lg"
 							onchange={() => {
 								const urlToNavigate = new URL(page.url)
 								urlToNavigate.searchParams.set(
@@ -1011,7 +1011,7 @@
 							{/each}
 						</select>
 					</div>
-					<div class="@sm/version-title:hidden">
+					<div class="@sm/section-article:hidden">
 						<select
 							name="versions"
 							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-lg text-black italic"
