@@ -28,7 +28,6 @@
 	let isLoadingCitingArticle = $state(false)
 	let citingArticleError = $state<Error | undefined>(undefined)
 	let currentCitingArticleId = $state<string | undefined>(undefined)
-	const requestedArticleId = page.url.searchParams.get("article") || undefined
 
 	$effect(() => {
 		if (
@@ -42,6 +41,8 @@
 	})
 
 	$effect(() => {
+		const requestedArticleId = page.url.searchParams.get("article") || undefined
+
 		if (data.articleInfoPromise && requestedArticleId !== currentArticleId) {
 			isLoadingArticle = true
 			articleError = undefined
@@ -132,7 +133,7 @@
 					{showParameterModal}
 					bind:parametersToVariables
 				></Article>
-			{:else if requestedArticleId}
+			{:else if page.url.searchParams.get("article") !== undefined}
 				<AlertDatabaseMessage
 					><p>
 						Les données ne permettent pas l'affichage du contenu de cet article.
@@ -140,7 +141,9 @@
 					<p>
 						Une version numérisée peut néanmoins être disponible sur <a
 							class="lx-link-text cursor-pointer font-bold"
-							href="https://www.legifrance.gouv.fr/loda/id/{requestedArticleId}"
+							href="https://www.legifrance.gouv.fr/loda/id/{page.url.searchParams.get(
+								'article',
+							)}"
 							target="_blank">Legifrance</a
 						>
 					</p>
@@ -198,7 +201,7 @@
 				</div>
 			{:else if articleError}
 				<p>Erreur: {articleError.message}</p>
-			{:else if articleInfo}
+			{:else if articleInfo !== undefined}
 				<Article
 					{articleInfo}
 					pjlDate={shared.pjlDate}

@@ -479,15 +479,17 @@ async function getArticle(
 export const load: PageServerLoad = async ({
 	url,
 }): Promise<{
-	articleInfoPromise: Promise<ArticleInfo> | undefined
-	citingArticleInfoPromise: Promise<ArticleInfo> | undefined
+	articleInfoPromise: Promise<ArticleInfo | undefined>
+	citingArticleInfoPromise: Promise<ArticleInfo | undefined>
 }> => {
 	const lawArticle = url.searchParams.get("article")
 	const citingLawArticle = url.searchParams.get("citant")
 	const urlDate = url.searchParams.get("date")
 	const requestedDate = urlDate ?? shared.pjlDate
-	let articleInfoPromise = undefined
-	let citingArticleInfoPromise = undefined
+	let articleInfoPromise: Promise<ArticleInfo | undefined> =
+		Promise.resolve(undefined)
+	let citingArticleInfoPromise: Promise<ArticleInfo | undefined> =
+		Promise.resolve(undefined)
 
 	try {
 		if (lawArticle !== undefined && lawArticle !== null) {
@@ -499,8 +501,8 @@ export const load: PageServerLoad = async ({
 	} catch (error) {
 		console.error("Erreur dans la récupération des articles de loi : ", error)
 		return {
-			articleInfoPromise: undefined,
-			citingArticleInfoPromise: undefined,
+			articleInfoPromise: Promise.resolve(undefined),
+			citingArticleInfoPromise: Promise.resolve(undefined),
 		}
 	}
 
