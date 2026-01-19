@@ -36,7 +36,7 @@
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
-	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
+	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -896,6 +896,23 @@
 </script>
 
 {#if articleInfo.article}
+	<!--En-tête-->
+	{#if articleInfo.article}
+		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+
+		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+			{@const originLabel =
+				articleFromUrl.startsWith("LEGITEXT") ||
+				articleFromUrl.startsWith("JORFTEXT")
+					? articleInfo.textTitle
+					: articleInfo.sectionTitle}
+			<InformationMessage
+				>Vous êtes sur le premier article de la section {#if originLabel}
+					« {originLabel} ».
+				{:else}.{/if}</InformationMessage
+			>
+		{/if}
+	{/if}
 	<!--Titre-->
 	<header
 		class="my-5 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
@@ -1062,7 +1079,9 @@
 				{#if historyByText && historyByText.length > 0}
 					<ul>
 						{#each historyByText as historyText}
-							<li class="line-clamp-2 pb-1 text-xs text-neutral-600 italic">
+							<li
+								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
+							>
 								<span
 									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
 									>Suite à {historyText.typelien} par</span
@@ -1090,7 +1109,7 @@
 										"article",
 										historyText.cidtexte,
 									)}
-									<a class="lx-link-text" href={urlToNavigate.href}>Texte</a>
+									<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
 								{/if}
 								)
 							</li>
@@ -1104,14 +1123,6 @@
 			<!--Texte de la version-->
 			<section>
 				<h2 class="sr-only">Texte de l’article</h2>
-				<!--En-tête-->
-				{#if articleInfo.article}
-					{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
-
-					{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-						Premier article :
-					{/if}
-				{/if}
 				{#if articleInfo.versions}
 					<div class="my-4 flex w-full justify-end text-left">
 						<label class="inline-flex cursor-pointer items-center">
