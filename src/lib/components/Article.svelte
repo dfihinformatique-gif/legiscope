@@ -343,7 +343,7 @@
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
 				},
 			)
 		: undefined
@@ -354,7 +354,7 @@
 				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
 				(_match, p1, p2) => {
 					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem]" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
 				},
 			)
 		: undefined
