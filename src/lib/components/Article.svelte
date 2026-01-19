@@ -16,7 +16,11 @@
 		rootParameter,
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
-	import { shared } from "$lib/shared.svelte"
+	import {
+		formatDateFr,
+		formatDateFrNumerique,
+		shared,
+	} from "$lib/shared.svelte"
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	import {
 		assertNever,
@@ -685,27 +689,6 @@
 		addEventListenersOnHighlighted()
 	})
 
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date
-			.toLocaleDateString("fr-FR", {
-				day: "numeric",
-				month: "long",
-				year: "numeric",
-			})
-			.replace(/^1 /, "1er ")
-	}
-	function formatFrancaisAbregeDate(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date
-			.toLocaleDateString("fr-FR", {
-				day: "2-digit",
-				month: "2-digit",
-				year: "numeric",
-			})
-			.replace(/\//g, ".")
-	}
-
 	function injectHighlightsIntoHtml(
 		html: string,
 		coordsToHighlight: Map<
@@ -1053,7 +1036,7 @@
 										version.legi_id_lien}
 								>
 									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatFrancaisAbregeDate(
+										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatDateFrNumerique(
 												articleInfo.jorfTextDatePubli!,
 											)}
 										{:else if version.debut === "2999-01-01"}
@@ -1062,13 +1045,13 @@
 											{#if version.debut === "2222-02-22"}
 												V. en vigueur différée ou article mort-né
 											{:else}
-												V. en vigueur depuis le {formatFrancaisAbregeDate(
+												V. en vigueur depuis le {formatDateFrNumerique(
 													version.debut,
 												)}
 											{/if}
 										{:else}
-											V. du {formatFrancaisAbregeDate(version.debut)}
-											au {formatFrancaisAbregeDate(version.fin)}
+											V. du {formatDateFrNumerique(version.debut)}
+											au {formatDateFrNumerique(version.fin)}
 										{/if}
 									{/if}
 								</option>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state"
-	import { shared } from "$lib/shared.svelte"
+	import { formatDateFrAbrege, shared } from "$lib/shared.svelte"
 
 	interface Props {
 		data?: {
@@ -31,15 +31,6 @@
 	let labelVersion = $state("")
 	let isJORFVersion = $derived(data?.legi_id.startsWith("JORF") || false)
 
-	const formatFrancaisAbregeDate = (date: Date | null) =>
-		date
-			? date.toLocaleDateString("fr-FR", {
-					day: "numeric",
-					month: "short",
-					year: "numeric",
-				})
-			: ""
-
 	$effect(() => {
 		if (!data) {
 			labelVersion = ""
@@ -56,11 +47,11 @@
 			if (end?.getFullYear() === 2999) end = null
 
 			if (start && end)
-				labelVersion = `Version du ${formatFrancaisAbregeDate(start)} au ${formatFrancaisAbregeDate(end)}`
+				labelVersion = `Version du ${formatDateFrAbrege(data.date_debut ?? null)} au ${formatDateFrAbrege(data.date_fin ?? null)}`
 			else if (start)
-				labelVersion = `Version depuis le ${formatFrancaisAbregeDate(start)}`
+				labelVersion = `Version depuis le ${formatDateFrAbrege(data.date_debut ?? null)}`
 			else if (end)
-				labelVersion = `Version jusqu’au ${formatFrancaisAbregeDate(end)}`
+				labelVersion = `Version jusqu’au ${formatDateFrAbrege(data.date_fin ?? null)}`
 			else labelVersion = "Version sans date"
 		}
 	})

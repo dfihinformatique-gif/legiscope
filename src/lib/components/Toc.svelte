@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
+	import { formatDateFr } from "$lib/shared.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
@@ -104,15 +105,6 @@
 			// (item) => item.dernier_segment === articleInfo.article?.legi_id,
 			(item) => item.dernier_segment === page.url.searchParams.get("article"),
 		)
-	}
-
-	function formatDateFr(dateStr: string): string {
-		const date = new Date(dateStr)
-		return date.toLocaleDateString("fr-FR", {
-			day: "numeric",
-			month: "long",
-			year: "numeric",
-		})
 	}
 </script>
 
