@@ -1014,7 +1014,7 @@
 					<div class="@sm/section-article:hidden">
 						<select
 							name="versions"
-							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-lg text-black italic"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-base text-black italic @xs/section-article:text-lg"
 							onchange={() => {
 								const urlToNavigate = new URL(page.url)
 								urlToNavigate.searchParams.set(
@@ -1040,17 +1040,17 @@
 												articleInfo.jorfTextDatePubli!,
 											)}
 										{:else if version.debut === "2999-01-01"}
-											V. de versement
+											Version de versement
 										{:else if version.fin === "2999-01-01"}
 											{#if version.debut === "2222-02-22"}
-												V. en vigueur différée ou article mort-né
+												Version en vigueur différée ou article mort-né
 											{:else}
-												V. en vigueur depuis le {formatDateFrNumerique(
+												Version en vigueur depuis le {formatDateFrNumerique(
 													version.debut,
 												)}
 											{/if}
 										{:else}
-											V. du {formatDateFrNumerique(version.debut)}
+											Version du {formatDateFrNumerique(version.debut)}
 											au {formatDateFrNumerique(version.fin)}
 										{/if}
 									{/if}
