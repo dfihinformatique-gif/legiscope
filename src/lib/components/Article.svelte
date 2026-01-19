@@ -695,6 +695,17 @@
 			})
 			.replace(/^1 /, "1er ")
 	}
+	function formatFrancaisAbregeDate(dateStr: string): string {
+		const date = new Date(dateStr)
+		return date
+			.toLocaleDateString("fr-FR", {
+				day: "2-digit",
+				month: "2-digit",
+				year: "numeric",
+			})
+			.replace(/\//g, ".")
+	}
+
 	function injectHighlightsIntoHtml(
 		html: string,
 		coordsToHighlight: Map<
@@ -962,7 +973,7 @@
 	</nav>
 
 	<div
-		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
+		class="@container/version-title mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
 		class:md:p-16={!shared.showBillDesktop}
 		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 	>
@@ -971,47 +982,99 @@
 			<section class="mb-8 flex flex-col gap-y-5">
 				<h2 class="sr-only">Version de l'article</h2>
 				{#if articleInfo.versions}
-					<select
-						name="versions"
-						class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-base text-black italic sm:text-lg"
-						onchange={() => {
-							const urlToNavigate = new URL(page.url)
-							urlToNavigate.searchParams.set(
-								"article",
-								selectedVersion!.legi_id_lien,
-							)
-							urlToNavigate.searchParams.set(
-								"date",
-								new Date(selectedVersion!.debut).toISOString().split("T")[0],
-							)
-							goto(urlToNavigate, { replaceState: false })
-						}}
-						bind:value={selectedVersion}
-					>
-						{#each articleInfo.versions as version (version.legi_id_lien)}
-							<option
-								value={version}
-								selected={articleInfo.article.legi_id === version.legi_id_lien}
-							>
-								{#if version.debut}
-									{#if version.legi_id_lien.startsWith("JORF")}Journal officiel
-										du {formatDateFr(articleInfo.jorfTextDatePubli!)}
-									{:else if version.debut === "2999-01-01"}
-										Version de versement
-									{:else if version.fin === "2999-01-01"}
-										{#if version.debut === "2222-02-22"}
-											Version en vigueur différée ou article mort-né
+					<div class="hidden @sm/version-title:flex">
+						<select
+							name="versions"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-black italic @md/version-title:text-lg"
+							onchange={() => {
+								const urlToNavigate = new URL(page.url)
+								urlToNavigate.searchParams.set(
+									"article",
+									selectedVersion!.legi_id_lien,
+								)
+								urlToNavigate.searchParams.set(
+									"date",
+									new Date(selectedVersion!.debut).toISOString().split("T")[0],
+								)
+								goto(urlToNavigate, { replaceState: false })
+							}}
+							bind:value={selectedVersion}
+						>
+							{#each articleInfo.versions as version (version.legi_id_lien)}
+								<option
+									value={version}
+									selected={articleInfo.article.legi_id ===
+										version.legi_id_lien}
+								>
+									{#if version.debut}
+										{#if version.legi_id_lien.startsWith("JORF")}Journal
+											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
+										{:else if version.debut === "2999-01-01"}
+											Version de versement
+										{:else if version.fin === "2999-01-01"}
+											{#if version.debut === "2222-02-22"}
+												Version en vigueur différée ou article mort-né
+											{:else}
+												Version en vigueur depuis le {formatDateFr(
+													version.debut,
+												)}
+											{/if}
 										{:else}
-											Version en vigueur depuis le {formatDateFr(version.debut)}
+											Version du {formatDateFr(version.debut)}
+											au {formatDateFr(version.fin)}
 										{/if}
-									{:else}
-										Version du {formatDateFr(version.debut)}
-										au {formatDateFr(version.fin)}
 									{/if}
-								{/if}
-							</option>
-						{/each}
-					</select>
+								</option>
+							{/each}
+						</select>
+					</div>
+					<div class="@sm/version-title:hidden">
+						<select
+							name="versions"
+							class="border-le-gris-dispositif w-full grow cursor-pointer truncate overflow-x-hidden rounded-t-sm border-b-3 bg-white p-2 text-left font-serif text-lg text-black italic"
+							onchange={() => {
+								const urlToNavigate = new URL(page.url)
+								urlToNavigate.searchParams.set(
+									"article",
+									selectedVersion!.legi_id_lien,
+								)
+								urlToNavigate.searchParams.set(
+									"date",
+									new Date(selectedVersion!.debut).toISOString().split("T")[0],
+								)
+								goto(urlToNavigate, { replaceState: false })
+							}}
+							bind:value={selectedVersion}
+						>
+							{#each articleInfo.versions as version (version.legi_id_lien)}
+								<option
+									value={version}
+									selected={articleInfo.article.legi_id ===
+										version.legi_id_lien}
+								>
+									{#if version.debut}
+										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatFrancaisAbregeDate(
+												articleInfo.jorfTextDatePubli!,
+											)}
+										{:else if version.debut === "2999-01-01"}
+											V. de versement
+										{:else if version.fin === "2999-01-01"}
+											{#if version.debut === "2222-02-22"}
+												V. en vigueur différée ou article mort-né
+											{:else}
+												V. en vigueur depuis le {formatFrancaisAbregeDate(
+													version.debut,
+												)}
+											{/if}
+										{:else}
+											V. du {formatFrancaisAbregeDate(version.debut)}
+											au {formatFrancaisAbregeDate(version.fin)}
+										{/if}
+									{/if}
+								</option>
+							{/each}
+						</select>
+					</div>
 				{/if}
 				{#if historyByText && historyByText.length > 0}
 					<ul>
