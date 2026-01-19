@@ -131,7 +131,7 @@ async function getArticle(
 						limit 1
 						)
 					`
-				output.sectionTitle = lastSectionTitle[0].section_title
+				output.sectionTitle = lastSectionTitle[0]?.section_title ?? undefined
 			} else if (associatedText.length === 0) {
 				const associatedTextOutOfBoundaries = await dbConnection`
 				select distinct subltree(s.chemin, 0, 1) as associated_text
@@ -149,7 +149,7 @@ async function getArticle(
 						limit 1
 						)
 					`
-					output.sectionTitle = lastSectionTitle[0].section_title
+					output.sectionTitle = lastSectionTitle[0]?.section_title ?? undefined
 				} else if (associatedTextOutOfBoundaries.length > 1) {
 					const refinedAssociatedTextOutOfBoundaries = await dbConnection`
 						select distinct subltree(s.chemin, 0, 1) as associated_text
