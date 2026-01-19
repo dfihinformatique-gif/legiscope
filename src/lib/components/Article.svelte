@@ -1100,7 +1100,7 @@
 											{#if (historyArticle.num ?? "").length > 0}
 												art. {historyArticle.num}
 											{:else}
-												art. sans numéro
+												article
 											{/if}
 										</a>
 										{#if index < historyText.articles_jorf.length - 1}
@@ -1113,9 +1113,10 @@
 										"article",
 										historyText.cidtexte,
 									)}
-									<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
+									<a class="lx-link-text" href={urlToNavigate.href}>articles</a>
 								{/if}
-								de {historyText.titre_texte}
+								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
+								{historyText.titre_texte}
 							</li>
 						{/each}
 					</ul>
