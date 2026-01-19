@@ -4,6 +4,7 @@
 	import ArticleCitant from "$lib/components/article_citations/ArticleCitant.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
+	import AlertDatabaseMessage from "$lib/components/ui_transverse_components/AlertDatabaseMessage.svelte"
 	import type { ArticleInfo } from "$lib/db_data_types"
 	import { shared } from "$lib/shared.svelte"
 	import type { PageProps } from "./$types"
@@ -27,6 +28,7 @@
 	let isLoadingCitingArticle = $state(false)
 	let citingArticleError = $state<Error | undefined>(undefined)
 	let currentCitingArticleId = $state<string | undefined>(undefined)
+	const requestedArticleId = page.url.searchParams.get("article") || undefined
 
 	$effect(() => {
 		if (
@@ -40,8 +42,6 @@
 	})
 
 	$effect(() => {
-		const requestedArticleId = page.url.searchParams.get("article") || undefined
-
 		if (data.articleInfoPromise && requestedArticleId !== currentArticleId) {
 			isLoadingArticle = true
 			articleError = undefined
@@ -132,6 +132,19 @@
 					{showParameterModal}
 					bind:parametersToVariables
 				></Article>
+			{:else if requestedArticleId}
+				<AlertDatabaseMessage
+					><p>
+						Les données ne permettent pas l'affichage du contenu de cet article.
+					</p>
+					<p>
+						Une version numérisée peut néanmoins être disponible sur <a
+							class="lx-link-text cursor-pointer font-bold"
+							href="https://www.legifrance.gouv.fr/loda/id/{requestedArticleId}"
+							>Legifrance</a
+						>
+					</p>
+				</AlertDatabaseMessage>
 			{:else}
 				<div
 					class="flex h-screen flex-col items-center justify-center p-4 text-center"

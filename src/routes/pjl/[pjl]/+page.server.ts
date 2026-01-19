@@ -27,7 +27,7 @@ function getPreviousLegiIdLien(
 async function getArticle(
 	requestedArticle: string,
 	requestedDate: string,
-): Promise<ArticleInfo> {
+): Promise<ArticleInfo | undefined> {
 	const output: ArticleInfo = {
 		article: undefined,
 		articlePreviousVersion: undefined,
@@ -89,10 +89,7 @@ async function getArticle(
 					where l.legi_id = ${firstArticle.premier_article_id}::text
 					`
 			} else {
-				throw error(
-					404,
-					"First article found is not LEGIARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		} else if (requestedArticle.startsWith("JORFTEXT")) {
 			output.text = requestedArticle
@@ -113,10 +110,7 @@ async function getArticle(
 				where j.legi_id = ${firstArticle.premier_article_id}::text
 				`
 			} else {
-				throw error(
-					404,
-					"First article found is not JORFARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		} else if (requestedArticle.startsWith("LEGIARTI")) {
 			const associatedText = await dbConnection`
@@ -310,30 +304,35 @@ async function getArticle(
 				where l.legi_id = ${firstArticle.premier_article_id}::text
 				`
 			} else {
-				throw error(
-					404,
-					"First article found is not LEGIARTI or first article not found.",
-				)
+				output.article = undefined
 			}
 		}
 
 		// Récupération des versions
-		const versionsResult: {
-			legi_id_lien: string
-			debut: string
-			fin: string
-		}[] = await dbConnection`
+		const versionsResult:
+			| {
+					legi_id_lien: string
+					debut: string
+					fin: string
+			  }[]
+			| undefined =
+			articleFromDb.length > 0
+				? ((await dbConnection`
 			select legi_id_lien, to_char(debut, 'YYYY-MM-DD') debut, to_char(fin, 'YYYY-MM-DD') fin
 			from versions
 			where legi_id = ${articleFromDb[0].legi_id}
 			and (debut < fin or legi_id_lien like 'JORF%')
-			order by debut desc`
+			order by debut desc`) as { legi_id_lien: string; debut: string; fin: string }[])
+				: undefined
 		output.versions = versionsResult
 
-		const previousVersionId = getPreviousLegiIdLien(
-			versionsResult,
-			new Date(articleFromDb[0].date_debut).toISOString().split("T")[0],
-		)
+		const previousVersionId =
+			articleFromDb.length > 0
+				? getPreviousLegiIdLien(
+						versionsResult!,
+						new Date(articleFromDb[0].date_debut).toISOString().split("T")[0],
+					)
+				: undefined
 
 		if (
 			previousVersionId !== undefined &&
@@ -376,7 +375,7 @@ async function getArticle(
 
 			let jorfText: string | undefined = output.text
 			if (!jorfText.startsWith("JORFTEXT")) {
-				const jorfArti = output.versions.filter((version) =>
+				const jorfArti = output.versions?.filter((version) =>
 					version.legi_id_lien.startsWith("JORF"),
 				)[0]
 				if (jorfArti !== undefined) {
@@ -466,7 +465,9 @@ async function getArticle(
 
 			return output
 		} else if (articleFromDb.length === 0) {
-			throw error(404, "Article not found")
+			// throw error(404, "Article not found")
+			output.article = undefined
+			return undefined
 		} else {
 			throw error(422, "Error: article ID refers to multiple articles")
 		}
