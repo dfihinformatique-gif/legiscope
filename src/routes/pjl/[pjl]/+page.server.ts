@@ -218,7 +218,9 @@ async function getArticle(
 						limit 1
 						)
 					`
-				output.sectionTitle = lastSectionTitle[0].section_title
+				output.sectionTitle =
+					lastSectionTitle[0]?.section_title ??
+					associatedText[0].associated_text.titre
 			} else if (associatedText.length === 0) {
 				throw error(
 					422,
