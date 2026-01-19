@@ -245,7 +245,7 @@
 								(version) => version.legi_id_lien === lawArticle,
 							)
 						) {
-							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune">${p2}</a>`
+							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-[#e1b3b3]">${p2}</a>`
 						} else {
 							return p2
 						}
@@ -267,7 +267,7 @@
 								(version) => version.legi_id_lien === lawArticle,
 							)
 						) {
-							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-le-jaune lien_citation">${p2}</a>`
+							return `<a id="lien_citation" class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] bg-[#e1b3b3] lien_citation">${p2}</a>`
 						} else {
 							return p2
 						}
@@ -624,7 +624,7 @@
 	class:md:p-16={!shared.showBillDesktop}
 >
 	<button
-		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-2 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
+		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-16 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
 		title="Fermer le volet citations"
 		onclick={() => {
 			const searchParams = new URLSearchParams(page.url.searchParams)
