@@ -902,14 +902,17 @@
 		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
 
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-			{@const originLabel =
+			{@const sectionOrTextTitle =
 				articleFromUrl.startsWith("LEGITEXT") ||
 				articleFromUrl.startsWith("JORFTEXT")
 					? articleInfo.textTitle
 					: articleInfo.sectionTitle}
 			<InformationMessage
-				>Vous êtes sur le premier article de la section {#if originLabel}
-					« {originLabel} ».
+				>Vous êtes sur le premier article de {#if articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+					la section
+				{/if}
+				{#if sectionOrTextTitle}
+					« {sectionOrTextTitle} ».
 				{:else}.{/if}</InformationMessage
 			>
 		{/if}
