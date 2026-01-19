@@ -100,9 +100,6 @@
 			<div>
 				<ul class="list-disc">
 					{#each group.items as text}
-						{@const urlToNavigate = new URL(page.url)}
-						{urlToNavigate.searchParams.set("article", text.cidtexte)}
-
 						<li class="pb-4 text-left text-sm">
 							<span
 								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
@@ -112,7 +109,9 @@
 							{text.titre_texte}
 							<span class="-mr-1 -ml-0.5" aria-hidden="true">・</span>
 
-							{#if text.articles_jorf && text.articles_jorf.length > 0}
+							{#if text.articles_jorf && text.articles_jorf.filter( (article) => {
+										return article.id !== ""
+									}, ).length > 0}
 								{#each text.articles_jorf as article, index}
 									{@const articleUrl = new URL(page.url)}
 									{articleUrl.searchParams.set("article", article.id)}
