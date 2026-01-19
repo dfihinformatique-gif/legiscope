@@ -1095,8 +1095,10 @@
 											historyArticle.id,
 										)}
 										<a class="lx-link-text" href={urlToNavigate.href}>
-											{#if historyArticle.num !== undefined}
+											{#if (historyArticle.num ?? "").length > 0}
 												art. {historyArticle.num}
+											{:else}
+												art. sans numéro
 											{/if}
 										</a>
 										{#if index < historyText.articles_jorf.length - 1}
