@@ -36,6 +36,7 @@
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
+	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
 
 	interface Props {
@@ -913,10 +914,11 @@
 			>
 		{/if}
 	{/if}
-	<!--Titre-->
+
 	<header
 		class="my-5 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
 	>
+		<!--Titre-->
 		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
 			<iconify-icon
 				class="align-[-0.2rem] text-2xl"
@@ -1086,7 +1088,7 @@
 									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
 									>Suite à {historyText.typelien} par</span
 								>
-								{historyText.titre_texte} (
+
 								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
 									{#each historyText.articles_jorf as historyArticle, index}
 										{@const urlToNavigate = new URL(page.url)}
@@ -1113,7 +1115,7 @@
 									)}
 									<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
 								{/if}
-								)
+								de {historyText.titre_texte}
 							</li>
 						{/each}
 					</ul>
