@@ -132,10 +132,12 @@ export function historyDataToHistoryByText(
 				}
 			}
 
-			acc[key].articles_jorf.push({
-				id: row.article_jorf || "",
-				num: row.num || "",
-			})
+			if (row.article_jorf) {
+				acc[key].articles_jorf.push({
+					id: row.article_jorf || "",
+					num: row.num || "",
+				})
+			}
 
 			return acc
 		},
