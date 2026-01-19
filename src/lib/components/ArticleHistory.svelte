@@ -7,6 +7,7 @@
 		type HistoryByTextRow,
 		type HistoryData,
 	} from "$lib/db_data_types"
+	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
 		articleInfo: ArticleInfo
@@ -139,4 +140,8 @@
 			</div>
 		</section>
 	{/each}
+{:else}
+	<AlertDatabaseMessage
+		>Aucun élément d'historique n'est disponible pour cet article</AlertDatabaseMessage
+	>
 {/if}
