@@ -897,10 +897,9 @@
 </script>
 
 {#if articleInfo.article}
-	<!--En-tête-->
-	{#if articleInfo.article}
-		{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
-
+	<!--Message si affichage de l'article après clic sur section ou sur texte -->
+	{@const articleFromUrl = page.url.searchParams.get("article") ?? ""}
+	<div class="px-4 lg:px-0">
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
 			{@const sectionOrTextTitle =
 				articleFromUrl.startsWith("LEGITEXT") ||
@@ -912,11 +911,12 @@
 					la section
 				{/if}
 				{#if sectionOrTextTitle}
-					« {sectionOrTextTitle} ».
+					«&nbsp;{sectionOrTextTitle}&nbsp;».
 				{:else}.{/if}</InformationMessage
 			>
 		{/if}
-	{/if}
+	</div>
+	<!--En-tête-->
 
 	<header
 		class="my-5 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
