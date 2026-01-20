@@ -132,11 +132,7 @@
 			{:else if articleError}
 				<p>Erreur: {articleError.message}</p>
 			{:else if articleInfo}
-				<Article
-					{articleInfo}
-					pjlDate={shared.pjlDate}
-					{showParameterModal}
-					bind:parametersToVariables
+				<Article {articleInfo} {showParameterModal} bind:parametersToVariables
 				></Article>
 			{:else if page.url.searchParams.get("article") !== null}
 				<AlertDatabaseMessage>
@@ -213,11 +209,7 @@
 			{:else if articleError}
 				<p>Erreur: {articleError.message}</p>
 			{:else if articleInfo !== undefined}
-				<Article
-					{articleInfo}
-					pjlDate={shared.pjlDate}
-					{showParameterModal}
-					{parametersToVariables}
+				<Article {articleInfo} {showParameterModal} {parametersToVariables}
 				></Article>
 			{:else}
 				<div

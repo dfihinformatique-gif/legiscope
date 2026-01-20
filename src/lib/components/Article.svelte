@@ -41,13 +41,11 @@
 
 	interface Props {
 		articleInfo: ArticleInfo
-		pjlDate: string
 		showParameterModal: boolean
 		parametersToVariables: Record<string, string[]> | null
 	}
 	let {
 		articleInfo,
-		pjlDate,
 		showParameterModal,
 		parametersToVariables = $bindable(),
 	}: Props = $props()
@@ -972,7 +970,7 @@
 		</div>
 		{#if showRightScrollShadow}
 			<div
-				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-blue-900/10 to-transparent"
+				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-blue-900/10 to-transparent"
 			></div>
 		{/if}
 	</nav>
@@ -1141,7 +1139,7 @@
 							/>
 							{#if articleInfo.versions.length > 1}
 								<div
-									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 								></div>
 								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
 									Voir les changements apportés <br /> à la version précédente
@@ -1289,8 +1287,8 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 

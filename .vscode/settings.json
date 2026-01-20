@@ -3,6 +3,7 @@
 	"editor.rulers": [100],
 	"editor.codeActionsOnSave": {
 		"source.fixAll": "always",
+		"source.fixAll.eslint": "explicit",
 		"source.organizeImports": "always",
 		"source.sortImports": "never",
 		"source.sortMembers": "never"
@@ -10,6 +11,13 @@
 	"editor.quickSuggestions": {
 		"strings": "on"
 	},
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"svelte"
+	],
 	"files.readonlyInclude": {
 		"node_modules/**": true
 	},
