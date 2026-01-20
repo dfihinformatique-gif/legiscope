@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
@@ -999,7 +1001,12 @@
 									"date",
 									new Date(selectedVersion!.debut).toISOString().split("T")[0],
 								)
-								goto(urlToNavigate, { replaceState: false })
+								goto(
+									resolve(
+										`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+									),
+									{ replaceState: false },
+								)
 							}}
 							bind:value={selectedVersion}
 						>
