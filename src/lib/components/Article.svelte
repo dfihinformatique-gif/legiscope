@@ -381,7 +381,7 @@
 					)
 
 					protectedContent = protectedContent.replace(
-						/[\.\,\-\'’°]/g,
+						/[.,\-'’°]/g,
 						ATOMIC_SPACE_MARKER,
 					)
 
