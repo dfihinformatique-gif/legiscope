@@ -771,8 +771,8 @@
 		> = new SvelteMap()
 
 		const dateForParameterValuesSearch = generateMiddleDate(
-			articleInfo.article?.date_debut!,
-			articleInfo.article?.date_fin!,
+			articleInfo.article?.date_debut ?? new Date().toISOString().split("T")[0],
+			articleInfo.article?.date_fin ?? new Date().toISOString().split("T")[0],
 		)
 
 		articleParameterReferences.forEach((param) => {
