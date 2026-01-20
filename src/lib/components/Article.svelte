@@ -950,7 +950,7 @@
 			onscroll={checkScroll}
 			class="scrollbar-hide flex items-end gap-x-1 overflow-x-auto pr-1 whitespace-nowrap"
 		>
-			{#each ongletsArticle as tab}
+			{#each ongletsArticle as tab (tab.id)}
 				<button
 					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
 					class:bg-blue-50={activeTab === tab.id}
