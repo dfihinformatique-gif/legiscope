@@ -192,7 +192,7 @@
 					}
 				})
 
-				button.addEventListener("click", (e: Event) => {
+				button.addEventListener("click", () => {
 					button.classList.add("bg-le-vert-500/50")
 					parametersToVariables = button.dataset.params
 						? decodeParametersToVariables(button.dataset.params)
