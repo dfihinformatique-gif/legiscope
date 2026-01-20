@@ -716,7 +716,6 @@
 			const target = result.slice(originalStart, originalStop)
 			const after = result.slice(originalStop)
 
-			const title = parameters.join(", ")
 			const parametersToVariables: Record<string, string[]> = {}
 
 			for (const parameter of parameters) {
