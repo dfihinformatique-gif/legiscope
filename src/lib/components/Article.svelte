@@ -32,6 +32,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -753,7 +754,7 @@
 		const simplifiedCoordWithParameters: Map<
 			{ start: number; stop: number },
 			Array<string>
-		> = new Map()
+		> = new SvelteMap()
 
 		const coordsToHighlight: Map<
 			{
@@ -767,7 +768,7 @@
 				outerSuffix?: string
 			},
 			{ parameters: Array<string> }
-		> = new Map()
+		> = new SvelteMap()
 
 		const dateForParameterValuesSearch = generateMiddleDate(
 			articleInfo.article?.date_debut!,
