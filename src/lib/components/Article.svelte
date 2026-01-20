@@ -1093,7 +1093,7 @@
 				{/if}
 				{#if historyByText && historyByText.length > 0}
 					<ul>
-						{#each historyByText as historyText}
+						{#each historyByText as historyText (historyText.cidtexte)}
 							<li
 								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
 							>
@@ -1103,7 +1103,7 @@
 								>
 
 								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
-									{#each historyText.articles_jorf as historyArticle, index}
+									{#each historyText.articles_jorf as historyArticle, index (historyArticle.id)}
 										{@const urlToNavigate = new URL(page.url)}
 										{urlToNavigate.searchParams.set(
 											"article",
