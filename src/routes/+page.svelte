@@ -118,30 +118,31 @@
 										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée nationale le
-											14/10/2025
-										</span>
-										<span class=""
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Écrit par le Gouvernement</span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 14/10/2025
+										</span>
+										<span class="text-black"
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale :
+										</span>
+										<ul class="ml-4 list-inside list-disc text-black">
+											<li>en commission des finances saisie au fond</li>
+											<li>
+												en séance <span
+													class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs text-red-900"
+													>Texte rejeté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des finances saisie au fond à
-											l'Assemblée nationale
-										</li>
-										<li>
-											examiné en séance en première lecture à l'Assemblée
-											nationale <span
-												class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs text-red-900"
-												>Texte rejeté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -209,12 +210,6 @@
 										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé au Sénat le 24/11/2025
-										</span>
-										<span class=""
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Écrit par le Gouvernement
 											<i
@@ -222,19 +217,30 @@
 												lecture par l'Assemblée nationale)</i
 											></span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 24/11/2025
+										</span>
+
+										<span class="text-black"
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par le Sénat :
+										</span>
+										<ul class="ml-4 list-inside list-disc text-black">
+											<li>en commission des finances saisie au fond</li>
+											<li>
+												en séance en première lecture -
+												<span
+													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
+													>Texte adopté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des finances saisie au fond au Sénat
-										</li>
-										<li>
-											examiné en séance en première lecture au Sénat -
-											<span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -326,46 +332,52 @@
 										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée nationale le
-											15/12/2025
-										</span>
-										<span class=""
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Modifié par le Sénat</span
 										>
-									</div>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 15/12/2025
+										</span>
+										<span class="text-black"
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale :
+										</span>
 
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des finances saisie au fond à
-											l'Assemblée nationale
-										</li>
-										<li>
-											examiné en séance à l'Assemblée nationale - <span
-												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
-												><a
-													class="lx-link-simple font-serif text-base"
-													href={resolve("/pjl/DECLANR5L17B2247-N0")}
-													onclick={() => (isLoadingPjl = true)}
-													title="Vers le projet de loi"
-												>
-													<iconify-icon
-														class="mr-1 align-[-0.18em]"
-														icon="ri:book-marked-fill"
+										<ul class="ml-1 list-inside list-disc">
+											<li>
+												examiné en commission des finances saisie au fond à
+												l'Assemblée nationale
+											</li>
+											<li>
+												examiné en séance à l'Assemblée nationale - <span
+													class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
+													><a
+														class="lx-link-simple font-serif text-base"
+														href={resolve("/pjl/DECLANR5L17B2247-N0")}
+														onclick={() => (isLoadingPjl = true)}
+														title="Vers le projet de loi"
 													>
-													</iconify-icon>Texte sur lequel le Gouvernement engage
-													sa responsabilité (article 49.3 de la Constitution)
-													<iconify-icon
-														class=" align-[-0.3rem] text-xl"
-														icon="ri-arrow-right-line"
-													></iconify-icon>
-												</a></span
-											>
-										</li>
-									</ul>
+														<iconify-icon
+															class="mr-1 align-[-0.18em]"
+															icon="ri:book-marked-fill"
+														>
+														</iconify-icon>Texte sur lequel le Gouvernement
+														engage sa responsabilité (article 49.3 de la
+														Constitution)
+														<iconify-icon
+															class=" align-[-0.3rem] text-xl"
+															icon="ri-arrow-right-line"
+														></iconify-icon>
+													</a></span
+												>
+											</li>
+										</ul>
+									</div>
 								</div>
 							{/if}
 						</div>
