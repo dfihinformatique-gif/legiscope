@@ -341,7 +341,28 @@
 											examiné en commission des finances saisie au fond à
 											l'Assemblée nationale
 										</li>
-										<li>...</li>
+										<li>
+											examiné en séance à l'Assemblée nationale - <span
+												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
+												><a
+													class="lx-link-simple font-serif text-base"
+													href="pjl/DECLANR5L17B2247-N0"
+													onclick={() => (isLoadingPjl = true)}
+													title="Vers le projet de loi"
+												>
+													<iconify-icon
+														class="mr-1 align-[-0.18em]"
+														icon="ri:book-marked-fill"
+													>
+													</iconify-icon>Texte sur lequel le Gouvernement engage
+													sa responsabilité (article 49.3 de la Constitution)
+													<iconify-icon
+														class=" align-[-0.3rem] text-xl"
+														icon="ri-arrow-right-line"
+													></iconify-icon>
+												</a></span
+											>
+										</li>
 									</ul>
 								</div>
 							{/if}
