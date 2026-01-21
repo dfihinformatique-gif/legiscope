@@ -17,7 +17,7 @@
 
 <!--Retrait de la hauteur maximale h-[70vh] en attendant de mettre une barre de recherche -->
 <section
-	class="fond relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-[50vh] before:bg-gradient-to-b before:from-[#dbeafe] before:to-transparent"
+	class="fond relative py-10 before:absolute before:inset-x-0 before:top-0 before:h-[50vh] before:bg-linear-to-b before:from-[#dbeafe] before:to-transparent"
 >
 	<div
 		class="relative z-10 my-16 flex h-full flex-col items-center justify-evenly text-2xl md:my-24"
@@ -124,16 +124,16 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Proposé par le Gouvernement</span
+											></iconify-icon>Écrit par le Gouvernement</span
 										>
 									</div>
 									<ul class="ml-1 list-inside list-disc">
 										<li>
-											Examiné en commission des finances saisie au fond à
+											examiné en commission des finances saisie au fond à
 											l'Assemblée nationale
 										</li>
 										<li>
-											Examiné en séance en première lecture à l'Assemblée
+											examiné en séance en première lecture à l'Assemblée
 											nationale <span
 												class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs text-red-900"
 												>Texte rejeté</span
@@ -214,8 +214,11 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Proposé par le Gouvernement suite au rejet
-											du texte par l'Assemblée nationale</span
+											></iconify-icon>Écrit par le Gouvernement
+											<i
+												>(Identique au texte initial suite au rejet en première
+												lecture par l'Assemblée nationale)</i
+											></span
 										>
 									</div>
 									<ul class="ml-1 list-inside list-disc">
@@ -425,7 +428,7 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Proposé par le Gouvernement</span
+											></iconify-icon>Écrit par le Gouvernement</span
 										>
 									</div>
 									<ul class="ml-1 list-inside list-disc">
@@ -930,7 +933,7 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Proposé par le Gouvernement</span
+											></iconify-icon>Écrit par le Gouvernement</span
 										>
 									</div>
 									<ul class="ml-1 list-inside list-disc">
@@ -1178,7 +1181,7 @@
 	</AnchorTitle>
 	<div class="col-span-4 max-w-prose justify-self-center text-lg">
 		<p>
-			Cette site internet est mis en œuvre par la <a
+			Ce site internet est mis en œuvre par la <a
 				class="lx-link-text"
 				href="https://leximpact.an.fr">cellule LexImpact</a
 			> de l'Assemblée nationale. Il permet à la fois de :
