@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import { DropdownMenu } from "bits-ui"
 
 	let isAccueilMobileMenuDropdownOpen = $state(false)
@@ -47,7 +48,7 @@
 									<a
 										{...props}
 										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-										href="/"
+										href={resolve("/")}
 									>
 										Accueil Légiscope
 									</a>
@@ -152,7 +153,7 @@
 									<a
 										{...props}
 										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-										href="/"
+										href={resolve("/")}
 									>
 										Accueil Légiscope
 									</a>
