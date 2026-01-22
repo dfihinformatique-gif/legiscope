@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { copyToClipboard } from "$lib/clipboard"
+	import type { Snippet } from "svelte"
 
 	interface Props {
 		class?: string
 		id: string
 		tag?: string
-		children?: import("svelte").Snippet
-		[key: string]: any
+		children?: Snippet
 	}
 
 	let { class: klass = "", id, tag = "h2", children, ...rest }: Props = $props()
