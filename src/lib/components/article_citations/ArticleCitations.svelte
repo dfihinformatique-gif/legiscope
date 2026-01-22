@@ -19,6 +19,7 @@
 		getFilteredRowModel,
 		getGroupedRowModel,
 		getSortedRowModel,
+		type Row,
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
@@ -197,7 +198,9 @@
 	}
 
 	// Extrait le label de nature des groupes par nature */
-	function getGroupeArticlesCitantsTexteNatureLabel(row: any): string {
+	function getGroupeArticlesCitantsTexteNatureLabel(
+		row: Row<CitationsDataRow>,
+	): string {
 		const firstRow = row.subRows?.[0]?.original
 		const nature = firstRow?.article_citant_texte_nature
 		return getTextNatureLabel(
