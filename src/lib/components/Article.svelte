@@ -1174,6 +1174,11 @@
 				{#if showDiff === true}
 					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
 						<span class="font-serif text-lg leading-8 md:text-left">
+							<!--
+							Le warning eslint porte sur le risque de XSS.
+							Ici, on maîtrise ce qui arrive dans dffiContent
+							-->
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html diffContent}
 						</span>
 					</div>
