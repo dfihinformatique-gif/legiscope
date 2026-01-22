@@ -23,6 +23,7 @@
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
+	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 	import SkeletonArticleCitationsLoader from "./../SkeletonArticleCitationsLoader.svelte"
 	import CellVersionArticle from "./CellVersionArticle.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
@@ -629,7 +630,7 @@
 	let availableArticleTypes = $derived.by(() => {
 		if (!citationsData) return []
 
-		const typesSet = new Set<string>()
+		const typesSet = new SvelteSet<string>()
 		for (const row of citationsData) {
 			const type = row.article_type_citant
 			if (type !== null) {
@@ -662,7 +663,7 @@
 	let availableTextNatures = $derived.by(() => {
 		if (!citationsData) return []
 
-		const naturesMap = new Map<string, string>()
+		const naturesMap = new SvelteMap<string, string>()
 		for (const row of citationsData) {
 			const nature = row.article_citant_texte_nature
 			if (nature !== null) {
@@ -686,7 +687,7 @@
 	let availableVersionEtats = $derived.by(() => {
 		if (!citationsData) return []
 
-		const etatsSet = new Set<string>()
+		const etatsSet = new SvelteSet<string>()
 		for (const row of citationsData) {
 			const etat = row.etat_citant
 			if (etat !== null) {
