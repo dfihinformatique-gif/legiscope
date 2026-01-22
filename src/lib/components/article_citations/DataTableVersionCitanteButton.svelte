@@ -8,7 +8,6 @@
 		articleNum,
 	}: ComponentProps<typeof Button> & {
 		inEffectOnly?: boolean
-		onFilterChange?: (value: boolean) => void
 		grouping?: string[]
 		articleNum?: string | null
 	} = $props()
