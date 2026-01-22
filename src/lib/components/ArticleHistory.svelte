@@ -93,14 +93,14 @@
 </script>
 
 {#if historyByText !== undefined}
-	{#each historyByYear as group}
+	{#each historyByYear as group, index (index)}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
 			<div>
 				<span class=" px-2 font-bold text-gray-400">{group.year}</span>
 			</div>
 			<div>
 				<ul class="list-disc">
-					{#each group.items as text}
+					{#each group.items as text, indexItem (indexItem)}
 						<li class="pb-4 text-left text-sm">
 							<span
 								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
@@ -113,7 +113,7 @@
 							{#if text.articles_jorf && text.articles_jorf.filter( (article) => {
 										return article.id !== ""
 									}, ).length > 0}
-								{#each text.articles_jorf as article, index}
+								{#each text.articles_jorf as article, indexArticle (indexArticle)}
 									{@const articleUrl = new URL(page.url)}
 									{articleUrl.searchParams.set("article", article.id)}
 
@@ -125,7 +125,7 @@
 										{/if}
 									</a>
 
-									{#if index < text.articles_jorf.length - 1}
+									{#if indexArticle < text.articles_jorf.length - 1}
 										,
 									{/if}
 								{/each}
