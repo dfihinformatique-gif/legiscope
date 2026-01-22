@@ -1183,8 +1183,13 @@
 						</span>
 					</div>
 				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-					<span class="font-serif text-lg leading-8 md:text-left"
-						>{@html highlightParameterValuesInArticleHTML(
+					<span class="font-serif text-lg leading-8 md:text-left">
+						<!--
+							Le warning eslint porte sur le risque de XSS.
+							Ici, on maîtrise ce qui arrive dans dffiContent
+							-->
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html highlightParameterValuesInArticleHTML(
 							articleParameterReferences,
 						)}</span
 					>
