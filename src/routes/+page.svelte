@@ -348,7 +348,7 @@
 												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
 												><a
 													class="lx-link-simple font-serif text-base"
-													href="pjl/DECLANR5L17B2247-N0"
+													href={resolve("/pjl/DECLANR5L17B2247-N0")}
 													onclick={() => (isLoadingPjl = true)}
 													title="Vers le projet de loi"
 												>
