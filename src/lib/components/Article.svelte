@@ -1109,7 +1109,12 @@
 											"article",
 											historyArticle.id,
 										)}
-										<a class="lx-link-text" href={urlToNavigate.href}>
+										<a
+											class="lx-link-text"
+											href={resolve(
+												`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+											)}
+										>
 											{#if (historyArticle.num ?? "").length > 0}
 												art. {historyArticle.num}
 											{:else}
@@ -1126,7 +1131,12 @@
 										"article",
 										historyText.cidtexte,
 									)}
-									<a class="lx-link-text" href={urlToNavigate.href}>articles</a>
+									<a
+										class="lx-link-text"
+										href={resolve(
+											`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+										)}>articles</a
+									>
 								{/if}
 								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
 								{historyText.titre_texte}
