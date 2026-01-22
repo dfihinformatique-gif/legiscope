@@ -287,7 +287,6 @@
 				const [r, g, b] = match.slice(1).map(Number)
 
 				const isGrayOrBlack = r === g && g === b && r < 255
-				const isWhite = r === 255 && g === 255 && b === 255
 
 				if (isGrayOrBlack) continue // ignore gris/noir
 
@@ -924,8 +923,8 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 
