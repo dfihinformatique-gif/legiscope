@@ -1255,7 +1255,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each variables as variable}
+					{#each variables as variable, index (index)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1287,7 +1287,7 @@
 					> intervient dans le dispositif suivant :
 				</p>
 				<div class="mt-4">
-					{#each variables as variable}
+					{#each variables as variable, index (index)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1325,7 +1325,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each Object.entries(parametersToVariables) as [parameter, variables]}
+					{#each Object.keys(parametersToVariables) as parameter, index (index)}
 						{@const parameterLabel =
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
@@ -1365,8 +1365,8 @@
 					{#if parameterSimulatorlinksOpen}
 						<div class="space-y-2 p-4">
 							<ul class="ml-4 list-disc">
-								{#each Object.entries(parametersToVariables) as [parameter, variables]}
-									{#each variables as variable}
+								{#each Object.entries(parametersToVariables) as [parameter, variables], index (index)}
+									{#each variables as variable, index (index)}
 										{@const variableLabel =
 											variablesSummaries[variable]?.label ?? variable}
 										{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
@@ -1424,7 +1424,7 @@
 					</p>
 
 					<ul class="mt-4 ml-4 list-disc">
-						{#each variables as variable}
+						{#each variables as variable, index (index)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
@@ -1455,7 +1455,7 @@
 						> intervient dans le dispositif suivant :
 					</p>
 					<div class="mt-4">
-						{#each variables as variable}
+						{#each variables as variable, index (index)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
