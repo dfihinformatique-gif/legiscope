@@ -293,6 +293,9 @@ export const load: LayoutServerLoad = async ({
 			case "PRJLANR5L17B2115":
 				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
 				break
+			case "PRJLANR5L17BTC2250":
+				pjlDate = new Date("2025-12-17").toISOString().split("T")[0]
+				break
 		}
 
 		shared.pjlDate = pjlDate
