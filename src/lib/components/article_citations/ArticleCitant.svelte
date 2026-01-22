@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
 	import { formatDateFr, shared } from "$lib/shared.svelte"
 	import {
@@ -629,10 +631,13 @@
 			const searchParams = new SvelteURLSearchParams(page.url.searchParams)
 			searchParams.delete("citant")
 			shared.activePanelMobile = "law"
-			goto(`${page.url.pathname}?${searchParams.toString()}`, {
-				replaceState: true,
-				noScroll: true,
-			})
+			goto(
+				resolve(`${page.url.pathname}?${searchParams.toString()}` as Pathname),
+				{
+					replaceState: true,
+					noScroll: true,
+				},
+			)
 		}}
 	>
 		<iconify-icon class="align-[-0.4rem] text-3xl" icon="ri-close-large-line"
@@ -704,7 +709,12 @@
 							"date",
 							new Date(selectedVersion!.debut).toISOString().split("T")[0],
 						)
-						goto(urlToNavigate, { replaceState: false })
+						goto(
+							resolve(
+								`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname,
+							),
+							{ replaceState: false },
+						)
 					}}
 					bind:value={selectedVersion}
 				>
