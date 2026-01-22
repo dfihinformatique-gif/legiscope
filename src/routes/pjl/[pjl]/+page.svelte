@@ -117,14 +117,14 @@
 {#if !shared.isMobilePhone}
 	<div class="fixed flex min-h-full w-full flex-row overflow-hidden">
 		<section
-			class={`@container/section-bill z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300 `}
+			class="@container/section-bill z-10 flex h-screen flex-1 origin-right justify-center overflow-y-auto shadow-xl transition-all duration-300"
 			class:hidden={!shared.showBillDesktop}
 		>
 			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
 		</section>
 
 		<section
-			class={`@container/section-article flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6`}
+			class="@container/section-article flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
 			class:hidden={!shared.showLawDesktop}
 		>
 			{#if isLoadingArticle}
@@ -169,7 +169,7 @@
 
 		{#if citingArticleInfo}
 			<aside
-				class={`@container/section-citations flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300`}
+				class="@container/section-citations flex h-screen flex-1 justify-center overflow-y-auto bg-blue-100 transition-all duration-300"
 				class:hidden={!shared.showCitingDesktop}
 			>
 				{#if isLoadingCitingArticle}
