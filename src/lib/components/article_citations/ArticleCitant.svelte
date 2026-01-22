@@ -765,12 +765,14 @@
 		{#if showDiff === true}
 			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
 				<span class="font-serif text-lg leading-8 md:text-left">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html diffContent}
 				</span>
 			</div>
 		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html currentBlocTextuel}</span
+			<span class="font-serif text-lg leading-8 md:text-left">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html currentBlocTextuel}</span
 			>
 		{/if}
 	{:else}
