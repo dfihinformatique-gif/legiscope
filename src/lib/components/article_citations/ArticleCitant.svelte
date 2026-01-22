@@ -11,6 +11,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import { SvelteURLSearchParams } from "svelte/reactivity"
 	import ArticleSummary from "./../ArticleSummary.svelte"
 
 	interface Props {
@@ -625,7 +626,7 @@
 		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-16 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
 		title="Fermer le volet citations"
 		onclick={() => {
-			const searchParams = new URLSearchParams(page.url.searchParams)
+			const searchParams = new SvelteURLSearchParams(page.url.searchParams)
 			searchParams.delete("citant")
 			shared.activePanelMobile = "law"
 			goto(`${page.url.pathname}?${searchParams.toString()}`, {
