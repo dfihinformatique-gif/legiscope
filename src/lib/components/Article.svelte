@@ -1093,7 +1093,7 @@
 				{/if}
 				{#if historyByText && historyByText.length > 0}
 					<ul>
-						{#each historyByText as historyText (historyText.cidtexte)}
+						{#each historyByText as historyText, indexText (indexText)}
 							<li
 								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
 							>
@@ -1103,7 +1103,7 @@
 								>
 
 								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
-									{#each historyText.articles_jorf as historyArticle, index (historyArticle.id)}
+									{#each historyText.articles_jorf as historyArticle, indexArticle (indexArticle)}
 										{@const urlToNavigate = new URL(page.url)}
 										{urlToNavigate.searchParams.set(
 											"article",
@@ -1121,7 +1121,7 @@
 												article
 											{/if}
 										</a>
-										{#if index < historyText.articles_jorf.length - 1}
+										{#if indexArticle < historyText.articles_jorf.length - 1}
 											,
 										{/if}
 									{/each}
@@ -1255,7 +1255,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each variables as variable, index (index)}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1287,7 +1287,7 @@
 					> intervient dans le dispositif suivant :
 				</p>
 				<div class="mt-4">
-					{#each variables as variable, index (index)}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1325,7 +1325,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each Object.keys(parametersToVariables) as parameter, index (index)}
+					{#each Object.keys(parametersToVariables) as parameter, indexParameter (indexParameter)}
 						{@const parameterLabel =
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
@@ -1366,7 +1366,7 @@
 						<div class="space-y-2 p-4">
 							<ul class="ml-4 list-disc">
 								{#each Object.entries(parametersToVariables) as [parameter, variables], index (index)}
-									{#each variables as variable, index (index)}
+									{#each variables as variable, indexVariable (indexVariable)}
 										{@const variableLabel =
 											variablesSummaries[variable]?.label ?? variable}
 										{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
@@ -1424,7 +1424,7 @@
 					</p>
 
 					<ul class="mt-4 ml-4 list-disc">
-						{#each variables as variable, index (index)}
+						{#each variables as variable, indexVariable (indexVariable)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
