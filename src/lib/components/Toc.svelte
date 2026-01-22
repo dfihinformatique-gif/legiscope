@@ -173,7 +173,7 @@
 
 		{#if tocItem.open && tocItem.children.length > 0}
 			<ul class="translate-1">
-				{#each tocItem.children as child}
+				{#each tocItem.children as child, childIndex (childIndex)}
 					{@render itemComponent(child)}
 				{/each}
 			</ul>
