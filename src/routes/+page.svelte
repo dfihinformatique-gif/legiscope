@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import AnchorTitle from "$lib/components/home_page/AnchorTitle.svelte"
+
 	let isLoadingPjl = $state(false)
 
 	let openTexteInitialplf2026 = $state(false)
@@ -72,7 +74,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17B1906"
+											href={resolve("/pjl/PRJLANR5L17B1906")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -164,7 +166,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/pjl25-138"
+											href={resolve("/pjl/pjl25-138")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -280,7 +282,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17B2247"
+											href={resolve("/pjl/PRJLANR5L17B2247")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -396,7 +398,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17B1907"
+											href={resolve("/pjl/PRJLANR5L17B1907")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -490,7 +492,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/pjl25-122"
+											href={resolve("/pjl/pjl25-122")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -605,7 +607,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17B2141"
+											href={resolve("/pjl/PRJLANR5L17B2141")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -698,7 +700,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/pjl25-193"
+											href={resolve("/pjl/pjl25-193")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -788,7 +790,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17BTA0188"
+											href={resolve("/pjl/PRJLANR5L17BTA0188")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -856,7 +858,7 @@
 												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
 												><a
 													class="lx-link-simple font-serif text-base"
-													href="pjl/PRJLANR5L17BTA0199"
+													href={resolve("/pjl/PRJLANR5L17BTA0199")}
 													onclick={() => (isLoadingPjl = true)}
 													title="Vers le projet de loi"
 												>
@@ -906,7 +908,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="pjl/pjl25-024"
+											href={resolve("/pjl/pjl25-024")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -990,7 +992,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/pjl25-112"
+											href={resolve("/pjl/pjl25-112")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -1076,7 +1078,7 @@
 										></iconify-icon>
 										<a
 											class="lx-link-simple font-serif text-lg"
-											href="/pjl/PRJLANR5L17B2115"
+											href={resolve("/pjl/PRJLANR5L17B2115")}
 											onclick={() => (isLoadingPjl = true)}
 											title="Vers le projet de loi"
 										>
@@ -1135,7 +1137,7 @@
 												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
 												><a
 													class="lx-link-simple font-serif text-base"
-													href="pjl/PRJLANR5L17BTC2250"
+													href={resolve("/pjl/PRJLANR5L17BTC2250")}
 													onclick={() => (isLoadingPjl = true)}
 													title="Vers le projet de loi"
 												>
