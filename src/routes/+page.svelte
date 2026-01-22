@@ -1133,7 +1133,7 @@
 									<ul class="ml-1 list-inside list-disc">
 										<li>
 											examiné en commission des affaires sociales de l'Assemblée
-											nationale saisie au fond <span
+											nationale saisie au fond <!--<span
 												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
 												><a
 													class="lx-link-simple font-serif text-base"
@@ -1151,7 +1151,7 @@
 														icon="ri-arrow-right-line"
 													></iconify-icon>
 												</a></span
-											>
+											>-->
 										</li>
 									</ul>
 								</div>

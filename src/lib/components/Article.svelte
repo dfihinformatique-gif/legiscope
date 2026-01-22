@@ -1319,8 +1319,8 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
-					LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le
+					simulateur LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 
