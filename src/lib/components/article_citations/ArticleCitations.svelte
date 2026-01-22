@@ -213,7 +213,7 @@
 
 	// Génère le texte complet du compteur de nombre de ligne enfant (ex: "(3 articles citent cette version)")
 	function getInformationNombreEnfant(
-		row: any,
+		row: Row<CitationsDataRow>,
 		columnId: string,
 		articleNum?: string | null,
 	): string {
@@ -228,7 +228,8 @@
 			grouping.includes("article_citant_texte_nature")
 		) {
 			count = row.subRows.reduce(
-				(acc: number, subRow: any) => acc + (subRow.subRows?.length ?? 0),
+				(acc: number, subRow: Row<CitationsDataRow>) =>
+					acc + (subRow.subRows?.length ?? 0),
 				0,
 			)
 		}
