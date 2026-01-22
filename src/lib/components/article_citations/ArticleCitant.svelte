@@ -16,10 +16,8 @@
 	interface Props {
 		citingArticleInfo: ArticleInfo
 		versionsArticle: VersionArticle[] | undefined
-		parametersToVariables: Record<string, string[]> | null
 	}
-	let { citingArticleInfo, versionsArticle, parametersToVariables }: Props =
-		$props()
+	let { citingArticleInfo, versionsArticle }: Props = $props()
 
 	interface MergeOptions {
 		countThreshold?: number

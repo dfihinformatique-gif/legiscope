@@ -180,7 +180,6 @@
 					<ArticleCitant
 						{citingArticleInfo}
 						versionsArticle={articleInfo!.versions}
-						{parametersToVariables}
 					></ArticleCitant>
 				{/if}
 			</aside>
@@ -250,7 +249,6 @@
 				<ArticleCitant
 					{citingArticleInfo}
 					versionsArticle={articleInfo!.versions}
-					{parametersToVariables}
 				></ArticleCitant>
 			{:else}
 				<aside
