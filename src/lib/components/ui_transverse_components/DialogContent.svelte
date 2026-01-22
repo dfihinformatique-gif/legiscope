@@ -11,7 +11,7 @@
 		children?: Snippet
 	} = $props()
 
-	let windowInnerHeight: number = $state()
+	let windowInnerHeight: number = $state(0)
 </script>
 
 <svelte:window bind:innerHeight={windowInnerHeight} />

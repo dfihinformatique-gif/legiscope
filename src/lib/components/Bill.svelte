@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import type { Pathname } from "$app/types"
 
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
@@ -287,7 +289,6 @@
 				const [r, g, b] = match.slice(1).map(Number)
 
 				const isGrayOrBlack = r === g && g === b && r < 255
-				const isWhite = r === 255 && g === 255 && b === 255
 
 				if (isGrayOrBlack) continue // ignore gris/noir
 
@@ -330,7 +331,7 @@
 
 			// Pour nettoyer le fichier HTML du PLF :
 			let cleanedHTML = pjlHTML
-				.replace(/style="([^"]*)"/g, (match, styleContent) => {
+				.replace(/style="([^"]*)"/g, (_match, styleContent) => {
 					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
 						.split(";")
@@ -338,8 +339,8 @@
 						.filter(
 							(rule: string) =>
 								rule &&
-								!/^margin(\-|$)/i.test(rule) &&
-								!/^padding(\-|$)/i.test(rule),
+								!/^margin(-|$)/i.test(rule) &&
+								!/^padding(-|$)/i.test(rule),
 						)
 						.join("; ")
 
@@ -775,7 +776,9 @@
 						const linkAbove = findFirstLinkAbove(button)
 						if (linkAbove && linkAbove.href) {
 							const url = new URL(linkAbove.href)
-							goto(url.pathname + url.search + url.hash)
+							goto(
+								resolve(`${url.pathname}${url.search}${url.hash}` as Pathname),
+							)
 						}
 						parametersToVariables = clickedParam
 							? decodeParametersToVariables(clickedParam)
@@ -859,7 +862,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each variables as variable}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -891,7 +894,7 @@
 					> intervient dans le dispositif suivant :
 				</p>
 				<div class="mt-4">
-					{#each variables as variable}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -924,13 +927,13 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each Object.entries(parametersToVariables) as [parameter, variables]}
+					{#each Object.keys(parametersToVariables) as parameter, indexParameter (indexParameter)}
 						{@const parameterLabel =
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
@@ -970,8 +973,8 @@
 					{#if parameterSimulatorlinksOpen}
 						<div class="space-y-2 p-4">
 							<ul class="ml-4 list-disc">
-								{#each Object.entries(parametersToVariables) as [parameter, variables]}
-									{#each variables as variable}
+								{#each Object.entries(parametersToVariables) as [parameter, variables], indexParameter (indexParameter)}
+									{#each variables as variable, indexVariable (indexVariable)}
 										{@const variableLabel =
 											variablesSummaries[variable]?.label ?? variable}
 										{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
@@ -1029,7 +1032,7 @@
 					</p>
 
 					<ul class="mt-4 ml-4 list-disc">
-						{#each variables as variable}
+						{#each variables as variable, indexVariable (indexVariable)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
@@ -1060,7 +1063,7 @@
 						> intervient dans le dispositif suivant :
 					</p>
 					<div class="mt-4">
-						{#each variables as variable}
+						{#each variables as variable, indexVariable (indexVariable)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}

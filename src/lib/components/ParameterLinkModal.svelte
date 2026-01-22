@@ -3,7 +3,7 @@
 	import DialogOverlay from "$lib/components/ui_transverse_components/DialogOverlay.svelte"
 	import { simplifyHtml } from "@tricoteuses/tisseuse"
 	import { Dialog } from "bits-ui"
-	import { onMount } from "svelte"
+	import { onMount, type Snippet } from "svelte"
 
 	// Props
 
@@ -11,7 +11,7 @@
 		showParameterModal: boolean
 		clickedParameterButtons: HTMLButtonElement[]
 		parametersToVariables: Record<string, string[]> | null
-		children: any
+		children?: Snippet
 	}
 
 	let {

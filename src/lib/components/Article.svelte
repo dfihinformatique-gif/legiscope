@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
@@ -32,6 +34,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
@@ -41,13 +44,11 @@
 
 	interface Props {
 		articleInfo: ArticleInfo
-		pjlDate: string
 		showParameterModal: boolean
 		parametersToVariables: Record<string, string[]> | null
 	}
 	let {
 		articleInfo,
-		pjlDate,
 		showParameterModal,
 		parametersToVariables = $bindable(),
 	}: Props = $props()
@@ -194,7 +195,7 @@
 					}
 				})
 
-				button.addEventListener("click", (e: Event) => {
+				button.addEventListener("click", () => {
 					button.classList.add("bg-le-vert-500/50")
 					parametersToVariables = button.dataset.params
 						? decodeParametersToVariables(button.dataset.params)
@@ -383,7 +384,7 @@
 					)
 
 					protectedContent = protectedContent.replace(
-						/[\.\,\-\'’°]/g,
+						/[.,\-'’°]/g,
 						ATOMIC_SPACE_MARKER,
 					)
 
@@ -718,7 +719,6 @@
 			const target = result.slice(originalStart, originalStop)
 			const after = result.slice(originalStop)
 
-			const title = parameters.join(", ")
 			const parametersToVariables: Record<string, string[]> = {}
 
 			for (const parameter of parameters) {
@@ -756,7 +756,7 @@
 		const simplifiedCoordWithParameters: Map<
 			{ start: number; stop: number },
 			Array<string>
-		> = new Map()
+		> = new SvelteMap()
 
 		const coordsToHighlight: Map<
 			{
@@ -770,11 +770,11 @@
 				outerSuffix?: string
 			},
 			{ parameters: Array<string> }
-		> = new Map()
+		> = new SvelteMap()
 
 		const dateForParameterValuesSearch = generateMiddleDate(
-			articleInfo.article?.date_debut!,
-			articleInfo.article?.date_fin!,
+			articleInfo.article?.date_debut ?? new Date().toISOString().split("T")[0],
+			articleInfo.article?.date_fin ?? new Date().toISOString().split("T")[0],
 		)
 
 		articleParameterReferences.forEach((param) => {
@@ -952,7 +952,7 @@
 			onscroll={checkScroll}
 			class="scrollbar-hide flex items-end gap-x-1 overflow-x-auto pr-1 whitespace-nowrap"
 		>
-			{#each ongletsArticle as tab}
+			{#each ongletsArticle as tab (tab.id)}
 				<button
 					class="rounded-t-xs px-4 py-2 font-sans transition-colors"
 					class:bg-blue-50={activeTab === tab.id}
@@ -972,7 +972,7 @@
 		</div>
 		{#if showRightScrollShadow}
 			<div
-				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-blue-900/10 to-transparent"
+				class="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-blue-900/10 to-transparent"
 			></div>
 		{/if}
 	</nav>
@@ -1001,7 +1001,12 @@
 									"date",
 									new Date(selectedVersion!.debut).toISOString().split("T")[0],
 								)
-								goto(urlToNavigate, { replaceState: false })
+								goto(
+									resolve(
+										`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+									),
+									{ replaceState: false },
+								)
 							}}
 							bind:value={selectedVersion}
 						>
@@ -1047,7 +1052,12 @@
 									"date",
 									new Date(selectedVersion!.debut).toISOString().split("T")[0],
 								)
-								goto(urlToNavigate, { replaceState: false })
+								goto(
+									resolve(
+										`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+									),
+									{ replaceState: false },
+								)
 							}}
 							bind:value={selectedVersion}
 						>
@@ -1083,7 +1093,7 @@
 				{/if}
 				{#if historyByText && historyByText.length > 0}
 					<ul>
-						{#each historyByText as historyText}
+						{#each historyByText as historyText, indexText (indexText)}
 							<li
 								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
 							>
@@ -1093,20 +1103,25 @@
 								>
 
 								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
-									{#each historyText.articles_jorf as historyArticle, index}
+									{#each historyText.articles_jorf as historyArticle, indexArticle (indexArticle)}
 										{@const urlToNavigate = new URL(page.url)}
 										{urlToNavigate.searchParams.set(
 											"article",
 											historyArticle.id,
 										)}
-										<a class="lx-link-text" href={urlToNavigate.href}>
+										<a
+											class="lx-link-text"
+											href={resolve(
+												`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+											)}
+										>
 											{#if (historyArticle.num ?? "").length > 0}
 												art. {historyArticle.num}
 											{:else}
 												article
 											{/if}
 										</a>
-										{#if index < historyText.articles_jorf.length - 1}
+										{#if indexArticle < historyText.articles_jorf.length - 1}
 											,
 										{/if}
 									{/each}
@@ -1116,7 +1131,12 @@
 										"article",
 										historyText.cidtexte,
 									)}
-									<a class="lx-link-text" href={urlToNavigate.href}>articles</a>
+									<a
+										class="lx-link-text"
+										href={resolve(
+											`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+										)}>articles</a
+									>
 								{/if}
 								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
 								{historyText.titre_texte}
@@ -1141,7 +1161,7 @@
 							/>
 							{#if articleInfo.versions.length > 1}
 								<div
-									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 								></div>
 								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
 									Voir les changements apportés <br /> à la version précédente
@@ -1154,12 +1174,22 @@
 				{#if showDiff === true}
 					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
 						<span class="font-serif text-lg leading-8 md:text-left">
+							<!--
+							Le warning eslint porte sur le risque de XSS.
+							Ici, on maîtrise ce qui arrive dans dffiContent
+							-->
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html diffContent}
 						</span>
 					</div>
 				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-					<span class="font-serif text-lg leading-8 md:text-left"
-						>{@html highlightParameterValuesInArticleHTML(
+					<span class="font-serif text-lg leading-8 md:text-left">
+						<!--
+							Le warning eslint porte sur le risque de XSS.
+							Ici, on maîtrise ce qui arrive dans dffiContent
+							-->
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html highlightParameterValuesInArticleHTML(
 							articleParameterReferences,
 						)}</span
 					>
@@ -1225,7 +1255,7 @@
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each variables as variable}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1257,7 +1287,7 @@
 					> intervient dans le dispositif suivant :
 				</p>
 				<div class="mt-4">
-					{#each variables as variable}
+					{#each variables as variable, indexVariable (indexVariable)}
 						{@const variableLabel =
 							variablesSummaries[variable]?.label ?? variable}
 						{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(onlyParameter)}`}
@@ -1289,13 +1319,13 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 
 				<ul class="mt-4 ml-4 list-disc">
-					{#each Object.entries(parametersToVariables) as [parameter, variables]}
+					{#each Object.keys(parametersToVariables) as parameter, indexParameter (indexParameter)}
 						{@const parameterLabel =
 							getParameter(rootParameter, parameter)?.short_label ?? parameter}
 						<li class="mb-3">
@@ -1335,8 +1365,8 @@
 					{#if parameterSimulatorlinksOpen}
 						<div class="space-y-2 p-4">
 							<ul class="ml-4 list-disc">
-								{#each Object.entries(parametersToVariables) as [parameter, variables]}
-									{#each variables as variable}
+								{#each Object.entries(parametersToVariables) as [parameter, variables], index (index)}
+									{#each variables as variable, indexVariable (indexVariable)}
 										{@const variableLabel =
 											variablesSummaries[variable]?.label ?? variable}
 										{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(parameter)}`}
@@ -1394,7 +1424,7 @@
 					</p>
 
 					<ul class="mt-4 ml-4 list-disc">
-						{#each variables as variable}
+						{#each variables as variable, indexVariable (indexVariable)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}
@@ -1425,7 +1455,7 @@
 						> intervient dans le dispositif suivant :
 					</p>
 					<div class="mt-4">
-						{#each variables as variable}
+						{#each variables as variable, index (index)}
 							{@const variableLabel =
 								variablesSummaries[variable]?.label ?? variable}
 							{@const linkHref = `https://socio-fiscal.leximpact.an.fr?law=true&parameters=${encodeURIComponent(variable)}#${encodeURIComponent(selectedParameter)}`}

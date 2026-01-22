@@ -87,7 +87,7 @@ function injectHighlightsIntoHtml(
 			parametersToVariables[parameter] = findVariablesByParameter(parameter)
 		}
 
-		result = `${before}${coords.outerPrefix ?? ""}<button class="hover:bg-le-vert-500/50 highlighted cursor-pointer bg-le-gris-dispositif-light [&>*]:!bg-transparent" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
+		result = `${before}${coords.outerPrefix ?? ""}<button class="hover:bg-le-vert-500/50 highlighted cursor-pointer bg-le-gris-dispositif-light *:bg-transparent!" data-params="${encodeParametersToVariables(parametersToVariables)}">${coords.innerPrefix ?? ""}${target}${coords.innerSuffix ?? ""}</button>${coords.outerSuffix ?? ""}${after}`
 	}
 
 	return result
@@ -292,6 +292,12 @@ export const load: LayoutServerLoad = async ({
 				break
 			case "PRJLANR5L17B2115":
 				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
+				break
+			case "PRJLANR5L17BTC2250":
+				pjlDate = new Date("2025-12-17").toISOString().split("T")[0]
+				break
+			case "DECLANR5L17B2247-N0":
+				pjlDate = new Date("2026-01-21").toISOString().split("T")[0]
 				break
 		}
 

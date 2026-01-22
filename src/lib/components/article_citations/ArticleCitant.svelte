@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
 	import { formatDateFr, shared } from "$lib/shared.svelte"
 	import {
@@ -11,15 +13,14 @@
 	} from "@tricoteuses/tisseuse"
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
+	import { SvelteURLSearchParams } from "svelte/reactivity"
 	import ArticleSummary from "./../ArticleSummary.svelte"
 
 	interface Props {
 		citingArticleInfo: ArticleInfo
 		versionsArticle: VersionArticle[] | undefined
-		parametersToVariables: Record<string, string[]> | null
 	}
-	let { citingArticleInfo, versionsArticle, parametersToVariables }: Props =
-		$props()
+	let { citingArticleInfo, versionsArticle }: Props = $props()
 
 	interface MergeOptions {
 		countThreshold?: number
@@ -300,7 +301,7 @@
 					)
 
 					protectedContent = protectedContent.replace(
-						/[\.\,\-\'’°]/g,
+						/[.,\-'’°]/g,
 						ATOMIC_SPACE_MARKER,
 					)
 
@@ -627,13 +628,16 @@
 		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-16 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
 		title="Fermer le volet citations"
 		onclick={() => {
-			const searchParams = new URLSearchParams(page.url.searchParams)
+			const searchParams = new SvelteURLSearchParams(page.url.searchParams)
 			searchParams.delete("citant")
 			shared.activePanelMobile = "law"
-			goto(`${page.url.pathname}?${searchParams.toString()}`, {
-				replaceState: true,
-				noScroll: true,
-			})
+			goto(
+				resolve(`${page.url.pathname}?${searchParams.toString()}` as Pathname),
+				{
+					replaceState: true,
+					noScroll: true,
+				},
+			)
 		}}
 	>
 		<iconify-icon class="align-[-0.4rem] text-3xl" icon="ri-close-large-line"
@@ -641,7 +645,7 @@
 	>
 	<div
 		class="pointer-events-none absolute inset-0 z-40
-         bg-gradient-to-r from-transparent to-transparent
+         bg-linear-to-r from-transparent to-transparent
          transition
          peer-hover:from-transparent
          peer-hover:to-blue-100"
@@ -705,7 +709,12 @@
 							"date",
 							new Date(selectedVersion!.debut).toISOString().split("T")[0],
 						)
-						goto(urlToNavigate, { replaceState: false })
+						goto(
+							resolve(
+								`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname,
+							),
+							{ replaceState: false },
+						)
 					}}
 					bind:value={selectedVersion}
 				>
@@ -741,7 +750,7 @@
 						/>
 						{#if citingArticleInfo?.versions && citingArticleInfo.versions.length > 1}
 							<div
-								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 							></div>
 							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
 								Voir les changements apportés <br /> à la version précédente
@@ -756,12 +765,14 @@
 		{#if showDiff === true}
 			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
 				<span class="font-serif text-lg leading-8 md:text-left">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html diffContent}
 				</span>
 			</div>
 		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-			<span class="font-serif text-lg leading-8 md:text-left"
-				>{@html currentBlocTextuel}</span
+			<span class="font-serif text-lg leading-8 md:text-left">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html currentBlocTextuel}</span
 			>
 		{/if}
 	{:else}

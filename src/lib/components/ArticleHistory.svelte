@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
@@ -7,6 +9,7 @@
 		type HistoryByTextRow,
 		type HistoryData,
 	} from "$lib/db_data_types"
+	import { SvelteMap } from "svelte/reactivity"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
@@ -44,7 +47,7 @@
 
 	/* fonction de groupement par année (ne modifie rien d'autre)*/
 	function groupHistoryByYear(historyList?: HistoryByText) {
-		const map = new Map<string, HistoryByTextRow[]>()
+		const map = new SvelteMap<string, HistoryByTextRow[]>()
 		if (!Array.isArray(historyList)) return []
 
 		for (const text of historyList) {
@@ -92,14 +95,14 @@
 </script>
 
 {#if historyByText !== undefined}
-	{#each historyByYear as group}
+	{#each historyByYear as group, index (index)}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
 			<div>
 				<span class=" px-2 font-bold text-gray-400">{group.year}</span>
 			</div>
 			<div>
 				<ul class="list-disc">
-					{#each group.items as text}
+					{#each group.items as text, indexItem (indexItem)}
 						<li class="pb-4 text-left text-sm">
 							<span
 								class="rounded-md border border-neutral-300 bg-neutral-100 px-1 text-xs tracking-wide text-neutral-600"
@@ -112,11 +115,16 @@
 							{#if text.articles_jorf && text.articles_jorf.filter( (article) => {
 										return article.id !== ""
 									}, ).length > 0}
-								{#each text.articles_jorf as article, index}
+								{#each text.articles_jorf as article, indexArticle (indexArticle)}
 									{@const articleUrl = new URL(page.url)}
 									{articleUrl.searchParams.set("article", article.id)}
 
-									<a class="lx-link-text text-nowrap" href={articleUrl.href}>
+									<a
+										class="lx-link-text text-nowrap"
+										href={resolve(
+											`${articleUrl.pathname}${articleUrl.search}` as Pathname & {},
+										)}
+									>
 										{#if (article.num ?? "").length > 0}
 											art. {article.num}
 										{:else}
@@ -124,7 +132,7 @@
 										{/if}
 									</a>
 
-									{#if index < text.articles_jorf.length - 1}
+									{#if indexArticle < text.articles_jorf.length - 1}
 										,
 									{/if}
 								{/each}
@@ -132,7 +140,12 @@
 								{@const urlToNavigate = new URL(page.url)}
 								{urlToNavigate.searchParams.set("article", text.cidtexte)}
 
-								<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
+								<a
+									class="lx-link-text"
+									href={resolve(
+										`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+									)}>texte</a
+								>
 							{/if}
 						</li>
 					{/each}

@@ -19,9 +19,11 @@
 		getFilteredRowModel,
 		getGroupedRowModel,
 		getSortedRowModel,
+		type Row,
 		type SortingState,
 		type Table,
 	} from "@tanstack/table-core"
+	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 	import SkeletonArticleCitationsLoader from "./../SkeletonArticleCitationsLoader.svelte"
 	import CellVersionArticle from "./CellVersionArticle.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
@@ -197,7 +199,9 @@
 	}
 
 	// Extrait le label de nature des groupes par nature */
-	function getGroupeArticlesCitantsTexteNatureLabel(row: any): string {
+	function getGroupeArticlesCitantsTexteNatureLabel(
+		row: Row<CitationsDataRow>,
+	): string {
 		const firstRow = row.subRows?.[0]?.original
 		const nature = firstRow?.article_citant_texte_nature
 		return getTextNatureLabel(
@@ -210,7 +214,7 @@
 
 	// Génère le texte complet du compteur de nombre de ligne enfant (ex: "(3 articles citent cette version)")
 	function getInformationNombreEnfant(
-		row: any,
+		row: Row<CitationsDataRow>,
 		columnId: string,
 		articleNum?: string | null,
 	): string {
@@ -225,7 +229,8 @@
 			grouping.includes("article_citant_texte_nature")
 		) {
 			count = row.subRows.reduce(
-				(acc: number, subRow: any) => acc + (subRow.subRows?.length ?? 0),
+				(acc: number, subRow: Row<CitationsDataRow>) =>
+					acc + (subRow.subRows?.length ?? 0),
 				0,
 			)
 		}
@@ -268,13 +273,13 @@
 					getValue() as string,
 				)
 			},
-			filterFn: (row, columnId, filterValues) => {
+			filterFn: (row, _columnId, filterValues) => {
 				if (!filterValues || filterValues.length === 0) return true
 
 				const id = row.original.article_citant_texte_nature_id
 				return id !== null && filterValues.includes(id)
 			},
-			sortingFn: (rowA, rowB, columnId) => {
+			sortingFn: (rowA, rowB) => {
 				const natureA = rowA.getIsGrouped()
 					? rowA.subRows[0]?.original.article_citant_texte_nature
 					: rowA.original.article_citant_texte_nature
@@ -625,7 +630,7 @@
 	let availableArticleTypes = $derived.by(() => {
 		if (!citationsData) return []
 
-		const typesSet = new Set<string>()
+		const typesSet = new SvelteSet<string>()
 		for (const row of citationsData) {
 			const type = row.article_type_citant
 			if (type !== null) {
@@ -658,7 +663,7 @@
 	let availableTextNatures = $derived.by(() => {
 		if (!citationsData) return []
 
-		const naturesMap = new Map<string, string>()
+		const naturesMap = new SvelteMap<string, string>()
 		for (const row of citationsData) {
 			const nature = row.article_citant_texte_nature
 			if (nature !== null) {
@@ -682,7 +687,7 @@
 	let availableVersionEtats = $derived.by(() => {
 		if (!citationsData) return []
 
-		const etatsSet = new Set<string>()
+		const etatsSet = new SvelteSet<string>()
 		for (const row of citationsData) {
 			const etat = row.etat_citant
 			if (etat !== null) {
@@ -796,7 +801,7 @@
 						}}
 					/>
 					<div
-						class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+						class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
 					></div>
 					<span
 						class="ms-3 text-left text-sm font-medium text-gray-900 sm:text-sm"
@@ -866,7 +871,7 @@
 							Par nature de texte :
 						</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each availableTextNatures as textNature}
+							{#each availableTextNatures as textNature, indexTextnature (indexTextnature)}
 								<button
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
 										textNature.nature,
@@ -889,7 +894,7 @@
 					<div>
 						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par état :</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each availableVersionEtats as etatVersion}
+							{#each availableVersionEtats as etatVersion, indexVersionEtat (indexVersionEtat)}
 								<button
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedVersionEtats.includes(
 										etatVersion.value,
@@ -915,7 +920,7 @@
 							Par type de version :
 						</h4>
 						<div class="mb-4 flex flex-wrap gap-2">
-							{#each availableArticleTypes as articleType}
+							{#each availableArticleTypes as articleType, indexArticleType (indexArticleType)}
 								<button
 									title={articleType.title}
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(

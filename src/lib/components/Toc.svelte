@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import type { ArticleInfo, TocData, TocDataRow } from "$lib/db_data_types"
 	import { formatDateFr } from "$lib/shared.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
@@ -126,7 +128,7 @@
 </p>
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
-		{#each topLevelItems as item}
+		{#each topLevelItems as item, indexItem (indexItem)}
 			{@render itemComponent(item)}
 		{/each}
 	{/if}
@@ -159,8 +161,10 @@
 					bind:this={activeEl}>{tocItem.title}</span
 				>
 			{:else if item.chemin.includes("LEGIARTI") || item.chemin.includes("JORFARTI")}
-				<a href="{page.url.pathname}?article={item.dernier_segment}"
-					>{tocItem.title}</a
+				<a
+					href="{resolve(
+						page.url.pathname as Pathname,
+					)}?article={item.dernier_segment}">{tocItem.title}</a
 				>
 			{:else}
 				<span class:font-bold={tocItem.open}>{tocItem.title}</span>
@@ -169,7 +173,7 @@
 
 		{#if tocItem.open && tocItem.children.length > 0}
 			<ul class="translate-1">
-				{#each tocItem.children as child}
+				{#each tocItem.children as child, childIndex (childIndex)}
 					{@render itemComponent(child)}
 				{/each}
 			</ul>

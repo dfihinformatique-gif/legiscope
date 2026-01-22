@@ -1,4 +1,6 @@
 <script lang="ts" module>
+	import { resolve } from "$app/paths"
+	import { type Pathname } from "$app/types"
 	import { cn, type WithElementRef } from "$lib/utils.js"
 	import type {
 		HTMLAnchorAttributes,
@@ -66,7 +68,7 @@
 		bind:this={ref}
 		data-slot="button"
 		class={cn(buttonVariants({ variant, size }), className)}
-		href={disabled ? undefined : href}
+		href={resolve((disabled ? "#" : href) as Pathname)}
 		aria-disabled={disabled}
 		role={disabled ? "link" : undefined}
 		tabindex={disabled ? -1 : undefined}

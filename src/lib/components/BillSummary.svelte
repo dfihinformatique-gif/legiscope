@@ -123,7 +123,7 @@
 				class="font-sans font-light tracking-wider">| Sommaire</span
 			>
 		</h2>
-		{#each summaryItems as item}
+		{#each summaryItems as item, indexItem (indexItem)}
 			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
 					href={`#${item.id}`}
