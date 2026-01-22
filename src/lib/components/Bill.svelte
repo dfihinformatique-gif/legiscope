@@ -329,7 +329,7 @@
 
 			// Pour nettoyer le fichier HTML du PLF :
 			let cleanedHTML = pjlHTML
-				.replace(/style="([^"]*)"/g, (match, styleContent) => {
+				.replace(/style="([^"]*)"/g, (_match, styleContent) => {
 					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
 					const cleanedStyle = styleContent
 						.split(";")
@@ -337,8 +337,8 @@
 						.filter(
 							(rule: string) =>
 								rule &&
-								!/^margin(\-|$)/i.test(rule) &&
-								!/^padding(\-|$)/i.test(rule),
+								!/^margin(-|$)/i.test(rule) &&
+								!/^padding(-|$)/i.test(rule),
 						)
 						.join("; ")
 
