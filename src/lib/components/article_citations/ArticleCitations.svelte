@@ -871,7 +871,7 @@
 							Par nature de texte :
 						</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each availableTextNatures as textNature}
+							{#each availableTextNatures as textNature, indexTextnature (indexTextnature)}
 								<button
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedTextNatures.includes(
 										textNature.nature,
@@ -894,7 +894,7 @@
 					<div>
 						<h4 class="mb-2 text-sm font-semibold text-gray-500">Par état :</h4>
 						<div class="mb-2 flex flex-wrap gap-2">
-							{#each availableVersionEtats as etatVersion}
+							{#each availableVersionEtats as etatVersion, indexVersionEtat (indexVersionEtat)}
 								<button
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedVersionEtats.includes(
 										etatVersion.value,
@@ -920,7 +920,7 @@
 							Par type de version :
 						</h4>
 						<div class="mb-4 flex flex-wrap gap-2">
-							{#each availableArticleTypes as articleType}
+							{#each availableArticleTypes as articleType, indexArticleType (indexArticleType)}
 								<button
 									title={articleType.title}
 									class="relative cursor-pointer rounded-full border px-2 py-1 text-sm tracking-wide transition-colors {selectedArticleTypes.includes(
