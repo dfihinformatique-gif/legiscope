@@ -7,6 +7,7 @@
 		type HistoryByTextRow,
 		type HistoryData,
 	} from "$lib/db_data_types"
+	import { SvelteMap } from "svelte/reactivity"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 
 	interface Props {
@@ -44,7 +45,7 @@
 
 	/* fonction de groupement par année (ne modifie rien d'autre)*/
 	function groupHistoryByYear(historyList?: HistoryByText) {
-		const map = new Map<string, HistoryByTextRow[]>()
+		const map = new SvelteMap<string, HistoryByTextRow[]>()
 		if (!Array.isArray(historyList)) return []
 
 		for (const text of historyList) {
