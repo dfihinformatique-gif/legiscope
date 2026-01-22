@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+
+	import { type Pathname } from "$app/types"
 	import { formatDateFrAbrege, shared } from "$lib/shared.svelte"
 
 	interface Props {
@@ -70,11 +73,13 @@
 
 <div class="flex flex-col gap-y-1 leading-tight">
 	<div class="1">
-		{#if !data?.is_version_citee}
+		{#if !data?.is_version_citee && data?.legi_id}
+			{@const urlToNavigate = new URL(page.url)}
+			{urlToNavigate.searchParams.set("citant", data?.legi_id)}
 			<a
-				href="/pjl/{page.params.pjl}?article={page.url.searchParams.get(
-					'article',
-				)}&citant={data?.legi_id}"
+				href={resolve(
+					`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname,
+				)}
 				onclick={() => {
 					shared.showCitingDesktop = true
 				}}
