@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import type { Pathname } from "$app/types"
 
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
@@ -774,7 +776,9 @@
 						const linkAbove = findFirstLinkAbove(button)
 						if (linkAbove && linkAbove.href) {
 							const url = new URL(linkAbove.href)
-							goto(url.pathname + url.search + url.hash)
+							goto(
+								resolve(`${url.pathname}${url.search}${url.hash}` as Pathname),
+							)
 						}
 						parametersToVariables = clickedParam
 							? decodeParametersToVariables(clickedParam)
