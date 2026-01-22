@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
@@ -117,7 +119,12 @@
 									{@const articleUrl = new URL(page.url)}
 									{articleUrl.searchParams.set("article", article.id)}
 
-									<a class="lx-link-text text-nowrap" href={articleUrl.href}>
+									<a
+										class="lx-link-text text-nowrap"
+										href={resolve(
+											`${articleUrl.pathname}${articleUrl.search}` as Pathname & {},
+										)}
+									>
 										{#if (article.num ?? "").length > 0}
 											art. {article.num}
 										{:else}
@@ -133,7 +140,12 @@
 								{@const urlToNavigate = new URL(page.url)}
 								{urlToNavigate.searchParams.set("article", text.cidtexte)}
 
-								<a class="lx-link-text" href={urlToNavigate.href}>texte</a>
+								<a
+									class="lx-link-text"
+									href={resolve(
+										`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
+									)}>texte</a
+								>
 							{/if}
 						</li>
 					{/each}
