@@ -126,7 +126,7 @@
 </p>
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
-		{#each topLevelItems as item}
+		{#each topLevelItems as item, indexItem (indexItem)}
 			{@render itemComponent(item)}
 		{/each}
 	{/if}
