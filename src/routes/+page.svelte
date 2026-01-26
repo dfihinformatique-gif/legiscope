@@ -114,7 +114,7 @@
 							</button>
 							{#if openTexteInitialplf2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
+									<div class="ml-1 flex flex-col text-neutral-700">
 										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
@@ -125,21 +125,24 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé le 14/10/2025
+											></iconify-icon>Déposé le 14/10/2025 à l'Assemblée
+											nationale
 										</span>
-										<span class="text-black"
+										<span class=""
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
-										<ul class="ml-4 list-inside list-disc text-black">
+										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission des finances saisie au fond</li>
+											<!--1ère lecture en commission-->
 											<li>
-												en séance <span
-													class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs text-red-900"
+												en séance publique <span
+													class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs font-normal text-red-900"
 													>Texte rejeté</span
 												>
+												<!--1ère lecture en séance publique-->
 											</li>
 										</ul>
 									</div>
@@ -212,30 +215,30 @@
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Initié par le Gouvernement
-											<i
+											<span class="font-light italic"
 												>(Identique au texte initial suite au rejet en première
-												lecture par l'Assemblée nationale)</i
+												lecture par l'Assemblée nationale)</span
 											></span
 										>
 										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé le 24/11/2025
+											></iconify-icon>Déposé le 24/11/2025 au Sénat
 										</span>
 
-										<span class="text-black"
+										<span class=""
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
 											></iconify-icon>Examiné par le Sénat :
 										</span>
-										<ul class="ml-4 list-inside list-disc text-black">
+										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission des finances saisie au fond</li>
 											<li>
-												en séance en première lecture -
+												en séance publique -
 												<span
-													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
+													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-normal text-green-900"
 													>Texte adopté</span
 												>
 											</li>
@@ -339,23 +342,21 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé le 15/12/2025
+											></iconify-icon>Déposé le 15/12/2025 à l'Assemblée
+											nationale
 										</span>
-										<span class="text-black"
+										<span class=""
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
 
-										<ul class="ml-1 list-inside list-disc">
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>en commission des finances saisie au fond</li>
 											<li>
-												examiné en commission des finances saisie au fond à
-												l'Assemblée nationale
-											</li>
-											<li>
-												examiné en séance à l'Assemblée nationale - <span
-													class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
+												en séance publique - <span
+													class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs font-normal text-neutral-900"
 													><a
 														class="lx-link-simple font-serif text-base"
 														href={resolve("/pjl/DECLANR5L17B2247-N0")}
@@ -451,34 +452,39 @@
 
 							{#if openTexteInitialplfss2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée nationale le
-											14/10/2025</span
-										>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Initié par le Gouvernement</span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 14/10/2025 à l'Assemblée
+											nationale
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale :
+										</span>
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>
+												en commission des affaires sociales saisie au fond
+											</li>
+
+											<li>
+												en séance publique <span
+													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-normal text-green-900"
+													>Texte adopté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											à l'Assemblée nationale
-										</li>
-										<li>
-											examiné en séance en première lecture à l'Assemblée
-											nationale <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -543,32 +549,38 @@
 
 							{#if openTexte122plfss2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé au Sénat le 13/11/2025</span
-										>
-										<span>
-											<iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Modifié par l'Assemblée nationale</span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 13/11/2025 au Sénat
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par le Sénat :
+										</span>
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>
+												en commission des affaires sociales saisie au fond
+											</li>
+
+											<li>
+												en séance publique <span
+													class="text-green-90 rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-normal"
+													>Texte adopté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											du Sénat
-										</li>
-										<li>
-											examiné en séance en première lecture au Sénat <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -661,33 +673,39 @@
 
 							{#if openTexte2141plfss2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée le 26/11/2025</span
-										>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Modifié par le Sénat</span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 26/11/2025 à l'Assemblée
+											nationale
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale :
+										</span>
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>
+												en commission des affaires sociales saisie au fond
+											</li>
+
+											<li>
+												en séance publique <span
+													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-normal text-green-900"
+													>Texte adopté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											à l'Assemblée nationale
-										</li>
-										<li>
-											examiné pour nouvelle lecture en séance à l'Assemblée
-											nationale <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												>Texte adopté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -752,32 +770,38 @@
 
 							{#if openTexte193plfss2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé au Sénat le 09/12/2025</span
-										>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
 											></iconify-icon>Modifié par l'Assemblée nationale</span
 										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 09/12/2025 au Sénat
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par le Sénat :
+										</span>
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>
+												en commission des affaires sociales saisie au fond
+											</li>
+
+											<li>
+												en séance publique <span
+													class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs font-medium text-red-900"
+													>Texte rejeté</span
+												>
+											</li>
+										</ul>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											au Sénat
-										</li>
-										<li>
-											examiné pour nouvelle lecture en séance au Sénat <span
-												class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs text-red-900"
-												>Texte rejeté</span
-											>
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -843,50 +867,54 @@
 
 							{#if openTexte188plfss2026}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée nationale entre le 12
-											et le 15 décembre 2025</span
-										>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Modifié par l'Assemblée nationale en
-											nouvelle lecture</span
-										>
-									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											à l'Assemblée nationale
-										</li>
-										<li>
-											examiné en séance, pour lecture définitive, à l'Assemblée
-											nationale <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
-												><a
-													class="lx-link-simple font-serif text-base"
-													href={resolve("/pjl/PRJLANR5L17BTA0199")}
-													onclick={() => (isLoadingPjl = true)}
-													title="Vers le projet de loi"
-												>
-													<iconify-icon
-														class="mr-1 align-[-0.18em]"
-														icon="ri:book-marked-fill"
+											></iconify-icon>Modifié par l'Assemblée nationale
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 12/12/2025 à l'Assemblée
+											nationale
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale :
+										</span>
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>
+												en commission des affaires sociales saisie au fond
+											</li>
+
+											<li>
+												en séance publique <span
+													class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
+													><a
+														class="lx-link-simple font-serif text-base"
+														href={resolve("/pjl/PRJLANR5L17BTA0199")}
+														onclick={() => (isLoadingPjl = true)}
+														title="Vers le projet de loi"
 													>
-													</iconify-icon>Texte adopté n°199
-													<iconify-icon
-														class=" align-[-0.3rem] text-xl"
-														icon="ri-arrow-right-line"
-													></iconify-icon>
-												</a></span
-											>
-										</li>
-									</ul>
+														<iconify-icon
+															class="mr-1 align-[-0.18em]"
+															icon="ri:book-marked-fill"
+														>
+														</iconify-icon>Texte adopté n°199
+														<iconify-icon
+															class=" align-[-0.3rem] text-xl"
+															icon="ri-arrow-right-line"
+														></iconify-icon>
+													</a></span
+												>
+											</li>
+										</ul>
+									</div>
 								</div>
 							{/if}
 						</div>
@@ -956,27 +984,27 @@
 
 							{#if openTexteInitialpjlfraude}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé au Sénat, en commission, le
-											14/10/2025</span
-										>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Écrit par le Gouvernement</span
-										>
+											></iconify-icon>Initié par le Gouvernement
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 14/10/2025 au Sénat
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par le Sénat, en commission des
+											affaires sociales saisie au fond
+										</span>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales saisie au fond
-											au Sénat
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
@@ -1040,29 +1068,31 @@
 
 							{#if openTextecommissionSenatpjlfraude}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:quill-pen-line"
+											></iconify-icon>Modifié par le Sénat, en commission des
+											affaires sociales
+										</span>
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé au Sénat, en séance, le 05/11/2025</span
-										>
-										<span>
-											<iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:quill-pen-line"
-											></iconify-icon>Modifié par la commission des affaires
-											sociales du Sénat
+											></iconify-icon>Déposé le 05/11/2025 au Sénat
 										</span>
-									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en séance au Sénat pour première lecture <span
-												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs text-green-900"
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par le Sénat, en séance publique
+											<span
+												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-medium text-green-900"
 												>Texte adopté</span
 											>
-										</li>
-									</ul>
+										</span>
+									</div>
 								</div>
 							{/if}
 						</div>
@@ -1127,45 +1157,28 @@
 
 							{#if openTextecommissionAssembleepjlfraude}
 								<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
-									<div class="ml-1 flex flex-col text-neutral-600">
-										<span
-											><iconify-icon
-												class="mr-1 align-[-0.18em]"
-												icon="ri:inbox-archive-line"
-											></iconify-icon>Déposé à l'Assemblée nationale, en
-											commission, le 18/11/2025
-										</span>
-										<span
+									<div class="ml-1 flex flex-col text-neutral-700">
+										<span class=""
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Modifié par le Sénat</span
-										>
+											></iconify-icon>Modifié par le Sénat
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 18/11/2025 à l'Assemblée
+											nationale
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné par l'Assemblée nationale, en
+											commission des affaires sociales saisie au fond
+										</span>
 									</div>
-									<ul class="ml-1 list-inside list-disc">
-										<li>
-											examiné en commission des affaires sociales de l'Assemblée
-											nationale saisie au fond <!--<span
-												class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs text-neutral-900"
-												><a
-													class="lx-link-simple font-serif text-base"
-													href={resolve("/pjl/PRJLANR5L17BTC2250")}
-													onclick={() => (isLoadingPjl = true)}
-													title="Vers le projet de loi"
-												>
-													<iconify-icon
-														class="mr-1 align-[-0.18em]"
-														icon="ri:book-marked-fill"
-													>
-													</iconify-icon>Texte de la commission, n°2250
-													<iconify-icon
-														class=" align-[-0.3rem] text-xl"
-														icon="ri-arrow-right-line"
-													></iconify-icon>
-												</a></span
-											>-->
-										</li>
-									</ul>
 								</div>
 							{/if}
 						</div>
