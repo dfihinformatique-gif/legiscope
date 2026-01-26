@@ -288,11 +288,6 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			let cleanedHTML = pjlHTML
-
-			if (pjl === "pjl25-122")
-				cleanedHTML = cleanedHTML.split(`<body>`)[1].split("</html>")[0]
-
 			// Nettoie et applique les styles aux liens vers les textes de loi
 			const cleanAndStyleLienTexteExterne = (
 				root: ShadowRoot | HTMLElement,
@@ -518,7 +513,7 @@
 				<div class="content-wrapper"></div>
 			`
 
-			shadow.querySelector(".content-wrapper")!.innerHTML = cleanedHTML
+			shadow.querySelector(".content-wrapper")!.innerHTML = pjlHTML
 
 			// Style les liens qui ouvrent la vue Article
 			cleanAndStyleLienTexteExterne(shadow)
