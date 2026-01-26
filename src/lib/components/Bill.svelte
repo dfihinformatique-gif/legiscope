@@ -37,34 +37,30 @@
 		}
 	})
 
-	let container: HTMLDivElement | undefined = $state()
-	let {
-		pjlHTML,
-		showParameterModal,
-		parametersToVariables = $bindable(),
-	}: Props = $props()
-
-	const scrollToAnchor = (hash: string, shadowRoot: ShadowRoot) => {
+	function scrollToAnchor(hash: string, shadowRoot: ShadowRoot) {
 		if (!hash) return
 
-		const id = hash.substring(1) // Remove #
+		const id = hash.substring(1)
 		const element = shadowRoot.getElementById(id)
-
 		const host = shadowRoot.host as HTMLElement
 
 		if (element && host) {
 			const elementRect = element.getBoundingClientRect().top
 			const hostRect = host.getBoundingClientRect().top
-
-			// On ajoute le scrollTop actuel pour compenser si on a déjà scrollé
 			const finalPosition = elementRect - hostRect + host.scrollTop
-
 			host.scrollTo({
 				top: finalPosition,
 				behavior: "smooth",
 			})
 		}
 	}
+
+	let container: HTMLDivElement | undefined = $state()
+	let {
+		pjlHTML,
+		showParameterModal,
+		parametersToVariables = $bindable(),
+	}: Props = $props()
 
 	// Pour supprimer les éléments vides (pas de texte ni d'enfants), sauf s'ils sont explicitement exclus (comme <img>, <iframe>, etc.) ou si il s'agit d'éléments à l'intérieur des tableaux
 
@@ -629,9 +625,17 @@
 
 			disableJustify(shadow)
 
-			scrollToAnchor(window.location.hash, shadow)
-			shadow.addEventListener("click", (e) => {
-				const link = (e.target as HTMLElement).closest('a[href^="#"]')
+			const initialHash = window.location.hash
+			if (initialHash) {
+				requestAnimationFrame(() => scrollToAnchor(initialHash, shadow))
+			}
+
+			const handleClick = (e: Event) => {
+				const mouseEvent = e as MouseEvent
+				const target = mouseEvent.target as HTMLElement
+
+				const link = target.closest('a[href^="#"]') as HTMLAnchorElement
+
 				if (link) {
 					e.preventDefault()
 					const hash = link.getAttribute("href")
@@ -640,7 +644,15 @@
 						scrollToAnchor(hash, shadow)
 					}
 				}
-			})
+
+				if (!target.closest("button.highlighted")) {
+					showParameterModal = false
+					activeParam = null
+					updateButtonColors()
+				}
+			}
+
+			shadow.addEventListener("click", handleClick)
 
 			// Supervise le style des tableaux en les mettant dans une div avec une bordure, seulement si il y a plus de 2 cellules, afin d'éviter de toucher aux tables qui contiennent les titres
 			shadow.querySelectorAll("table").forEach((table) => {
@@ -781,15 +793,9 @@
 				})
 			}
 
-			/* 🔹 Clique à côté → ferme le modal et reset la couleur */
-			;(shadow as Document | ShadowRoot).addEventListener("click", (e) => {
-				const target = e.target as HTMLElement
-				if (!target.closest("button.highlighted")) {
-					showParameterModal = false
-					activeParam = null
-					updateButtonColors()
-				}
-			})
+			return () => {
+				shadow.removeEventListener("click", handleClick)
+			}
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
