@@ -1001,8 +1001,10 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat, en commission des
-											affaires sociales saisie au fond
+											></iconify-icon>Examiné par le Sénat<span
+												class="font-light"
+												>, en commission des affaires sociales saisie au fond</span
+											>
 										</span>
 									</div>
 								</div>
@@ -1086,7 +1088,9 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat, en séance publique
+											></iconify-icon>Examiné par le Sénat<span
+												class="font-light">, en séance publique</span
+											>
 											<span
 												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-medium text-green-900"
 												>Texte adopté</span
@@ -1175,8 +1179,10 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale, en
-											commission des affaires sociales saisie au fond
+											></iconify-icon>Examiné par l'Assemblée nationale<span
+												class="font-light"
+												>, en commission des affaires sociales saisie au fond</span
+											>
 										</span>
 									</div>
 								</div>
