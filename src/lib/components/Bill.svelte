@@ -43,25 +43,25 @@
 		showParameterModal,
 		parametersToVariables = $bindable(),
 	}: Props = $props()
-	let resizeObserver: ResizeObserver
+	// let resizeObserver: ResizeObserver
 
-	const adjustImgSizes = (shadowRoot: ShadowRoot) => {
-		if (!shadowRoot) return
+	// const adjustImgSizes = (shadowRoot: ShadowRoot) => {
+	// 	if (!shadowRoot) return
 
-		// Ajuste les images au max 100% de leur conteneur
-		shadowRoot.querySelectorAll("img").forEach((img) => {
-			// Supprime les dimensions HTML (évite conflits avec CSS)
-			img.removeAttribute("width")
-			img.removeAttribute("height")
+	// 	// Ajuste les images au max 100% de leur conteneur
+	// 	shadowRoot.querySelectorAll("img").forEach((img) => {
+	// 		// Supprime les dimensions HTML (évite conflits avec CSS)
+	// 		img.removeAttribute("width")
+	// 		img.removeAttribute("height")
 
-			// Style CSS pour un comportement fluide et centré
-			img.style.display = "block"
-			img.style.margin = "0 auto"
-			img.style.height = "auto"
-			img.style.maxWidth = "100%" // Ne dépasse jamais le conteneur
-			// Pas de width forcée : l’image gardera sa taille naturelle si plus petite
-		})
-	}
+	// 		// Style CSS pour un comportement fluide et centré
+	// 		img.style.display = "block"
+	// 		img.style.margin = "0 auto"
+	// 		img.style.height = "auto"
+	// 		img.style.maxWidth = "100%" // Ne dépasse jamais le conteneur
+	// 		// Pas de width forcée : l’image gardera sa taille naturelle si plus petite
+	// 	})
+	// }
 
 	const scrollToAnchor = (hash: string, shadowRoot: ShadowRoot) => {
 		if (!hash) return
@@ -648,9 +648,9 @@
 
 			disableJustify(shadow)
 
-			resizeObserver = new ResizeObserver(() => adjustImgSizes(shadow))
-			resizeObserver.observe(container)
-			requestAnimationFrame(() => adjustImgSizes(shadow))
+			// resizeObserver = new ResizeObserver(() => adjustImgSizes(shadow))
+			// resizeObserver.observe(container)
+			// requestAnimationFrame(() => adjustImgSizes(shadow))
 
 			scrollToAnchor(window.location.hash, shadow)
 			shadow.addEventListener("click", (e) => {
@@ -817,7 +817,7 @@
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
 		}
-		return () => resizeObserver?.disconnect()
+		// return () => resizeObserver?.disconnect()
 	})
 </script>
 
@@ -927,8 +927,8 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 

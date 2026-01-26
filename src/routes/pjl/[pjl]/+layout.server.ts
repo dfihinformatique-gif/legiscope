@@ -1,4 +1,5 @@
 import fs from "fs/promises"
+import { parseHTML } from "linkedom"
 import path from "path"
 
 import {
@@ -261,54 +262,67 @@ export const load: LayoutServerLoad = async ({
 	const pjl = params.pjl
 	const filePath = path.resolve(`static/${pjl}.html`)
 
+	let pjlDate = new Date().toISOString().split("T")[0]
+
+	switch (pjl) {
+		case "PRJLANR5L17B1906":
+		case "PRJLANR5L17B1907":
+		case "pjl25-024":
+			pjlDate = new Date("2025-10-14").toISOString().split("T")[0]
+			break
+		case "pjl25-138":
+			pjlDate = new Date("2025-11-24").toISOString().split("T")[0]
+			break
+		case "PRJLANR5L17B2247":
+			pjlDate = new Date("2025-12-15").toISOString().split("T")[0]
+			break
+		case "pjl25-122":
+			pjlDate = new Date("2025-11-13").toISOString().split("T")[0]
+			break
+		case "PRJLANR5L17B2141":
+			pjlDate = new Date("2025-11-26").toISOString().split("T")[0]
+			break
+		case "pjl25-193":
+			pjlDate = new Date("2025-12-09").toISOString().split("T")[0]
+			break
+		case "pjl25-112":
+			pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
+			break
+		case "PRJLANR5L17B2115":
+			pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
+			break
+		case "PRJLANR5L17BTC2250":
+			pjlDate = new Date("2025-12-17").toISOString().split("T")[0]
+			break
+		case "DECLANR5L17B2247-N0":
+			pjlDate = new Date("2026-01-21").toISOString().split("T")[0]
+			break
+	}
+
+	shared.pjlDate = pjlDate
+
+	const currentParameterReferences = await getCurrentLegiIds(
+		parameterReferences,
+		pjlDate,
+	)
+
 	try {
-		const html = await fs.readFile(filePath, "utf-8")
+		const rawHtml = await fs.readFile(filePath, "utf-8")
+		const { document } = parseHTML(rawHtml)
 
-		let pjlDate = new Date().toISOString().split("T")[0]
+		const images = document.querySelectorAll("img")
+		images.forEach((img) => {
+			img.removeAttribute("width")
+			img.removeAttribute("height")
+			img.setAttribute(
+				"style",
+				"display: block; margin: 0 auto; height: auto; max-width: 100%;",
+			)
+		})
 
-		switch (pjl) {
-			case "PRJLANR5L17B1906":
-			case "PRJLANR5L17B1907":
-			case "pjl25-024":
-				pjlDate = new Date("2025-10-14").toISOString().split("T")[0]
-				break
-			case "pjl25-138":
-				pjlDate = new Date("2025-11-24").toISOString().split("T")[0]
-				break
-			case "PRJLANR5L17B2247":
-				pjlDate = new Date("2025-12-15").toISOString().split("T")[0]
-				break
-			case "pjl25-122":
-				pjlDate = new Date("2025-11-13").toISOString().split("T")[0]
-				break
-			case "PRJLANR5L17B2141":
-				pjlDate = new Date("2025-11-26").toISOString().split("T")[0]
-				break
-			case "pjl25-193":
-				pjlDate = new Date("2025-12-09").toISOString().split("T")[0]
-				break
-			case "pjl25-112":
-				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
-				break
-			case "PRJLANR5L17B2115":
-				pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
-				break
-			case "PRJLANR5L17BTC2250":
-				pjlDate = new Date("2025-12-17").toISOString().split("T")[0]
-				break
-			case "DECLANR5L17B2247-N0":
-				pjlDate = new Date("2026-01-21").toISOString().split("T")[0]
-				break
-		}
+		const htmlContent = document.toString()
 
-		shared.pjlDate = pjlDate
-
-		const currentParameterReferences = await getCurrentLegiIds(
-			parameterReferences,
-			pjlDate,
-		)
-
-		const htmlWithLinks = html.replace(
+		const htmlWithLinks = htmlContent.replace(
 			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr\/legifrance\/(?:sections|articles|textes)\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/g,
 			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
@@ -335,13 +349,6 @@ export const load: LayoutServerLoad = async ({
 		let HTMLToReturn: string = ""
 
 		if (pjl === "PRJLANR5L17B1907") {
-			// const htmlWithLinksAndSummary = htmlWithLinks.replace(
-			// 	/(<p class="assnat9ArticleNum">[\s\n\t]*)Article\s+(\w+)([\s\n\t]*<\/p>)/g,
-			// 	"$1Article $2$3".replace(
-			// 		/<p class="assnat9ArticleNum">/,
-			// 		'<p class="assnat9ArticleNum" id="#_TocArt$2">',
-			// 	),
-			// )
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
 				/<p class="assnat9ArticleNum">/g,
 				(match, offset, string) => {
