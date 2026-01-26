@@ -310,15 +310,7 @@ export const load: LayoutServerLoad = async ({
 		const rawHtml = await fs.readFile(filePath, "utf-8")
 		const { document } = parseHTML(rawHtml)
 
-		const images = document.querySelectorAll("img")
-		images.forEach((img) => {
-			img.removeAttribute("width")
-			img.removeAttribute("height")
-			img.setAttribute(
-				"style",
-				"display: block; margin: 0 auto; height: auto; max-width: 100%;",
-			)
-		})
+		resizeImg(document)
 
 		const htmlContent = document.toString()
 
@@ -412,4 +404,15 @@ ${articles
 			currentParameterReferences: undefined,
 		}
 	}
+}
+
+function resizeImg(document: Document) {
+	document.querySelectorAll("img").forEach((img) => {
+		img.removeAttribute("width")
+		img.removeAttribute("height")
+		img.setAttribute(
+			"style",
+			"display:block; margin:0 auto; height:auto; max-width:100%;",
+		)
+	})
 }
