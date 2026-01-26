@@ -119,7 +119,7 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Écrit par le Gouvernement</span
+											></iconify-icon>Initié par le Gouvernement</span
 										>
 										<span class=""
 											><iconify-icon
@@ -211,7 +211,7 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Écrit par le Gouvernement
+											></iconify-icon>Initié par le Gouvernement
 											<i
 												>(Identique au texte initial suite au rejet en première
 												lecture par l'Assemblée nationale)</i
@@ -463,7 +463,7 @@
 											><iconify-icon
 												class="mr-1 align-[-0.18em]"
 												icon="ri:quill-pen-line"
-											></iconify-icon>Écrit par le Gouvernement</span
+											></iconify-icon>Initié par le Gouvernement</span
 										>
 									</div>
 									<ul class="ml-1 list-inside list-disc">
