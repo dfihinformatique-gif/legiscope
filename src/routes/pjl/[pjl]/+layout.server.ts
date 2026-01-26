@@ -311,6 +311,7 @@ export const load: LayoutServerLoad = async ({
 		const { document } = parseHTML(rawHtml)
 
 		resizeImg(document)
+		removeMarginPadding(document)
 
 		const htmlContent = document.toString()
 
@@ -414,5 +415,27 @@ function resizeImg(document: Document) {
 			"style",
 			"display:block; margin:0 auto; height:auto; max-width:100%;",
 		)
+	})
+}
+
+function removeMarginPadding(document: Document) {
+	document.querySelectorAll("[style]").forEach((el) => {
+		const style = el.getAttribute("style") || ""
+		const cleanedStyle = style
+			.split(";")
+			.map((rule) => rule.trim())
+			.filter(
+				(rule) =>
+					rule &&
+					!rule.toLowerCase().startsWith("margin") &&
+					!rule.toLowerCase().startsWith("padding"),
+			)
+			.join("; ")
+
+		if (cleanedStyle) {
+			el.setAttribute("style", cleanedStyle)
+		} else {
+			el.removeAttribute("style")
+		}
 	})
 }

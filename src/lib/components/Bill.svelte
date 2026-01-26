@@ -37,24 +37,6 @@
 		}
 	})
 
-	function scrollToAnchor(hash: string, shadowRoot: ShadowRoot) {
-		if (!hash) return
-
-		const id = hash.substring(1)
-		const element = shadowRoot.getElementById(id)
-		const host = shadowRoot.host as HTMLElement
-
-		if (element && host) {
-			const elementRect = element.getBoundingClientRect().top
-			const hostRect = host.getBoundingClientRect().top
-			const finalPosition = elementRect - hostRect + host.scrollTop
-			host.scrollTo({
-				top: finalPosition,
-				behavior: "smooth",
-			})
-		}
-	}
-
 	let container: HTMLDivElement | undefined = $state()
 	let {
 		pjlHTML,
@@ -306,37 +288,7 @@
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
-			// Pour nettoyer le fichier HTML du PLF :
 			let cleanedHTML = pjlHTML
-				.replace(/style="([^"]*)"/g, (_match, styleContent) => {
-					// Supprimer toutes les propriétés margin et padding dans le Html | Fonctionne en complément des classes CSS ajoutée ici qui permettent de limiter les margins de la Css du document
-					const cleanedStyle = styleContent
-						.split(";")
-						.map((rule: string) => rule.trim())
-						.filter(
-							(rule: string) =>
-								rule &&
-								!/^margin(-|$)/i.test(rule) &&
-								!/^padding(-|$)/i.test(rule),
-						)
-						.join("; ")
-
-					return cleanedStyle ? `style="${cleanedStyle}"` : ""
-				})
-				// Ajouter un attribut data-original-width aux images en conservant la valeur de width existante
-				.replace(
-					/<img([^>]*)width="([^"]+)"([^>]*)>/g,
-					(match, before, width, after) => {
-						return `<img ${before} width="${width}" data-original-width="${width}" ${after}>`
-					},
-				)
-				// Remplacer les <a> qui n'ont pas de href par des <span>
-				.replace(/<a([^>]*?)>(.*?)<\/a>/g, (match, attributes, innerHTML) => {
-					if (!/href\s*=\s*["'][^"']*["']/i.test(attributes)) {
-						return `<span${attributes}>${innerHTML}</span>`
-					}
-					return match
-				})
 
 			if (pjl === "pjl25-122")
 				cleanedHTML = cleanedHTML.split(`<body>`)[1].split("</html>")[0]
@@ -467,15 +419,15 @@
 							font-family: "Lora", serif !important;
 						}
 
-						a { /*Crée un style pour mettre en avant les liens au sein du document */
+						a[href^="#"] { /*Crée un style pour mettre en avant les liens au sein du document */
 							text-decoration: underline !important;
 							text-decoration-style: dotted !important;
 							text-decoration-color: #bbbbbb !important;
 							text-underline-offset: 4px !important;
 							text-decoration-thickness: 1px !important;
 						}
-						a:hover,
-						a:focus {
+						a[href^="#"]:hover,
+						a[href^="#"]:focus {
 							text-decoration-style: solid !important;
 							text-decoration-color: black !important;
 							text-underline-offset: 4px !important;
@@ -801,6 +753,24 @@
 			if (wrapper) wrapper.innerHTML = pjlHTML
 		}
 	})
+
+	function scrollToAnchor(hash: string, shadowRoot: ShadowRoot) {
+		if (!hash) return
+
+		const id = hash.substring(1)
+		const element = shadowRoot.getElementById(id)
+		const host = shadowRoot.host as HTMLElement
+
+		if (element && host) {
+			const elementRect = element.getBoundingClientRect().top
+			const hostRect = host.getBoundingClientRect().top
+			const finalPosition = elementRect - hostRect + host.scrollTop
+			host.scrollTo({
+				top: finalPosition,
+				behavior: "smooth",
+			})
+		}
+	}
 </script>
 
 <div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
