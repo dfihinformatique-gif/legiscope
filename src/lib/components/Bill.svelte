@@ -438,10 +438,12 @@
 						}
 						.law-article-link:hover .law-article-icon path {
 							fill: #2f406a !important;
+							text-underline-offset: 4px !important;
 						}
 						.law-article-link {
 							color: #000000;
 							text-decoration: underline;
+							text-underline-offset: 4px !important;
 							text-decoration-color: #ccd3e7 !important;
 							text-decoration-thickness: 0.2rem !important;
 							text-decoration-style: solid !important;
