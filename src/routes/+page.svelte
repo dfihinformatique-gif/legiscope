@@ -55,7 +55,7 @@
 
 						<!--texte initial PLF déposé à l'AN-->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexteInitialplf2026}
 						>
 							<button
@@ -153,7 +153,7 @@
 						</div>
 						<!--Texte initial PLF rejeté par l'AN / déposé au Sénat-->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte138plf2026}
 						>
 							<button
@@ -275,7 +275,7 @@
 						</div>
 						<!--texte 2247 PLF-->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte2247plf2026}
 						>
 							<button
@@ -388,7 +388,7 @@
 						</div>
 						<!--texte 308 PLF-->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte308plf2026}
 						>
 							<button
@@ -484,7 +484,7 @@
 
 						<!-- Texte initial PLFSS -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexteInitialplfss2026}
 						>
 							<button
@@ -583,7 +583,7 @@
 
 						<!-- Texte n°122 Sénat -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte122plfss2026}
 						>
 							<button
@@ -702,11 +702,11 @@
 
 						<!-- Texte n°2141 Assemblée -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte2141plfss2026}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() =>
 									(openTexte2141plfss2026 = !openTexte2141plfss2026)}
 								aria-expanded={openTexte2141plfss2026}
@@ -801,11 +801,11 @@
 						</div>
 						<!-- Texte n°193 Sénat -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte193plfss2026}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() => (openTexte193plfss2026 = !openTexte193plfss2026)}
 								aria-expanded={openTexte193plfss2026}
 							>
@@ -896,11 +896,11 @@
 						</div>
 
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexte188plfss2026}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() => (openTexte188plfss2026 = !openTexte188plfss2026)}
 								aria-expanded={openTexte188plfss2026}
 							>
@@ -1016,11 +1016,11 @@
 
 						<!-- Texte initial PJL -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTexteInitialpjlfraude}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() =>
 									(openTexteInitialpjlfraude = !openTexteInitialpjlfraude)}
 								aria-expanded={openTexteInitialpjlfraude}
@@ -1101,11 +1101,11 @@
 
 						<!-- Texte de la commission Sénat -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTextecommissionSenatpjlfraude}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() =>
 									(openTextecommissionSenatpjlfraude =
 										!openTextecommissionSenatpjlfraude)}
@@ -1190,11 +1190,11 @@
 
 						<!-- Texte Assemblée nationale -->
 						<div
-							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class="my-2 flex flex-col justify-start rounded-sm border p-1 text-base"
 							class:bg-neutral-50={openTextecommissionAssembleepjlfraude}
 						>
 							<button
-								class="flex items-center gap-1 text-left"
+								class="flex cursor-pointer items-center gap-1 text-left"
 								onclick={() =>
 									(openTextecommissionAssembleepjlfraude =
 										!openTextecommissionAssembleepjlfraude)}
