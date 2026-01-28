@@ -72,7 +72,7 @@
 							>
 								<div>
 									<iconify-icon
-										class=" align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexteInitialplf2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -167,7 +167,7 @@
 							>
 								<div>
 									<iconify-icon
-										class=" align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexte138plf2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -211,7 +211,7 @@
 							</div>
 						</button>
 						{#if openTexte138plf2026}
-							<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+							<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
 								<div class="ml-1 flex flex-col text-neutral-600">
 									<span class=""
 										><iconify-icon
@@ -289,7 +289,7 @@
 							>
 								<div>
 									<iconify-icon
-										class=" align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-s-line"
 										class:rotate-90={openTexte2247plf2026}
 									></iconify-icon>
@@ -333,7 +333,7 @@
 							</div>
 						</button>
 						{#if openTexte2247plf2026}
-							<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+							<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
 								<div class="ml-1 flex flex-col text-neutral-600">
 									<span class=""
 										><iconify-icon
@@ -399,7 +399,7 @@
 							>
 								<div>
 									<iconify-icon
-										class=" align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										icon="ri-arrow-right-s-line"
 										class:rotate-90={openTexte308plf2026}
 									></iconify-icon>
@@ -443,7 +443,7 @@
 							</div>
 						</button>
 						{#if openTexte308plf2026}
-							<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+							<div class="mt-2 mb-4 ml-3 border-l-2 border-neutral-300 pl-3">
 								<div class="ml-1 flex flex-col text-neutral-600">
 									<span class=""
 										><iconify-icon
@@ -495,7 +495,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexteInitialplfss2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -591,7 +591,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexte122plfss2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -710,7 +710,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexte2141plfss2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -806,7 +806,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexte193plfss2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -901,7 +901,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexte188plfss2026}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -1020,7 +1020,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTexteInitialpjlfraude}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -1106,7 +1106,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTextecommissionSenatpjlfraude}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
@@ -1195,7 +1195,7 @@
 							>
 								<div>
 									<iconify-icon
-										class="align-[-0.3rem] text-xl"
+										class="ml-0.5 align-[-0.3rem] text-xl"
 										class:rotate-90={openTextecommissionAssembleepjlfraude}
 										icon="ri-arrow-right-s-line"
 									></iconify-icon>
