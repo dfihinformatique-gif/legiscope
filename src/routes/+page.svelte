@@ -132,13 +132,14 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale :
+											></iconify-icon>Examiné <i>en première lecture</i> par l'Assemblée
+											nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
 											<!--1ère lecture en commission-->
 											<li>
-												en séance publique <span
+												en séance publique - <span
 													class="rounded-sm border border-red-200 bg-red-100 p-0.5 text-xs font-normal text-red-900"
 													>Texte rejeté</span
 												>
@@ -231,7 +232,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat :
+											></iconify-icon>Examiné <i>en première lecture</i> par le Sénat
+											:
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -349,7 +351,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale :
+											></iconify-icon>Examiné <i>en nouvelle lecture</i> par l'Assemblée
+											nationale :
 										</span>
 
 										<ul class="ml-4 list-inside list-disc font-light">
@@ -470,7 +473,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale :
+											></iconify-icon>Examiné <i>en première lecture</i> par l'Assemblée
+											nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -564,7 +568,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat :
+											></iconify-icon>Examiné <i>en première lecture</i>par le
+											Sénat :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -687,7 +692,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale :
+											></iconify-icon>Examiné <i>en nouvelle lecture</i> par l'Assemblée
+											nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -781,7 +787,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat :
+											></iconify-icon>Examiné <i>en nouvelle lecture</i> par le Sénat
+											:
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -877,7 +884,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale :
+											></iconify-icon>Examiné <i>en lecture définitive</i> par l'Assemblée
+											nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
 											<li>en commission</li>
@@ -991,8 +999,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat<span
-												class="font-light"
+											></iconify-icon>Examiné <i>en première lecture</i> par le
+											Sénat<span class="font-light"
 												>, en commission des affaires sociales saisie au fond</span
 											>
 										</span>
@@ -1078,9 +1086,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par le Sénat<span
-												class="font-light">, en séance publique</span
-											>
+											></iconify-icon>Examiné <i>en première lecture</i> par le
+											Sénat<span class="font-light">, en séance publique</span>
 											<span
 												class="rounded-sm border border-green-200 bg-green-100 p-0.5 text-xs font-medium text-green-900"
 												>Texte adopté</span
@@ -1169,8 +1176,8 @@
 											><iconify-icon
 												class="mr-1 -scale-x-100 align-[-0.18em]"
 												icon="ri:search-line"
-											></iconify-icon>Examiné par l'Assemblée nationale<span
-												class="font-light"
+											></iconify-icon>Examiné <i>en première lecture</i> par
+											l'Assemblée nationale<span class="font-light"
 												>, en commission des affaires sociales saisie au fond</span
 											>
 										</span>
