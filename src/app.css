@@ -129,10 +129,16 @@
   .lx-link-text {
     @apply cursor-pointer underline underline-offset-4 hover:decoration-2;
   }
+  .lx-link-text:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
+  }
 
   /* lien texte, bleu au survol : si besoin de plus de visibilité */
   .lx-link-text-le-bleu {
     @apply hover:text-le-bleu cursor-pointer underline underline-offset-4 hover:decoration-2;
+  }
+  .lx-link-text-le-bleu:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
   }
 
   /* LIEN SIMPLE : lien solo (en dehors d'un corps de texte), se caractérise par un écard entre les lettres plus grand */
@@ -141,9 +147,15 @@
   .lx-link-simple-no-underline {
     @apply cursor-pointer font-sans tracking-wider underline-offset-4 hover:underline hover:decoration-2;
   }
+  .lx-link-simple-no-underline:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
+  }
 
   .lx-link-simple {
     @apply cursor-pointer font-sans tracking-wider underline underline-offset-4 hover:underline hover:decoration-2;
+  }
+  .lx-link-simple:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
   }
 
   /* LIEN UPPERCASE : lien solo à la frontière avec un bouton, se caractérise par une casse en majuscule et un écard entre les lettres plus grand*/
@@ -151,10 +163,18 @@
   .lx-link-uppercase {
     @apply cursor-pointer gap-2 font-semibold tracking-widest text-neutral-700 uppercase decoration-2 underline-offset-4 hover:text-black hover:underline md:text-nowrap;
   }
+  .lx-link-uppercase:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
+  }
+
   /* lien uppercase, bleu au survol : si besoin de plus de visibilité */
   .lx-link-uppercase-le-bleu {
     @apply text-le-bleu cursor-pointer gap-2 font-semibold tracking-widest uppercase decoration-2 underline-offset-4 hover:underline md:text-nowrap;
   }
+  .lx-link-uppercase-le-bleu:not([href]) {
+    @apply pointer-events-none cursor-default opacity-50;
+  }
+
   /* *******--- TITRES ---******* */
   .lx-titreh2 {
     @apply bg-le-vert-100 mt-5 mb-3 inline-flex px-1 font-sans text-2xl font-bold text-black;
