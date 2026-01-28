@@ -1342,7 +1342,7 @@
 				et au
 				<a class="lx-link-text" href="https://dotations.leximpact.an.fr/"
 					>simulateur des dotations aux communes</a
-				>. lorsqu'un article entre dans leur périmètre ;
+				> lorsqu'un article entre dans leur périmètre ;
 			</li>
 			<li>
 				obtenir des informations complémentaires sur les paramètres de la loi
@@ -1364,9 +1364,11 @@
 	</AnchorTitle>
 	<div class="col-span-4 max-w-prose justify-self-center text-lg">
 		Tous les textes de lois et les informations lisibles sur ce site sont
-		récupérés à la source, auprès des institutions fournisseurs : Direction de
-		l'information légale et administrative (DILA) en charge de Légifrance et
-		Assemblée nationale.
+		récupérés à la source, auprès des institutions fournisseurs. C'est-à-dire la
+		direction de l'information légale et administrative (DILA) <i
+			>en charge de Légifrance</i
+		>
+		et l'Assemblée nationale.
 
 		<br />
 		<br />
