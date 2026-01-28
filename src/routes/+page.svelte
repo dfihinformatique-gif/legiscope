@@ -7,6 +7,7 @@
 	let openTexteInitialplf2026 = $state(false)
 	let openTexte138plf2026 = $state(false)
 	let openTexte2247plf2026 = $state(true)
+	let openTexte308plf2026 = $state(true)
 	let openTexteInitialplfss2026 = $state(false)
 	let openTexte122plfss2026 = $state(false)
 	let openTexte2141plfss2026 = $state(false)
@@ -380,6 +381,95 @@
 													</a></span
 												>
 											</li>
+										</ul>
+									</div>
+								</div>
+							{/if}
+						</div>
+						<!--texte 308 PLF-->
+						<div
+							class="my-2 flex cursor-pointer flex-col justify-start rounded-sm border p-1 text-base"
+							class:bg-neutral-50={openTexte308plf2026}
+						>
+							<button
+								class="flex cursor-pointer items-center gap-1 text-left"
+								onclick={() => (openTexte308plf2026 = !openTexte308plf2026)}
+								aria-expanded={openTexte308plf2026}
+							>
+								<div
+									class="flex w-full flex-col-reverse sm:flex-row sm:items-center sm:justify-between"
+								>
+									<div>
+										<iconify-icon
+											class=" align-[-0.3rem] text-xl"
+											icon="ri-arrow-right-s-line"
+											class:rotate-90={openTexte308plf2026}
+										></iconify-icon>
+										<a
+											class="lx-link-simple font-serif text-lg"
+											title="Vers le projet de loi"
+											aria-disabled="true"
+										>
+											<iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:book-marked-fill"
+											>
+											</iconify-icon>Texte n°308
+											<i>(en attente de publication)</i>
+											<iconify-icon
+												class=" align-[-0.3rem] text-xl"
+												icon="ri-arrow-right-line"
+											></iconify-icon></a
+										>
+									</div>
+									<div
+										class="mt-1 flex w-48 items-center justify-between self-end rounded-sm border bg-amber-50 px-0.5 text-xs sm:self-auto"
+									>
+										<div>
+											27/01/26・<iconify-icon
+												class="mr-1 align-[-0.18em] text-base"
+												icon="ri:inbox-archive-line"
+											></iconify-icon><span class="tracking-wider"
+												>Assemblée</span
+											>
+										</div>
+										<div>
+											<iconify-icon
+												class="align-[-0.18em] text-base"
+												icon="tabler:users-group"
+											></iconify-icon><iconify-icon
+												class="align-[-0.18em] text-base"
+												icon="streamline:rainbow-solid"
+											></iconify-icon>
+										</div>
+									</div>
+								</div>
+							</button>
+							{#if openTexte308plf2026}
+								<div class="mt-2 mb-4 ml-2 border-l-2 border-neutral-300 pl-3">
+									<div class="ml-1 flex flex-col text-neutral-600">
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:quill-pen-line"
+											></iconify-icon>Modifié par l'Assemblée nationale</span
+										>
+										<span class=""
+											><iconify-icon
+												class="mr-1 align-[-0.18em]"
+												icon="ri:inbox-archive-line"
+											></iconify-icon>Déposé le 27/01/2026 au Sénat
+										</span>
+										<span class=""
+											><iconify-icon
+												class="mr-1 -scale-x-100 align-[-0.18em]"
+												icon="ri:search-line"
+											></iconify-icon>Examiné <i>en nouvelle lecture</i> par le Sénat
+											:
+										</span>
+
+										<ul class="ml-4 list-inside list-disc font-light">
+											<li>en commission</li>
 										</ul>
 									</div>
 								</div>
