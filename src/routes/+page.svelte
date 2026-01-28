@@ -135,7 +135,7 @@
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>en commission des finances saisie au fond</li>
+											<li>en commission</li>
 											<!--1ère lecture en commission-->
 											<li>
 												en séance publique <span
@@ -234,7 +234,7 @@
 											></iconify-icon>Examiné par le Sénat :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>en commission des finances saisie au fond</li>
+											<li>en commission</li>
 											<li>
 												en séance publique -
 												<span
@@ -353,7 +353,7 @@
 										</span>
 
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>en commission des finances saisie au fond</li>
+											<li>en commission</li>
 											<li>
 												en séance publique - <span
 													class="rounded-sm border border-neutral-200 bg-neutral-100 p-0.5 text-xs font-normal text-neutral-900"
@@ -473,9 +473,7 @@
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>
-												en commission des affaires sociales saisie au fond
-											</li>
+											<li>en commission</li>
 
 											<li>
 												en séance publique <span
@@ -569,9 +567,7 @@
 											></iconify-icon>Examiné par le Sénat :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>
-												en commission des affaires sociales saisie au fond
-											</li>
+											<li>en commission</li>
 
 											<li>
 												en séance publique <span
@@ -694,9 +690,7 @@
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>
-												en commission des affaires sociales saisie au fond
-											</li>
+											<li>en commission</li>
 
 											<li>
 												en séance publique <span
@@ -790,9 +784,7 @@
 											></iconify-icon>Examiné par le Sénat :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>
-												en commission des affaires sociales saisie au fond
-											</li>
+											<li>en commission</li>
 
 											<li>
 												en séance publique <span
@@ -888,9 +880,7 @@
 											></iconify-icon>Examiné par l'Assemblée nationale :
 										</span>
 										<ul class="ml-4 list-inside list-disc font-light">
-											<li>
-												en commission des affaires sociales saisie au fond
-											</li>
+											<li>en commission</li>
 
 											<li>
 												en séance publique <span
