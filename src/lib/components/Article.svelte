@@ -996,7 +996,7 @@
 	const ongletsArticle = [
 		{ id: "content", label: "Texte" },
 		{ id: "history", label: "Historique" },
-		{ id: "citations", label: "Articles citant cet article" },
+		{ id: "citations", label: "Citations" },
 	]
 	let activeTab = $state("content")
 	let tabsContainer = $state<HTMLElement | undefined>(undefined)
