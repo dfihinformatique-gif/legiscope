@@ -611,7 +611,13 @@
 		}
 	}
 
-	let selectedVersion: VersionArticle | undefined = $state(undefined)
+	const selectedVersion = $derived.by(() => {
+		const article = citingArticleInfo?.article
+		const versions = citingArticleInfo?.versions
+		if (!article || !versions) return undefined
+
+		return versions.find((version) => version.legi_id_lien === article.legi_id)
+	})
 
 	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
 
@@ -695,52 +701,26 @@
 		</div>
 
 		<div class="my-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
-			{#if citingArticleInfo?.versions}
-				<select
-					name="versions"
-					class="text-le-gris-dispositif-dark grow truncate overflow-x-hidden rounded-sm bg-white p-0.5 px-2 text-left font-serif text-sm italic sm:text-base"
-					onchange={() => {
-						const urlToNavigate = new URL(page.url)
-						urlToNavigate.searchParams.set(
-							"article",
-							selectedVersion!.legi_id_lien,
-						)
-						urlToNavigate.searchParams.set(
-							"date",
-							new Date(selectedVersion!.debut).toISOString().split("T")[0],
-						)
-						goto(
-							resolve(
-								`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname,
-							),
-							{ replaceState: false },
-						)
-					}}
-					bind:value={selectedVersion}
+			{#if citingArticleInfo?.versions && selectedVersion}
+				<p
+					class="grow rounded-sm p-0.5 px-2 text-left font-serif text-black italic sm:text-base"
 				>
-					{#each citingArticleInfo?.versions ?? [] as version (version.legi_id_lien)}
-						<option
-							disabled
-							value={version}
-							selected={citingArticleInfo.article.legi_id ===
-								version.legi_id_lien}
-						>
-							{#if version.debut}
-								{#if version.legi_id_lien.startsWith("JORF")}Journal officiel du {formatDateFr(
-										citingArticleInfo.jorfTextDatePubli!,
-									)}
-								{:else if version.debut === "2999-01-01"}
-									Version de versement
-								{:else if version.fin === "2999-01-01"}
-									Version en vigueur depuis le {formatDateFr(version.debut)}
-								{:else}
-									Version du {formatDateFr(version.debut)}
-									au {formatDateFr(version.fin)}
-								{/if}
-							{/if}
-						</option>
-					{/each}
-				</select>
+					{#if selectedVersion?.debut}
+						{#if selectedVersion.legi_id_lien.startsWith("JORF")}
+							Journal officiel du {formatDateFr(
+								citingArticleInfo.jorfTextDatePubli!,
+							)}
+						{:else if selectedVersion.debut === "2999-01-01"}
+							Version de versement
+						{:else if selectedVersion.fin === "2999-01-01"}
+							Version en vigueur depuis le {formatDateFr(selectedVersion.debut)}
+						{:else}
+							Version du {formatDateFr(selectedVersion.debut)}
+							au {formatDateFr(selectedVersion.fin)}
+						{/if}
+					{/if}
+				</p>
+
 				<div class="text-left">
 					<label class="inline-flex cursor-pointer items-center">
 						<input
