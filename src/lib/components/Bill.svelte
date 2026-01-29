@@ -221,41 +221,6 @@
 		})
 	}
 
-	// Pour retirer le bleu natif du document et le remplacer par le bleu-gris
-
-	function replaceNonGrayCSSColors(root: HTMLElement | ShadowRoot) {
-		const colorMap: Record<string, string> = {
-			color: "#2f406a",
-			"border-color": "#ced3e0",
-			"border-top-color": "#ced3e0",
-			"border-right-color": "#ced3e0",
-			"border-bottom-color": "#ced3e0",
-			"border-left-color": "#ced3e0",
-			"background-color": "#f9fafb",
-			"outline-color": "#ced3e0",
-		}
-
-		const elements = root.querySelectorAll<HTMLElement>("*")
-
-		elements.forEach((el) => {
-			const computed = getComputedStyle(el)
-
-			for (const [prop, targetColor] of Object.entries(colorMap)) {
-				const value = computed.getPropertyValue(prop)
-				const match = value.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
-				if (!match) continue
-
-				const [r, g, b] = match.slice(1).map(Number)
-
-				const isGrayOrBlack = r === g && g === b && r < 255
-
-				if (isGrayOrBlack) continue // ignore gris/noir
-
-				el.style.setProperty(prop, targetColor, "important")
-			}
-		})
-	}
-
 	function findFirstLinkAbove(
 		button: HTMLButtonElement,
 	): HTMLAnchorElement | null {
@@ -300,6 +265,10 @@
 						}
 						:host, :host * {
 							line-height: 1.5 !important;  /* Augmente aussi l'interligne */
+							outline-color: #ced3e0;
+						}
+						.has-custom-color {
+							color: #2f406a !important;
 						}
 						body {
 							width: 100%; /* prendre toute la largeur */
@@ -314,7 +283,7 @@
 						table {
 							table-layout: auto;
 							width: 100% !important;
-
+							border: 1px solid black !important;
 						}
 						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
 							overflow-x: auto;
@@ -329,6 +298,11 @@
 						}
 
 						td, th {
+							border-color: #ced3e0 !important;
+							border-top-color: #ced3e0 !important;
+							border-right-color: #ced3e0 !important;
+							border-bottom-color: #ced3e0 !important;
+							border-left-color: #ced3e0 !important;
 							width: auto !important;
 							word-wrap: break-word !important;
 							overflow-wrap: break-word !important;
@@ -477,8 +451,6 @@
 			`
 
 			shadow.querySelector(".content-wrapper")!.innerHTML = pjlHTML
-
-			replaceNonGrayCSSColors(shadow)
 
 			// Pour transformer les tables des exposés des motifs en div
 			const tables = shadow.querySelectorAll("table")
