@@ -14,6 +14,7 @@
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import { SvelteURLSearchParams } from "svelte/reactivity"
+	import InformationMessage from "../ui_transverse_components/InformationMessage.svelte"
 	import ArticleSummary from "./../ArticleSummary.svelte"
 
 	interface Props {
@@ -626,84 +627,88 @@
 	})
 </script>
 
-<div
-	class="relative mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-6 pt-2 pb-20 text-justify md:mx-6"
-	class:md:p-16={!shared.showBillDesktop}
+<button
+	class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-8 right-6 z-50 flex cursor-pointer items-center justify-center rounded-b-full px-3 pt-8 pb-2 text-white hover:translate-y-4"
+	title="Fermer le volet citations"
+	onclick={() => {
+		const searchParams = new SvelteURLSearchParams(page.url.searchParams)
+		searchParams.delete("citant")
+		shared.activePanelMobile = "law"
+		goto(
+			resolve(`${page.url.pathname}?${searchParams.toString()}` as Pathname),
+			{
+				replaceState: true,
+				noScroll: true,
+			},
+		)
+	}}
 >
-	<button
-		class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-16 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full p-3 text-white"
-		title="Fermer le volet citations"
-		onclick={() => {
-			const searchParams = new SvelteURLSearchParams(page.url.searchParams)
-			searchParams.delete("citant")
-			shared.activePanelMobile = "law"
-			goto(
-				resolve(`${page.url.pathname}?${searchParams.toString()}` as Pathname),
-				{
-					replaceState: true,
-					noScroll: true,
-				},
-			)
-		}}
-	>
-		<iconify-icon class="align-[-0.4rem] text-3xl" icon="ri-close-large-line"
-		></iconify-icon></button
-	>
-	<div
-		class="pointer-events-none absolute inset-0 z-40
+	<iconify-icon class="align-[-0.4rem] text-2xl" icon="ri-close-large-line"
+	></iconify-icon></button
+>
+<div
+	class="pointer-events-none absolute inset-0 z-40
          bg-linear-to-r from-transparent to-transparent
          transition
          peer-hover:from-transparent
          peer-hover:to-blue-100"
-	></div>
-	{#if citingArticleInfo && citingArticleInfo.article}
-		<!--Sommaire-->
-		<ArticleSummary
-			articleInfo={citingArticleInfo}
-			date={dateForSelect}
-			isSummaryOfCitingArticle={true}
-		></ArticleSummary>
-
-		<!--En-tête-->
-		{@const articleFromUrl = page.url.searchParams.get("citant") ?? ""}
+></div>
+{#if citingArticleInfo && citingArticleInfo.article}
+	<!--Message si affichage de l'article après clic sur section ou sur texte -->
+	{@const articleFromUrl = page.url.searchParams.get("citant") ?? ""}
+	<div class="px-4 lg:px-0">
 		{#if articleFromUrl.startsWith("LEGITEXT") || articleFromUrl.startsWith("JORFTEXT") || articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
-			Premier article :
+			{@const sectionOrTextTitle =
+				articleFromUrl.startsWith("LEGITEXT") ||
+				articleFromUrl.startsWith("JORFTEXT")
+					? citingArticleInfo.textTitle
+					: citingArticleInfo.sectionTitle}
+			<InformationMessage
+				>Vous êtes sur le premier article de {#if articleFromUrl.startsWith("LEGISCTA") || articleFromUrl.startsWith("JORFSCTA")}
+					la section
+				{/if}
+				{#if sectionOrTextTitle}
+					«&nbsp;{sectionOrTextTitle}&nbsp;».
+				{:else}.{/if}</InformationMessage
+			>
 		{/if}
-		<div class="mt-2 flex flex-col items-start justify-between gap-x-5">
-			<!--Titre-->
-			<div
-				class="text-le-gris-dispositif-dark max-w-md flex-wrap text-left font-sans text-2xl"
-			>
-				<iconify-icon
-					class="align-[-0.2rem] text-2xl"
-					icon="ri:book-marked-fill"
-				>
-				</iconify-icon>
-				{#if citingArticleInfo !== undefined && citingArticleInfo.article.num !== undefined}
-					<span class="text-nowrap"
-						>Article {citingArticleInfo.article.num}</span
-					>
-				{/if} ·
-				<span class=""
-					>{citingArticleInfo!.textTitle?.replaceAll("\\n", " ")}</span
-				>
-			</div>
-			<a
-				class="lx-link-simple ml-auto text-gray-500"
-				href="https://www.legifrance.gouv.fr/loda/id/{citingArticleInfo.article
-					.legi_id}"
-				target="_blank"
-				>Légifrance<iconify-icon
-					class="ml-0.5 align-[-0.15rem] text-sm"
-					icon="ri:external-link-line"
-				></iconify-icon></a
-			>
-		</div>
+	</div>
 
-		<div class="my-4 flex w-full flex-wrap justify-end gap-x-5 gap-y-3">
+	<header
+		class="my-5 mr-10 flex flex-col justify-between gap-x-5 px-4 md:flex-row md:items-center lg:px-0"
+	>
+		<!--Titre-->
+		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
+			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
+			</iconify-icon>
+			{#if citingArticleInfo !== undefined && citingArticleInfo.article.num !== undefined}
+				<span class="text-nowrap">Article {citingArticleInfo.article.num}</span>
+			{/if} ·
+			<span class=""
+				>{citingArticleInfo!.textTitle?.replaceAll("\\n", " ")}</span
+			>
+		</h1>
+		<a
+			class="lx-link-simple self-end text-sm text-nowrap text-gray-500 md:self-auto"
+			href="https://www.legifrance.gouv.fr/loda/id/{citingArticleInfo.article
+				.legi_id}"
+			target="_blank"
+			>Légifrance<iconify-icon
+				class="ml-0.5 align-[-0.15rem] text-sm"
+				icon="ri:external-link-line"
+			></iconify-icon></a
+		>
+	</header>
+
+	<div
+		class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
+		class:md:p-16={!shared.showBillDesktop}
+		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
+	>
+		<div class="mb-4 flex flex-wrap justify-end gap-x-5 gap-y-3">
 			{#if citingArticleInfo?.versions && selectedVersion}
 				<p
-					class="grow rounded-sm p-0.5 px-2 text-left font-serif text-black italic sm:text-base"
+					class="grow rounded-t-sm border-b-3 border-neutral-200 bg-white p-2 text-left font-serif text-black italic sm:text-base"
 				>
 					{#if selectedVersion?.debut}
 						{#if selectedVersion.legi_id_lien.startsWith("JORF")}
@@ -720,52 +725,57 @@
 						{/if}
 					{/if}
 				</p>
-
-				<div class="text-left">
-					<label class="inline-flex cursor-pointer items-center">
-						<input
-							class="peer sr-only"
-							type="checkbox"
-							bind:checked={showDiff}
-						/>
-						{#if citingArticleInfo?.versions && citingArticleInfo.versions.length > 1}
-							<div
-								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-							></div>
-							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
-								Voir les changements apportés <br /> à la version précédente
-							</span>
-						{/if}
-					</label>
-				</div>
 			{/if}
 		</div>
 
-		<!--Article-->
-		{#if showDiff === true}
-			<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+		<!--Sommaire-->
+		<ArticleSummary
+			articleInfo={citingArticleInfo}
+			date={dateForSelect}
+			isSummaryOfCitingArticle={true}
+		></ArticleSummary>
+
+		<!--Texte de la version-->
+		<section class="mt-8">
+			<h2 class="sr-only">Texte de l’article</h2>
+			<div class="my-4 flex w-full justify-end text-left">
+				<label class="inline-flex cursor-pointer items-center">
+					<input class="peer sr-only" type="checkbox" bind:checked={showDiff} />
+					{#if citingArticleInfo?.versions && citingArticleInfo.versions.length > 1}
+						<div
+							class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+						></div>
+						<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+							Voir les changements apportés <br /> à la version précédente
+						</span>
+					{/if}
+				</label>
+			</div>
+			{#if showDiff === true}
+				<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+					<span class="font-serif text-lg leading-8 md:text-left">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html diffContent}
+					</span>
+				</div>
+			{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
 				<span class="font-serif text-lg leading-8 md:text-left">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html diffContent}
-				</span>
-			</div>
-		{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-			<span class="font-serif text-lg leading-8 md:text-left">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html currentBlocTextuel}</span
-			>
-		{/if}
-	{:else}
-		<div class="flex h-screen w-full flex-col justify-center">
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
-			></iconify-icon>
-			<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
-			<p class="text-center font-medium text-gray-500 uppercase">
-				est introuvable
-			</p>
+					{@html currentBlocTextuel}</span
+				>
+			{/if}
+		</section>
+	</div>
+{:else}
+	<div class="flex h-screen w-full flex-col justify-center">
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:book-marked-fill"
+		></iconify-icon>
+		<p class="text-center font-medium text-gray-500 uppercase">Cet article</p>
+		<p class="text-center font-medium text-gray-500 uppercase">
+			est introuvable
+		</p>
 
-			<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
-			></iconify-icon>
-		</div>
-	{/if}
-</div>
+		<iconify-icon class="text-8xl text-gray-300" icon="ri:question-mark"
+		></iconify-icon>
+	</div>
+{/if}
