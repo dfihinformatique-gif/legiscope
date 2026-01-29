@@ -92,11 +92,15 @@ export const load: LayoutServerLoad = async ({
 	try {
 		const rawHtml = await fs.readFile(filePath, "utf-8")
 		const { document } = parseHTML(rawHtml)
+		const baseSize = getBaseFontSize(document)
+		// const baseSize = "9"
+		console.log({ baseSize })
 
 		resizeImg(document)
+
 		// Beware ! processInternalStyle and processInlineStyles MUST be called in this order !
-		processInternalStyles(document)
-		processInlineStyles(document)
+		processInternalStyles(document, baseSize)
+		processInlineStyles(document, baseSize)
 
 		const htmlContent = document.toString()
 
@@ -203,9 +207,53 @@ function resizeImg(document: Document) {
 	})
 }
 
-function processInlineStyles(document: Document) {
+function getBaseFontSize(document: Document): number {
+	const weights: Record<string, number> = {}
+
+	document
+		.querySelectorAll<HTMLElement>('[style*="font-size"]')
+		.forEach((el) => {
+			const style = el.getAttribute("style") || ""
+			const match = style.match(/font-size\s*:\s*([0-9.]+)(px|pt)/i)
+
+			if (match) {
+				const sizeKey = match[1] + match[2].toLowerCase()
+				const textLength = el.textContent?.trim().length || 0
+				weights[sizeKey] = (weights[sizeKey] || 0) + textLength
+			}
+		})
+
+	const winner = Object.entries(weights).sort((a, b) => b[1] - a[1])[0]
+	if (winner) {
+		const size = parseFloat(winner[0])
+		return size <= 7 ? 7 : size >= 18 ? 18 : size
+	}
+
+	return 12
+}
+
+const FONT_SIZE_REGEX = /font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi
+
+function convertToRelativeEm(styleString: string, baseSize: number): string {
+	return styleString.replace(FONT_SIZE_REGEX, (_, value, unit) => {
+		const num = parseFloat(value)
+		let ratio = 1
+
+		if (unit.toLowerCase() === "pt" || unit.toLowerCase() === "px") {
+			ratio = num / baseSize
+		} else if (unit === "%") {
+			ratio = num / 100
+		} else {
+			ratio = num
+		}
+
+		return `font-size: calc(${ratio.toFixed(3)} * var(--base-font-size));`
+	})
+}
+
+function processInlineStyles(document: Document, baseSize: number) {
 	document.querySelectorAll("[style]").forEach((el) => {
-		const style = el.getAttribute("style") || ""
+		let style = el.getAttribute("style") || ""
 		const colorMatch = style.match(/(?:color|background-color)\s*:\s*([^;]+)/i)
 
 		if (colorMatch) {
@@ -217,6 +265,11 @@ function processInlineStyles(document: Document) {
 				el.classList.remove("has-custom-color")
 			}
 		}
+
+		if (style.toLowerCase().includes("font-size")) {
+			style = convertToRelativeEm(style, baseSize)
+		}
+
 		const cleanedStyle = style
 			.split(";")
 			.map((rule) => rule.trim())
@@ -258,12 +311,12 @@ function isColorChromatic(color: string): boolean {
 	return !["gray", "grey", "black"].includes(color.toLowerCase())
 }
 
-function processInternalStyles(document: Document) {
+function processInternalStyles(document: Document, baseSize: number) {
 	const styleTags = document.querySelectorAll("style")
 	const chromaticClasses: string[] = []
 
 	styleTags.forEach((tag) => {
-		const cssText = tag.textContent || ""
+		let cssText = tag.textContent || ""
 
 		const ruleRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
 		let match
@@ -276,6 +329,9 @@ function processInternalStyles(document: Document) {
 				chromaticClasses.push(className)
 			}
 		}
+
+		cssText = convertToRelativeEm(cssText, baseSize)
+		tag.textContent = cssText
 	})
 
 	if (chromaticClasses.length > 0) {

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation"
 	import { resolve } from "$app/paths"
-	import { page } from "$app/state"
 	import type { Pathname } from "$app/types"
 
 	import BillSummary from "$lib/components/BillSummary.svelte"
@@ -24,7 +23,6 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
-	const pjl = page.params.pjl
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -109,67 +107,6 @@
 			if (isLikelyFooter(text)) {
 				el.remove()
 			}
-		})
-	}
-
-	// Pour augmenter la taille de toutes les typos
-
-	const scaleFontSizesWithRemConversion = (
-		root: ShadowRoot | HTMLElement,
-		factor = 1.4,
-		basePx = 16, // 1rem = 16px
-	) => {
-		/* Fonction de conversion px -> rem */
-		const convertPxToRem = (pxValue: number) => {
-			const scaled = pxValue * factor
-			const remValue = scaled / basePx
-			return `${remValue.toFixed(4)}rem`
-		}
-
-		/* 1. Agit sur les Inline styles */
-		const inlineElements = root.querySelectorAll<HTMLElement>(
-			"[style*='font-size']",
-		)
-		inlineElements.forEach((el) => {
-			const style = el.getAttribute("style")
-			if (!style) return
-
-			const updatedStyle = style.replace(
-				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
-				(_, value, unit) => {
-					const num = parseFloat(value)
-					if (unit.toLowerCase() === "px") {
-						return `font-size: ${convertPxToRem(num)};`
-					} else {
-						const scaled = num * factor
-						return `font-size: ${scaled}${unit};`
-					}
-				},
-			)
-
-			el.setAttribute("style", updatedStyle)
-		})
-
-		/* 2. Agit sur la CSS in <style> tags */
-		const styleTags = root.querySelectorAll("style")
-		styleTags.forEach((styleTag) => {
-			const cssText = styleTag.textContent
-			if (!cssText) return
-
-			const updatedCss = cssText.replace(
-				/font-size\s*:\s*([0-9.]+)(px|pt|em|rem|%)\s*;?/gi,
-				(_, value, unit) => {
-					const num = parseFloat(value)
-					if (unit.toLowerCase() === "px") {
-						return `font-size: ${convertPxToRem(num)};`
-					} else {
-						const scaled = num * factor
-						return `font-size: ${scaled}${unit};`
-					}
-				},
-			)
-
-			styleTag.textContent = updatedCss
 		})
 	}
 
@@ -258,6 +195,7 @@
 
 					 	:host {
 							display: block;
+							font-size: 1.125rem;
 							width: 96%;
 							height: 100%;
 							overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
@@ -481,18 +419,6 @@
 
 			// Supprime la police Marianne
 			removeSpecificFontFamilies(shadow)
-
-			// Applique la formule qui augmente la taille des typos
-
-			if (pjl === "PRJLANR5L17B1906" || pjl === "PRJLANR5L17B0324") {
-				scaleFontSizesWithRemConversion(
-					shadow,
-					1.4, //1,4
-					16,
-				) /* 1,4 = +40% de taille typo | 16 = base en px pour 1rem */
-			} else {
-				scaleFontSizesWithRemConversion(shadow, 0.85, 16)
-			}
 
 			disableJustify(shadow)
 
