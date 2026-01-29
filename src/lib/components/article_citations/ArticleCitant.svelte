@@ -3,7 +3,11 @@
 	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
 	import { type Pathname } from "$app/types"
-	import type { ArticleInfo, VersionArticle } from "$lib/db_data_types"
+	import {
+		historyDataToHistoryByText,
+		type ArticleInfo,
+		type VersionArticle,
+	} from "$lib/db_data_types"
 	import { formatDateFr, shared } from "$lib/shared.svelte"
 	import {
 		assertNever,
@@ -14,6 +18,7 @@
 	import { diffArrays, diffSentences, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import { SvelteURLSearchParams } from "svelte/reactivity"
+	import ArticlesModificateurs from "../ArticlesModificateurs.svelte"
 	import InformationMessage from "../ui_transverse_components/InformationMessage.svelte"
 	import ArticleSummary from "./../ArticleSummary.svelte"
 
@@ -625,6 +630,12 @@
 	onMount(() => {
 		scrollToCitationLink()
 	})
+
+	const historyByText = $derived(
+		citingArticleInfo.historyLinks
+			? historyDataToHistoryByText(citingArticleInfo.historyLinks)
+			: undefined,
+	)
 </script>
 
 <button
@@ -705,36 +716,44 @@
 		class:md:p-16={!shared.showBillDesktop}
 		style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
 	>
-		<div class="mb-4 flex flex-wrap justify-end gap-x-5 gap-y-3">
-			{#if citingArticleInfo?.versions && selectedVersion}
-				<p
-					class="grow rounded-t-sm border-b-3 border-neutral-200 bg-white p-2 text-left font-serif text-black italic sm:text-base"
-				>
-					{#if selectedVersion?.debut}
-						{#if selectedVersion.legi_id_lien.startsWith("JORF")}
-							Journal officiel du {formatDateFr(
-								citingArticleInfo.jorfTextDatePubli!,
-							)}
-						{:else if selectedVersion.debut === "2999-01-01"}
-							Version de versement
-						{:else if selectedVersion.fin === "2999-01-01"}
-							Version en vigueur depuis le {formatDateFr(selectedVersion.debut)}
-						{:else}
-							Version du {formatDateFr(selectedVersion.debut)}
-							au {formatDateFr(selectedVersion.fin)}
+		<section class="mb-8 flex flex-col gap-y-5">
+			<h2 class="sr-only">Version de l'article</h2>
+			<div class="flex flex-wrap justify-end gap-x-5 gap-y-3">
+				{#if citingArticleInfo?.versions && selectedVersion}
+					<p
+						class="grow rounded-t-sm border-b-3 border-neutral-200 bg-white p-2 text-left font-serif text-black italic sm:text-base"
+					>
+						{#if selectedVersion?.debut}
+							{#if selectedVersion.legi_id_lien.startsWith("JORF")}
+								Journal officiel du {formatDateFr(
+									citingArticleInfo.jorfTextDatePubli!,
+								)}
+							{:else if selectedVersion.debut === "2999-01-01"}
+								Version de versement
+							{:else if selectedVersion.fin === "2999-01-01"}
+								Version en vigueur depuis le {formatDateFr(
+									selectedVersion.debut,
+								)}
+							{:else}
+								Version du {formatDateFr(selectedVersion.debut)}
+								au {formatDateFr(selectedVersion.fin)}
+							{/if}
 						{/if}
-					{/if}
-				</p>
+					</p>
+				{/if}
+			</div>
+
+			{#if historyByText && historyByText.length > 0}
+				<ArticlesModificateurs {historyByText}></ArticlesModificateurs>
 			{/if}
-		</div>
 
-		<!--Sommaire-->
-		<ArticleSummary
-			articleInfo={citingArticleInfo}
-			date={dateForSelect}
-			isSummaryOfCitingArticle={true}
-		></ArticleSummary>
-
+			<!--Sommaire-->
+			<ArticleSummary
+				articleInfo={citingArticleInfo}
+				date={dateForSelect}
+				isSummaryOfCitingArticle={true}
+			></ArticleSummary>
+		</section>
 		<!--Texte de la version-->
 		<section class="mt-8">
 			<h2 class="sr-only">Texte de l’article</h2>

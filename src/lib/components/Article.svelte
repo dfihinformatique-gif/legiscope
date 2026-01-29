@@ -37,6 +37,7 @@
 	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
+	import ArticlesModificateurs from "./ArticlesModificateurs.svelte"
 	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
@@ -1234,57 +1235,7 @@
 					</div>
 				{/if}
 				{#if historyByText && historyByText.length > 0}
-					<ul>
-						{#each historyByText as historyText, indexText (indexText)}
-							<li
-								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
-							>
-								<span
-									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
-									>Suite à {historyText.typelien} par</span
-								>
-
-								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
-									{#each historyText.articles_jorf as historyArticle, indexArticle (indexArticle)}
-										{@const urlToNavigate = new URL(page.url)}
-										{urlToNavigate.searchParams.set(
-											"article",
-											historyArticle.id,
-										)}
-										<a
-											class="lx-link-text"
-											href={resolve(
-												`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
-											)}
-										>
-											{#if (historyArticle.num ?? "").length > 0}
-												art. {historyArticle.num}
-											{:else}
-												article
-											{/if}
-										</a>
-										{#if indexArticle < historyText.articles_jorf.length - 1}
-											,
-										{/if}
-									{/each}
-								{:else}
-									{@const urlToNavigate = new URL(page.url)}
-									{urlToNavigate.searchParams.set(
-										"article",
-										historyText.cidtexte,
-									)}
-									<a
-										class="lx-link-text"
-										href={resolve(
-											`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
-										)}>articles</a
-									>
-								{/if}
-								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
-								{historyText.titre_texte}
-							</li>
-						{/each}
-					</ul>
+					<ArticlesModificateurs {historyByText}></ArticlesModificateurs>
 				{/if}
 				<!--Sommaire-->
 				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
