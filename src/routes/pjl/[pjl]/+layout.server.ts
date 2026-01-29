@@ -93,8 +93,6 @@ export const load: LayoutServerLoad = async ({
 		const rawHtml = await fs.readFile(filePath, "utf-8")
 		const { document } = parseHTML(rawHtml)
 		const baseSize = getBaseFontSize(document)
-		// const baseSize = "9"
-		console.log({ baseSize })
 
 		resizeImg(document)
 
