@@ -332,9 +332,9 @@ export const load: LayoutServerLoad = async ({
 							parameter.short_label?.replace("'", " "),
 						)
 					}
-					return `<a title='${referredParametersLabels.join("|")}' href='/pjl/${pjl}?article=${lawArticle}'>${p2}*</a>`
+					return `<a title='${referredParametersLabels.join("|")}' class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'>${p2}*</a>`
 				} else {
-					return `<a href='/pjl/${pjl}?article=${lawArticle}'>${p2}</a>`
+					return `<a class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'>${p2}</a>`
 				}
 			},
 		)
