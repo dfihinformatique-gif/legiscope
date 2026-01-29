@@ -4,6 +4,9 @@
 	let isCitantInUrl = $derived(
 		page.url.searchParams.get("citant") ? true : false,
 	)
+	let isSummaryInUrl = $derived(
+		page.url.searchParams.get("summary") ? true : false,
+	)
 </script>
 
 {#if !shared.isMobilePhone}
@@ -90,6 +93,36 @@
 				</button>
 			</div>
 		{/if}
+
+		{#if isSummaryInUrl}
+			<div class="flex-1">
+				<button
+					class="
+		cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+		{shared.showSummaryDesktop
+						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
+						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+					onclick={() => {
+						shared.showSummaryDesktop = !shared.showSummaryDesktop
+						if (
+							!shared.showBillDesktop &&
+							!shared.showLawDesktop &&
+							!shared.showCitingDesktop &&
+							!shared.showSummaryDesktop
+						) {
+							shared.showBillDesktop = true
+						}
+					}}
+				>
+					<iconify-icon
+						class="mr-1 align-[-0.3rem] text-2xl"
+						icon={shared.showSummaryDesktop ? "ri:eye-fill" : "ri:eye-off-line"}
+					></iconify-icon>
+
+					Sommaire
+				</button>
+			</div>
+		{/if}
 	</nav>
 {:else}
 	<nav class="fixed bottom-8 flex w-full justify-between bg-neutral-300">
@@ -132,6 +165,21 @@
 						onclick={() => (shared.activePanelMobile = "citing")}
 					>
 						Citation
+					</button>
+				</div>
+			{/if}
+			{#if isSummaryInUrl}
+				<div class="flex h-full flex-1">
+					<button
+						class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
+					${shared.activePanelMobile === "summary" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
+					${shared.activePanelMobile === "law" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+
+				`}
+						onclick={() => (shared.activePanelMobile = "summary")}
+					>
+						Sommaire
 					</button>
 				</div>
 			{/if}

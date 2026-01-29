@@ -2,6 +2,7 @@
 	import { page } from "$app/state"
 	import Article from "$lib/components/Article.svelte"
 	import ArticleCitant from "$lib/components/article_citations/ArticleCitant.svelte"
+	import ArticleSummaryPanel from "$lib/components/ArticleSummaryPanel.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
 	import AlertDatabaseMessage from "$lib/components/ui_transverse_components/AlertDatabaseMessage.svelte"
@@ -110,6 +111,24 @@
 	})
 
 	$effect(() => {
+		const showSummary = page.url.searchParams.get("summary") === "true"
+
+		if (showSummary) {
+			shared.activePanelMobile = "summary"
+			shared.showSummaryDesktop = true
+		}
+	})
+
+	$effect(() => {
+		const requestedArticleId = page.url.searchParams.get("article")
+		const date = page.url.searchParams.get("date") ?? shared.pjlDate
+
+		if (requestedArticleId && date) {
+			shared.pjlDate = date
+		}
+	})
+
+	$effect(() => {
 		shared.pjlDate = data.pjlDate ?? shared.pjlDate
 	})
 </script>
@@ -182,6 +201,18 @@
 						versionsArticle={articleInfo!.versions}
 					></ArticleCitant>
 				{/if}
+			</aside>
+		{/if}
+
+		{#if page.url.searchParams.get("summary") === "true" && articleInfo}
+			<aside
+				class="@container/section-article-summary flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+				class:hidden={!shared.showSummaryDesktop}
+			>
+				<ArticleSummaryPanel
+					{articleInfo}
+					date={page.url.searchParams.get("date") ?? shared.pjlDate}
+				></ArticleSummaryPanel>
 			</aside>
 		{/if}
 	</div>
@@ -270,6 +301,18 @@
 					<iconify-icon class="text-8xl text-gray-500" icon="ri:arrow-left-line"
 					></iconify-icon>
 				</aside>
+			{/if}
+		</div>
+
+		<div
+			class="h-screen w-full overflow-y-auto bg-blue-100"
+			class:hidden={shared.activePanelMobile !== "summary"}
+		>
+			{#if page.url.searchParams.get("summary") === "true" && articleInfo}
+				<ArticleSummaryPanel
+					{articleInfo}
+					date={page.url.searchParams.get("date") ?? shared.pjlDate}
+				></ArticleSummaryPanel>
 			{/if}
 		</div>
 	</div>

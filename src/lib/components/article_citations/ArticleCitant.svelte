@@ -20,7 +20,6 @@
 	import { SvelteURLSearchParams } from "svelte/reactivity"
 	import ArticlesModificateurs from "../ArticlesModificateurs.svelte"
 	import InformationMessage from "../ui_transverse_components/InformationMessage.svelte"
-	import ArticleSummary from "./../ArticleSummary.svelte"
 
 	interface Props {
 		citingArticleInfo: ArticleInfo
@@ -625,8 +624,6 @@
 		return versions.find((version) => version.legi_id_lien === article.legi_id)
 	})
 
-	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
-
 	onMount(() => {
 		scrollToCitationLink()
 	})
@@ -640,7 +637,7 @@
 
 <button
 	class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-8 right-6 z-50 flex cursor-pointer items-center justify-center rounded-b-full px-3 pt-8 pb-2 text-white hover:translate-y-4"
-	title="Fermer le volet citations"
+	title="Fermer les citations"
 	onclick={() => {
 		const searchParams = new SvelteURLSearchParams(page.url.searchParams)
 		searchParams.delete("citant")
@@ -659,11 +656,12 @@
 >
 <div
 	class="pointer-events-none absolute inset-0 z-40
-         bg-linear-to-r from-transparent to-transparent
-         transition
-         peer-hover:from-transparent
-         peer-hover:to-blue-100"
+         w-1/3 justify-self-end bg-linear-to-r
+         from-transparent
+         to-transparent
+         transition peer-hover:from-transparent peer-hover:to-blue-100"
 ></div>
+
 {#if citingArticleInfo && citingArticleInfo.article}
 	<!--Message si affichage de l'article après clic sur section ou sur texte -->
 	{@const articleFromUrl = page.url.searchParams.get("citant") ?? ""}
@@ -746,13 +744,6 @@
 			{#if historyByText && historyByText.length > 0}
 				<ArticlesModificateurs {historyByText}></ArticlesModificateurs>
 			{/if}
-
-			<!--Sommaire-->
-			<ArticleSummary
-				articleInfo={citingArticleInfo}
-				date={dateForSelect}
-				isSummaryOfCitingArticle={true}
-			></ArticleSummary>
 		</section>
 		<!--Texte de la version-->
 		<section class="mt-8">

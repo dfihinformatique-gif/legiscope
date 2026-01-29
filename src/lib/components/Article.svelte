@@ -38,7 +38,6 @@
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticlesModificateurs from "./ArticlesModificateurs.svelte"
-	import ArticleSummary from "./ArticleSummary.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
 	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
@@ -1238,7 +1237,45 @@
 					<ArticlesModificateurs {historyByText}></ArticlesModificateurs>
 				{/if}
 				<!--Sommaire-->
-				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+
+				<div class="flex items-center justify-end">
+					<!--<p>
+						Contexte : {articleInfo.sectionTitle?.replaceAll("\\n", " ") ??
+							articleInfo.textTitle?.replaceAll("\\n", " ")}
+					</p>-->
+					<button
+						class="lx-link-uppercase font-sans text-nowrap text-gray-500"
+						onclick={() => {
+							const url = new URL(page.url)
+							if (url.searchParams.has("summary")) {
+								url.searchParams.delete("summary")
+							} else {
+								url.searchParams.set("summary", "true")
+								url.searchParams.delete("citant")
+								shared.activePanelMobile = "summary"
+								shared.showSummaryDesktop = true
+								if (!shared.showLawDesktop) shared.showLawDesktop = true
+							}
+
+							goto(resolve(`${url.pathname}${url.search}` as Pathname & {}), {
+								replaceState: false,
+								noScroll: true,
+							})
+						}}
+					>
+						<iconify-icon
+							class="align-[-0.3rem] text-xl"
+							icon={page.url.searchParams.has("summary")
+								? "ri:menu-fold-line"
+								: "ri:menu-fold-2-line"}
+						>
+						</iconify-icon>
+						{#if !page.url.searchParams.has("summary")}
+							Sommaire
+						{:else}Fermer le sommaire
+						{/if}
+					</button>
+				</div>
 			</section>
 
 			<!--Texte de la version-->

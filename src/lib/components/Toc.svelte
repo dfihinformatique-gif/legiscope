@@ -166,7 +166,7 @@
 				<a
 					href="{resolve(
 						page.url.pathname as Pathname,
-					)}?article={item.dernier_segment}">{tocItem.title}</a
+					)}?article={item.dernier_segment}&summary=true">{tocItem.title}</a
 				>
 			{:else}
 				<span class:font-bold={tocItem.open}>{tocItem.title}</span>

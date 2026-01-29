@@ -3,10 +3,11 @@ import { SvelteDate } from "svelte/reactivity"
 export interface Shared {
 	screenWidth: number
 	isMobilePhone: boolean
-	activePanelMobile: "bill" | "law" | "citing"
+	activePanelMobile: "bill" | "law" | "citing" | "summary"
 	showBillDesktop: boolean
 	showLawDesktop: boolean
 	showCitingDesktop: boolean
+	showSummaryDesktop: boolean
 	pjlDate: string
 }
 
@@ -17,6 +18,7 @@ export const shared: Shared = $state({
 	showBillDesktop: true,
 	showLawDesktop: true,
 	showCitingDesktop: false,
+	showSummaryDesktop: false,
 	pjlDate: "2025-10-01",
 })
 
