@@ -734,6 +734,9 @@
 	}
 </script>
 
+<h2 class="flex items-center pb-2 text-base font-bold text-gray-700">
+	Citations de l'article
+</h2>
 {#if table !== undefined}
 	<div class="mt-2 flex w-full flex-col flex-wrap justify-end gap-y-2">
 		<div class="flex justify-end">
