@@ -94,6 +94,7 @@ export const load: LayoutServerLoad = async ({
 		const { document } = parseHTML(rawHtml)
 		const baseSize = getBaseFontSize(document)
 
+		removeEmptyElements(document)
 		resizeImg(document)
 
 		// Beware ! processInternalStyle and processInlineStyles MUST be called in this order !
@@ -340,6 +341,39 @@ function processInternalStyles(document: Document, baseSize: number) {
 	}
 }
 
+function removeEmptyElements(document: Document) {
+	const excludedTags: string[] = [
+		"img",
+		"iframe",
+		"video",
+		"audio",
+		"svg",
+		"canvas",
+		"input",
+		"button",
+		"hr",
+		"path",
+	]
+	const elements = document.querySelectorAll("*")
+
+	elements.forEach((el) => {
+		const tag = el.tagName.toLowerCase()
+
+		// Ne jamais supprimer les balises exclues
+		if (excludedTags.includes(tag)) return
+
+		// Ne pas supprimer les éléments contenus dans un tableau
+		if (el.closest("table")) return
+
+		const hasChildren = el.children.length > 0
+		const hasText = el.textContent?.trim().length > 0
+
+		if (!hasChildren && !hasText) {
+			el.remove()
+		}
+	})
+}
+
 async function getCurrentLegiIds(
 	originalMap: Map<string, Array<ValueParameter | ScaleParameter>>,
 	date: string,
@@ -429,8 +463,6 @@ function highlightParameterValuesInHTML(
 	let match: RegExpExecArray | null
 	let linkCount = 0
 	let previousLawArticle: string | null = null
-
-	// console.log({ ici: parameterReferences.get("LEGIARTI000048805464") })
 
 	while ((match = linkRegex.exec(htmlContent)) !== null) {
 		// Extraire la valeur du paramètre lawArticle du lien courant

@@ -42,43 +42,6 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	// Pour supprimer les éléments vides (pas de texte ni d'enfants), sauf s'ils sont explicitement exclus (comme <img>, <iframe>, etc.) ou si il s'agit d'éléments à l'intérieur des tableaux
-
-	const removeEmptyElements = (
-		root: ShadowRoot | HTMLElement,
-		excludedTags: string[] = [
-			"img",
-			"iframe",
-			"video",
-			"audio",
-			"svg",
-			"canvas",
-			"input",
-			"button",
-			"hr",
-			"path",
-		],
-	) => {
-		const elements = root.querySelectorAll("*")
-
-		elements.forEach((el) => {
-			const tag = el.tagName.toLowerCase()
-
-			// Ne jamais supprimer les balises exclues
-			if (excludedTags.includes(tag)) return
-
-			// Ne pas supprimer les éléments contenus dans un tableau
-			if (el.closest("table")) return
-
-			const hasChildren = el.children.length > 0
-			const hasText = el.textContent?.trim().length > 0
-
-			if (!hasChildren && !hasText) {
-				el.remove()
-			}
-		})
-	}
-
 	// Pour supprimer la div de pied de page ou en-tête indiquant Projet de loi de finances 1
 	const removeProjetDeLoiFooters = (root: ShadowRoot | HTMLElement) => {
 		const isLikelyFooter = (text: string | null | undefined) => {
@@ -414,7 +377,6 @@
 			})
 
 			// Applique les formules qui retirent certains éléments
-			removeEmptyElements(shadow)
 			removeProjetDeLoiFooters(shadow)
 
 			// Supprime la police Marianne
