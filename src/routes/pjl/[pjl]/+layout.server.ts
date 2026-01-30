@@ -470,9 +470,14 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 		}
 
 		// Supprimer certaines polices
-		cssText = cssText.replace(
-			/font-family\s*:\s*[^;]*(marianne|aril)[^;]*;/i,
-			"",
+		cssText = cssText.replaceAll(
+			/font-family\s*:\s*(?:(?:'[^']*'|"[^"]*"|[^;}])+?)(?=\s*[;}])/gi,
+			(match) => {
+				if (/marianne|arial/i.test(match)) {
+					return ""
+				}
+				return match
+			},
 		)
 
 		// Neutralisation des alignements forcés (Justify -> Left)
