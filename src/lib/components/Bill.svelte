@@ -86,29 +86,6 @@
 
 			shadow.innerHTML = pjlHTML
 
-			// Pour transformer les tables des exposés des motifs en div
-			const tables = shadow.querySelectorAll("table")
-
-			tables.forEach((table) => {
-				/* Cherche un <p class="assnatFPFexpogentexte"> dans cette table */
-				if (table.querySelector("p.assnatFPFexpogentexte")) {
-					/* Crée un div pour remplacer la table */
-					const div = document.createElement("div")
-					div.className = "expose-motif"
-
-					/* Récupère tout le texte des paragraphes dans la table */
-					const paragraphs = Array.from(
-						table.querySelectorAll("p.assnatFPFexpogentexte"),
-					)
-					paragraphs.forEach((p) => {
-						/* Clone le paragraphe pour conserver la structure */
-						div.appendChild(p.cloneNode(true))
-					})
-					/* Remplace la table par ce div */
-					table.replaceWith(div)
-				}
-			})
-
 			disableJustify(shadow)
 
 			const initialHash = window.location.hash

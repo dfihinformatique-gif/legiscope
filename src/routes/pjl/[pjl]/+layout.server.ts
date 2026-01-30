@@ -541,6 +541,26 @@ function processDocument(document: Document) {
 		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
+		// Transformer les tables des exposés des motifs en div
+		if (element.tagName === "TABLE") {
+			const specialParagraphs = element.querySelectorAll(
+				"p.assnatFPFexpogentexte",
+			)
+
+			if (specialParagraphs.length > 0) {
+				const div = document.createElement("div")
+				div.className = "expose-motif"
+
+				specialParagraphs.forEach((p) => {
+					// On clone pour garder la structure originale du paragraphe
+					div.appendChild(p.cloneNode(true))
+				})
+
+				element.replaceWith(div)
+				return // On arrête le traitement pour la table supprimée
+			}
+		}
+
 		// Suppression des éléments vides
 		if (
 			!tagsToExcludeFromRemoving.includes(element.tagName) &&
