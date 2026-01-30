@@ -541,23 +541,37 @@ function processDocument(document: Document) {
 		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
-		// Transformer les tables des exposés des motifs en div
 		if (element.tagName === "TABLE") {
-			const specialParagraphs = element.querySelectorAll(
-				"p.assnatFPFexpogentexte",
-			)
-
-			if (specialParagraphs.length > 0) {
+			const exposeMotif = element.querySelectorAll("p.assnatFPFexpogentexte")
+			// Transformer les tables des exposés des motifs en div
+			if (exposeMotif.length > 0) {
 				const div = document.createElement("div")
 				div.className = "expose-motif"
 
-				specialParagraphs.forEach((p) => {
+				exposeMotif.forEach((p) => {
 					// On clone pour garder la structure originale du paragraphe
 					div.appendChild(p.cloneNode(true))
 				})
 
 				element.replaceWith(div)
 				return // On arrête le traitement pour la table supprimée
+			} else {
+				// Contrôle le style des autres table
+				const cellCount = element.querySelectorAll("td, th").length
+
+				/* Créer le conteneur scrollable */
+				const wrapper = document.createElement("div")
+				wrapper.classList.add("table-container")
+
+				/* Insérer le conteneur autour de la table */
+				element.parentNode?.insertBefore(wrapper, element)
+				wrapper.appendChild(element)
+
+				/* Appliquer la bordure si plus de 2 cellules */
+				if (cellCount > 2) {
+					element.style.border = "1px solid black"
+					element.style.borderCollapse = "collapse"
+				}
 			}
 		}
 

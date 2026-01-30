@@ -105,25 +105,6 @@
 
 			shadow.addEventListener("click", handleClick)
 
-			// Supervise le style des tableaux en les mettant dans une div avec une bordure, seulement si il y a plus de 2 cellules, afin d'éviter de toucher aux tables qui contiennent les titres
-			shadow.querySelectorAll("table").forEach((table) => {
-				const cellCount = table.querySelectorAll("td, th").length
-
-				/* Créer le conteneur scrollable */
-				const wrapper = document.createElement("div")
-				wrapper.classList.add("table-container")
-
-				/* Insérer le conteneur autour de la table */
-				table.parentNode?.insertBefore(wrapper, table)
-				wrapper.appendChild(table)
-
-				/* Appliquer la bordure si plus de 2 cellules */
-				if (cellCount > 2) {
-					table.style.border = "1px solid black"
-					table.style.borderCollapse = "collapse"
-				}
-			})
-
 			// BOUTON PARAMÈTRES du simulateur ou OpenFIsca
 
 			const baseBg = "#ccd3e7" /* Fond bleu clair */
