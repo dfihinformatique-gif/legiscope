@@ -122,6 +122,9 @@ export const load: LayoutServerLoad = async ({
 							width: 100% !important;
 							border: 1px solid black !important;
 						}
+						div:not([id^="formCorrection:panel"]) > div.table-container > table {
+							font-size: 1rem;
+						}
 						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
 							overflow-x: auto;
 							width: 100%;
@@ -559,16 +562,14 @@ function processDocument(document: Document) {
 				// Contrôle le style des autres table
 				const cellCount = element.querySelectorAll("td, th").length
 
-				/* Créer le conteneur scrollable */
-				const wrapper = document.createElement("div")
-				wrapper.classList.add("table-container")
-
-				/* Insérer le conteneur autour de la table */
-				element.parentNode?.insertBefore(wrapper, element)
-				wrapper.appendChild(element)
-
-				/* Appliquer la bordure si plus de 2 cellules */
 				if (cellCount > 2) {
+					/* Créer le conteneur scrollable */
+					const wrapper = document.createElement("div")
+					wrapper.classList.add("table-container")
+
+					/* Insérer le conteneur autour de la table */
+					element.parentNode?.insertBefore(wrapper, element)
+					wrapper.appendChild(element)
 					element.style.border = "1px solid black"
 					element.style.borderCollapse = "collapse"
 				}
