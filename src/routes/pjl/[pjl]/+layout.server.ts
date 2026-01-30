@@ -468,7 +468,7 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 
 		// Supprimer certaines polices
 		cssText = cssText.replace(
-			/font-family\s*:\s*[^;!}]*(marianne|arial)[^;!}]*;?/gi,
+			/font-family\s*:\s*[^;]*(marianne|aril)[^;]*;/i,
 			"",
 		)
 
