@@ -42,16 +42,6 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	// Pour éviter que le texte soit justifié (text-align:justify)
-	const disableJustify = (root: ShadowRoot | HTMLElement) => {
-		root.querySelectorAll("*").forEach((el) => {
-			const style = getComputedStyle(el)
-			if (style.textAlign === "justify") {
-				;(el as HTMLElement).style.textAlign = "left" // ou "start"
-			}
-		})
-	}
-
 	function findFirstLinkAbove(
 		button: HTMLButtonElement,
 	): HTMLAnchorElement | null {
@@ -85,8 +75,6 @@
 			const shadow = container.attachShadow({ mode: "open" })
 
 			shadow.innerHTML = pjlHTML
-
-			disableJustify(shadow)
 
 			const initialHash = window.location.hash
 			if (initialHash) {
