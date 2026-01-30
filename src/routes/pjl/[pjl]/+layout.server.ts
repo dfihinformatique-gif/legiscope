@@ -455,7 +455,7 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 	styleTags.forEach((tag) => {
 		let cssText = tag.textContent || ""
 
-		// 1. Détection des classes avec couleurs chromatiques
+		// Détection des classes avec couleurs chromatiques
 		// On cherche le nom de la classe et la valeur de la couleur
 		const colorRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
 		let match
@@ -466,10 +466,16 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			}
 		}
 
-		// 2. Neutralisation des alignements forcés (Justify -> Left)
+		// Supprimer certaines polices
+		cssText = cssText.replace(
+			/font-family\s*:\s*[^;!}]*(marianne|arial)[^;!}]*;?/gi,
+			"",
+		)
+
+		// Neutralisation des alignements forcés (Justify -> Left)
 		cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
 
-		// 3. Mise à l'échelle des polices dans le CSS interne
+		// Mise à l'échelle des polices dans le CSS interne
 		// On utilise la même logique de variable CSS que pour l'inline
 		cssText = cssText.replace(FONT_SIZE_REGEX, (_, value, unit) => {
 			const num = parseFloat(value)
@@ -535,6 +541,7 @@ function processDocument(document: Document) {
 		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
+		// Suppression des éléments vides
 		if (
 			!tagsToExcludeFromRemoving.includes(element.tagName) &&
 			!isInsidetable
@@ -548,6 +555,7 @@ function processDocument(document: Document) {
 			}
 		}
 
+		// Ajustement du style des images
 		if (element.tagName === "IMG") {
 			element.removeAttribute("width")
 			element.removeAttribute("height")
@@ -614,11 +622,27 @@ function processDocument(document: Document) {
 					newStyle = convertToRelativeEm(newStyle, baseSize)
 				}
 
-				// Nettoyage margin/padding
+				// Nettoyage margin/padding/font-family
 				const cleanedStyle = newStyle
 					.split(";")
 					.map((r) => r.trim())
-					.filter((r) => r && !/^(margin|padding)/i.test(r))
+					.filter((r) => {
+						if (!r) return false
+						const lowerRule = r.toLowerCase()
+
+						// Filtre font-family (Marianne, Arial)
+						if (lowerRule.startsWith("font-family")) {
+							return !(
+								lowerRule.includes("marianne") || lowerRule.includes("arial")
+							)
+						}
+
+						// Filtre Margins/Paddings (en préservant les images)
+						return (
+							!lowerRule.startsWith("margin") &&
+							!lowerRule.startsWith("padding")
+						)
+					})
 					.join("; ")
 
 				if (cleanedStyle) {

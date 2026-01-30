@@ -42,44 +42,6 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	// Pour supprimer les font mises en place (ce qui rend impossible de leur appliquer une autre font) | Toutes les font ne sont pas supprimées au risque de casser la mise en page
-	const removeSpecificFontFamilies = (root: ShadowRoot | HTMLElement) => {
-		/* 1. Supprimer les font-family inline contenant Marianne */
-		root
-			.querySelectorAll<HTMLElement>('[style*="font-family"]')
-			.forEach((el) => {
-				const style = el.getAttribute("style")
-				if (!style) return
-
-				const cleanedStyle = style
-					.split(";")
-					.map((rule) => rule.trim())
-					.filter((rule) => {
-						const match = /^font-family\s*:\s*(.+)$/i.exec(rule)
-						if (!match) return true
-						const value = match[1].toLowerCase()
-						return !(value.includes("marianne") || value.includes("arial"))
-					})
-					.join("; ")
-
-				if (cleanedStyle) {
-					el.setAttribute("style", cleanedStyle)
-				} else {
-					el.removeAttribute("style")
-				}
-			})
-
-		/* 2. Supprimer dans les <style> internes les font-family ciblées */
-		root.querySelectorAll("style").forEach((styleTag) => {
-			if (!styleTag.textContent) return
-
-			styleTag.textContent = styleTag.textContent.replace(
-				/font-family\s*:\s*[^;]*(marianne)[^;]*;/gi,
-				"",
-			)
-		})
-	}
-
 	// Pour éviter que le texte soit justifié (text-align:justify)
 	const disableJustify = (root: ShadowRoot | HTMLElement) => {
 		root.querySelectorAll("*").forEach((el) => {
@@ -146,9 +108,6 @@
 					table.replaceWith(div)
 				}
 			})
-
-			// Supprime la police Marianne
-			removeSpecificFontFamilies(shadow)
 
 			disableJustify(shadow)
 
