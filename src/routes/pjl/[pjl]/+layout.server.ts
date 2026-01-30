@@ -285,14 +285,7 @@ export const load: LayoutServerLoad = async ({
 	try {
 		const rawHtml = await fs.readFile(filePath, "utf-8")
 		const { document } = parseHTML(rawHtml)
-		const baseSize = getBaseFontSize(document)
-
-		removeEmptyElements(document)
-		resizeImg(document)
-
-		// Beware ! processInternalStyle and processInlineStyles MUST be called in this order !
-		processInternalStyles(document, baseSize)
-		processInlineStyles(document, baseSize)
+		processDocument(document)
 
 		const htmlContent = document.toString()
 
@@ -389,17 +382,6 @@ ${articles
 	}
 }
 
-function resizeImg(document: Document) {
-	document.querySelectorAll("img").forEach((img) => {
-		img.removeAttribute("width")
-		img.removeAttribute("height")
-		img.setAttribute(
-			"style",
-			"display:block; margin:0 auto; height:auto; max-width:100%;",
-		)
-	})
-}
-
 function getBaseFontSize(document: Document): number {
 	const weights: Record<string, number> = {}
 
@@ -444,50 +426,12 @@ function convertToRelativeEm(styleString: string, baseSize: number): string {
 	})
 }
 
-function processInlineStyles(document: Document, baseSize: number) {
-	document.querySelectorAll("[style]").forEach((el) => {
-		let style = el.getAttribute("style") || ""
-		const colorMatch = style.match(/(?:color|background-color)\s*:\s*([^;]+)/i)
-
-		if (colorMatch) {
-			const colorValue = colorMatch[1].trim()
-
-			if (isColorChromatic(colorValue)) {
-				el.classList.add("has-custom-color")
-			} else {
-				el.classList.remove("has-custom-color")
-			}
-		}
-
-		if (style.toLowerCase().includes("font-size")) {
-			style = convertToRelativeEm(style, baseSize)
-		}
-
-		const cleanedStyle = style
-			.split(";")
-			.map((rule) => rule.trim())
-			.filter(
-				(rule) =>
-					rule &&
-					!rule.toLowerCase().startsWith("margin") &&
-					!rule.toLowerCase().startsWith("padding"),
-			)
-			.join("; ")
-
-		if (cleanedStyle) {
-			el.setAttribute("style", cleanedStyle)
-		} else {
-			el.removeAttribute("style")
-		}
-	})
-}
-
 function isColorChromatic(color: string): boolean {
 	const hexMatch = color.match(/^#([0-9a-f]{3}){1,2}$/i)
 	if (hexMatch) {
 		const hex = hexMatch[0].replace("#", "")
 		if (hex.length === 3) {
-			return hex[0] === hex[1] && hex[1] === hex[2]
+			return !(hex[0] === hex[1] && hex[1] === hex[2])
 		}
 		const r = hex.substring(0, 2),
 			g = hex.substring(2, 4),
@@ -504,39 +448,58 @@ function isColorChromatic(color: string): boolean {
 	return !["gray", "grey", "black"].includes(color.toLowerCase())
 }
 
-function processInternalStyles(document: Document, baseSize: number) {
+function processStyleTags(document: Document, baseSize: number): Set<string> {
 	const styleTags = document.querySelectorAll("style")
-	const chromaticClasses: string[] = []
+	const chromaticClasses = new Set<string>()
 
 	styleTags.forEach((tag) => {
 		let cssText = tag.textContent || ""
 
-		const ruleRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
+		// 1. Détection des classes avec couleurs chromatiques
+		// On cherche le nom de la classe et la valeur de la couleur
+		const colorRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
 		let match
-
-		while ((match = ruleRegex.exec(cssText)) !== null) {
-			const className = match[1]
-			const colorValue = match[2].trim()
-
-			if (isColorChromatic(colorValue)) {
-				chromaticClasses.push(className)
+		while ((match = colorRegex.exec(cssText)) !== null) {
+			const [, className, colorValue] = match
+			if (isColorChromatic(colorValue.trim())) {
+				chromaticClasses.add(className)
 			}
 		}
 
-		cssText = convertToRelativeEm(cssText, baseSize)
+		// 2. Neutralisation des alignements forcés (Justify -> Left)
+		cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
+
+		// 3. Mise à l'échelle des polices dans le CSS interne
+		// On utilise la même logique de variable CSS que pour l'inline
+		cssText = cssText.replace(FONT_SIZE_REGEX, (_, value, unit) => {
+			const num = parseFloat(value)
+			let ratio = 1
+			if (unit.toLowerCase() === "pt" || unit.toLowerCase() === "px") {
+				ratio = num / baseSize
+			} else if (unit === "%") {
+				ratio = num / 100
+			} else {
+				ratio = num
+			}
+			return `font-size: calc(${ratio.toFixed(3)} * var(--base-font-size))`
+		})
+
+		// 4. Suppression des marges globales qui cassent souvent le layout
+		cssText = cssText.replace(
+			/margin-(?:top|bottom|left|right)\s*:[^;!}]+(!important)?/gi,
+			"margin: 0",
+		)
+
 		tag.textContent = cssText
 	})
 
-	if (chromaticClasses.length > 0) {
-		const selector = chromaticClasses.map((c) => `.${c}`).join(", ")
-		document.querySelectorAll(selector).forEach((el) => {
-			el.classList.add("has-custom-color")
-		})
-	}
+	return chromaticClasses
 }
 
-function removeEmptyElements(document: Document) {
-	const excludedTags: string[] = [
+function processDocument(document: Document) {
+	const baseSize = getBaseFontSize(document)
+	const chromaticClasses = processStyleTags(document, baseSize)
+	const tagsToExcludeFromRemoving: string[] = [
 		"img",
 		"iframe",
 		"video",
@@ -548,22 +511,92 @@ function removeEmptyElements(document: Document) {
 		"hr",
 		"path",
 	]
-	const elements = document.querySelectorAll("*")
 
-	elements.forEach((el) => {
-		const tag = el.tagName.toLowerCase()
+	document.querySelectorAll("*").forEach((el) => {
+		const element = el as HTMLElement
+		const styleAttr = element.getAttribute("style") || ""
 
-		// Ne jamais supprimer les balises exclues
-		if (excludedTags.includes(tag)) return
+		if (
+			!tagsToExcludeFromRemoving.includes(element.tagName) &&
+			!el.closest("table")
+		) {
+			const hasChildren = el.children.length > 0
+			const hasText = el.textContent?.trim().length > 0
 
-		// Ne pas supprimer les éléments contenus dans un tableau
-		if (el.closest("table")) return
+			if (!hasChildren && !hasText) {
+				el.remove()
+				return
+			}
+		}
 
-		const hasChildren = el.children.length > 0
-		const hasText = el.textContent?.trim().length > 0
+		if (element.tagName === "IMG") {
+			element.removeAttribute("width")
+			element.removeAttribute("height")
+			// On définit le style de base. Note : si l'image a déjà un style,
+			// il sera traité/écrasé par la suite de la fonction.
+			element.setAttribute(
+				"style",
+				"display:block; margin:0 auto; height:auto; max-width:100%;",
+			)
+		} else {
+			let hasChromatism = false
+			// A. Vérification des classes internes
+			// On vérifie si l'élément possède une des classes détectées comme colorées
+			for (const className of element.classList) {
+				if (chromaticClasses.has(className)) {
+					hasChromatism = true
+					break
+				}
+			}
 
-		if (!hasChildren && !hasText) {
-			el.remove()
+			// B. Vérification du style Inline
+			const colorMatch = styleAttr.match(
+				/(?:color|background-color)\s*:\s*([^;]+)/i,
+			)
+			if (colorMatch) {
+				const colorValue = colorMatch[1].trim()
+				// Le style inline a le dernier mot : s'il est chromatique, on marque,
+				// s'il est gris/noir, on invalide le marquage de la classe.
+				hasChromatism = isColorChromatic(colorValue)
+			}
+
+			// C. Application de la classe
+			if (hasChromatism) {
+				element.classList.add("has-custom-color")
+			} else {
+				element.classList.remove("has-custom-color")
+			}
+
+			// D. Transformations structurelles du style
+			if (styleAttr) {
+				let newStyle = styleAttr
+
+				// Alignement
+				if (newStyle.toLowerCase().includes("justify")) {
+					newStyle = newStyle.replace(
+						/text-align\s*:\s*justify/gi,
+						"text-align: left",
+					)
+				}
+
+				// Polices
+				if (newStyle.toLowerCase().includes("font-size")) {
+					newStyle = convertToRelativeEm(newStyle, baseSize)
+				}
+
+				// Nettoyage margin/padding
+				const cleanedStyle = newStyle
+					.split(";")
+					.map((r) => r.trim())
+					.filter((r) => r && !/^(margin|padding)/i.test(r))
+					.join("; ")
+
+				if (cleanedStyle) {
+					element.setAttribute("style", cleanedStyle)
+				} else {
+					element.removeAttribute("style")
+				}
+			}
 		}
 	})
 }
