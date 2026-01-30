@@ -496,29 +496,48 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 	return chromaticClasses
 }
 
+function isLikelyFooter(text: string | null | undefined) {
+	if (!text) return false
+	const cleaned = text.toLowerCase().replace(/\s+/g, " ").trim()
+
+	/* Contient "projet de loi de finances" */
+	if (!cleaned.includes("projet de loi de finances")) return false
+
+	/* Contient un numéro isolé ou en fin */
+	const hasPageNumber = /\b\d{1,3}\b/.test(cleaned)
+	if (!hasPageNumber) return false
+
+	/* Doit être court (ex : max 15 mots) */
+	const wordCount = cleaned.split(/\s+/).length
+	if (wordCount > 15) return false
+
+	return true
+}
+
 function processDocument(document: Document) {
 	const baseSize = getBaseFontSize(document)
 	const chromaticClasses = processStyleTags(document, baseSize)
 	const tagsToExcludeFromRemoving: string[] = [
-		"img",
-		"iframe",
-		"video",
-		"audio",
-		"svg",
-		"canvas",
-		"input",
-		"button",
-		"hr",
-		"path",
+		"IMG",
+		"IFRAME",
+		"VIDEO",
+		"AUDIO",
+		"SVG",
+		"CANVAS",
+		"INPUT",
+		"BUTTON",
+		"HR",
+		"PATH",
 	]
 
 	document.querySelectorAll("*").forEach((el) => {
 		const element = el as HTMLElement
 		const styleAttr = element.getAttribute("style") || ""
+		const isInsidetable = element.closest("table")
 
 		if (
 			!tagsToExcludeFromRemoving.includes(element.tagName) &&
-			!el.closest("table")
+			!isInsidetable
 		) {
 			const hasChildren = el.children.length > 0
 			const hasText = el.textContent?.trim().length > 0
@@ -539,6 +558,17 @@ function processDocument(document: Document) {
 				"display:block; margin:0 auto; height:auto; max-width:100%;",
 			)
 		} else {
+			if (
+				["DIV", "P", "TABLE", "SECTION", "FOOTER"].includes(element.tagName)
+			) {
+				if (!isInsidetable || element.tagName !== "TABLE") {
+					const text = el.textContent
+					if (isLikelyFooter(text)) {
+						el.remove()
+						return
+					}
+				}
+			}
 			let hasChromatism = false
 			// A. Vérification des classes internes
 			// On vérifie si l'élément possède une des classes détectées comme colorées

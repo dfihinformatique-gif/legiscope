@@ -42,37 +42,6 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	// Pour supprimer la div de pied de page ou en-tête indiquant Projet de loi de finances 1
-	const removeProjetDeLoiFooters = (root: ShadowRoot | HTMLElement) => {
-		const isLikelyFooter = (text: string | null | undefined) => {
-			if (!text) return false
-			const cleaned = text.toLowerCase().replace(/\s+/g, " ").trim()
-
-			/* Contient "projet de loi de finances" */
-			if (!cleaned.includes("projet de loi de finances")) return false
-
-			/* Contient un numéro isolé ou en fin */
-			const hasPageNumber = /\b\d{1,3}\b/.test(cleaned)
-			if (!hasPageNumber) return false
-
-			/* Doit être court (ex : max 15 mots) */
-			const wordCount = cleaned.split(/\s+/).length
-			if (wordCount > 15) return false
-
-			return true
-		}
-
-		root.querySelectorAll("div, p, table, section, footer").forEach((el) => {
-			/* Ne touche pas aux éléments internes aux tableaux */
-			if (el.closest("table") && el.tagName !== "TABLE") return
-
-			const text = el.textContent
-			if (isLikelyFooter(text)) {
-				el.remove()
-			}
-		})
-	}
-
 	// Pour supprimer les font mises en place (ce qui rend impossible de leur appliquer une autre font) | Toutes les font ne sont pas supprimées au risque de casser la mise en page
 	const removeSpecificFontFamilies = (root: ShadowRoot | HTMLElement) => {
 		/* 1. Supprimer les font-family inline contenant Marianne */
@@ -177,9 +146,6 @@
 					table.replaceWith(div)
 				}
 			})
-
-			// Applique les formules qui retirent certains éléments
-			removeProjetDeLoiFooters(shadow)
 
 			// Supprime la police Marianne
 			removeSpecificFontFamilies(shadow)
