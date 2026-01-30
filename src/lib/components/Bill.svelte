@@ -155,8 +155,6 @@
 
 			shadow.innerHTML = pjlHTML
 
-			shadow.querySelector(".content-wrapper")!.innerHTML = pjlHTML
-
 			// Pour transformer les tables des exposés des motifs en div
 			const tables = shadow.querySelectorAll("table")
 
