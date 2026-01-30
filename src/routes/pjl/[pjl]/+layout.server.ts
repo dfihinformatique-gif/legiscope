@@ -18,6 +18,21 @@ import {
 } from "@tricoteuses/tisseuse"
 import type { LayoutServerLoad } from "./$types"
 
+const PJL_DATES = new Map<string, string>([
+	["PRJLANR5L17B1906", "2025-10-14"],
+	["PRJLANR5L17B1907", "2025-10-14"],
+	["pjl25-024", "2025-10-14"],
+	["pjl25-138", "2025-11-24"],
+	["PRJLANR5L17B2247", "2025-12-15"],
+	["pjl25-122", "2025-11-13"],
+	["PRJLANR5L17B2141", "2025-11-26"],
+	["pjl25-193", "2025-12-09"],
+	["pjl25-112", "2025-11-05"],
+	["PRJLANR5L17B2115", "2025-11-05"],
+	["PRJLANR5L17BTC2250", "2025-12-17"],
+	["DECLANR5L17B2247-N0", "2026-01-21"],
+])
+
 export const load: LayoutServerLoad = async ({
 	params,
 	request,
@@ -45,49 +60,14 @@ export const load: LayoutServerLoad = async ({
 	const pjl = params.pjl
 	const filePath = path.resolve(`static/${pjl}.html`)
 
-	let pjlDate = new Date().toISOString().split("T")[0]
-
-	switch (pjl) {
-		case "PRJLANR5L17B1906":
-		case "PRJLANR5L17B1907":
-		case "pjl25-024":
-			pjlDate = new Date("2025-10-14").toISOString().split("T")[0]
-			break
-		case "pjl25-138":
-			pjlDate = new Date("2025-11-24").toISOString().split("T")[0]
-			break
-		case "PRJLANR5L17B2247":
-			pjlDate = new Date("2025-12-15").toISOString().split("T")[0]
-			break
-		case "pjl25-122":
-			pjlDate = new Date("2025-11-13").toISOString().split("T")[0]
-			break
-		case "PRJLANR5L17B2141":
-			pjlDate = new Date("2025-11-26").toISOString().split("T")[0]
-			break
-		case "pjl25-193":
-			pjlDate = new Date("2025-12-09").toISOString().split("T")[0]
-			break
-		case "pjl25-112":
-			pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
-			break
-		case "PRJLANR5L17B2115":
-			pjlDate = new Date("2025-11-05").toISOString().split("T")[0]
-			break
-		case "PRJLANR5L17BTC2250":
-			pjlDate = new Date("2025-12-17").toISOString().split("T")[0]
-			break
-		case "DECLANR5L17B2247-N0":
-			pjlDate = new Date("2026-01-21").toISOString().split("T")[0]
-			break
-	}
+	const pjlDate = PJL_DATES.get(pjl) ?? new Date().toISOString().split("T")[0]
 
 	shared.pjlDate = pjlDate
 
-	const currentParameterReferences = await getCurrentLegiIds(
-		parameterReferences,
-		pjlDate,
-	)
+	const [rawHtml, currentParameterReferences] = await Promise.all([
+		fs.readFile(filePath, "utf-8"),
+		getCurrentLegiIds(parameterReferences, pjlDate),
+	])
 
 	const style = `
 						/* STYLES POUR RENDRE LISIBLE LE HTML */
@@ -286,7 +266,6 @@ export const load: LayoutServerLoad = async ({
 				`
 
 	try {
-		const rawHtml = await fs.readFile(filePath, "utf-8")
 		const { document } = parseHTML(rawHtml)
 		processDocument(document)
 
@@ -699,33 +678,41 @@ async function getCurrentLegiIds(
 	originalMap: Map<string, Array<ValueParameter | ScaleParameter>>,
 	date: string,
 ): Promise<Map<string, Array<ValueParameter | ScaleParameter>>> {
+	if (originalMap.size === 0) {
+		return new Map()
+	}
+
 	try {
 		const updatedMap = new Map<string, Array<ValueParameter | ScaleParameter>>()
 		const sql = await getDbPool()
 
 		const dbConnection = await sql.reserve()
 
-		const result = await dbConnection`select legi_id, legi_id_lien
+		try {
+			const keys = Array.from(originalMap.keys())
+			const result = await dbConnection`select legi_id, legi_id_lien
 				from versions
-				where ${date}::date between debut and fin and legi_id=ANY(${Array.from(originalMap.keys())})`
+				where ${date}::date between debut and fin and legi_id=ANY(${keys})`
 
-		const dictionary = new Map(
-			result.map((row) => [row.legi_id, row.legi_id_lien]),
-		)
-		dbConnection.release()
+			const dictionary = new Map(
+				result.map((row) => [row.legi_id, row.legi_id_lien]),
+			)
 
-		for (const [key, value] of originalMap.entries()) {
-			// Cherche la nouvelle clé dans le dictionnaire. Si non trouvée, garde l'ancienne.
-			const newKey = dictionary.get(key) || key
+			for (const [key, value] of originalMap.entries()) {
+				// Cherche la nouvelle clé dans le dictionnaire. Si non trouvée, garde l'ancienne.
+				const newKey = dictionary.get(key) || key
 
-			if (updatedMap.has(newKey)) {
-				updatedMap.set(newKey, [...updatedMap.get(newKey)!, ...value])
-			} else {
-				updatedMap.set(newKey, value)
+				if (updatedMap.has(newKey)) {
+					updatedMap.set(newKey, [...updatedMap.get(newKey)!, ...value])
+				} else {
+					updatedMap.set(newKey, value)
+				}
 			}
-		}
 
-		return updatedMap
+			return updatedMap
+		} finally {
+			dbConnection.release()
+		}
 	} catch (error) {
 		console.error("Erreur lors de la récupération des correspondances :", error)
 		return new Map()
@@ -796,36 +783,39 @@ function highlightParameterValuesInHTML(
 		const textBefore = htmlContent.substring(lastIndex, match.index)
 
 		if (linkCount > 0 && previousLawArticle !== null) {
-			// Extraire le texte brut du HTML
-			const simplified = simplifyHtml({ removeAWithHref: true })(textBefore)
-			const textPlain = simplified.output
-			let processedHtml = textBefore
+			const params = parameterReferences.get(previousLawArticle)
+			if (!params || params.length === 0) {
+				parts.push(textBefore)
+			} else {
+				// Extraire le texte brut du HTML
+				const simplified = simplifyHtml({ removeAWithHref: true })(textBefore)
+				const textPlain = simplified.output
+				let processedHtml = textBefore
 
-			const simplifiedCoordWithParameters: Map<
-				{ start: number; stop: number },
-				Array<string>
-			> = new Map()
+				const simplifiedCoordWithParameters: Map<
+					{ start: number; stop: number },
+					Array<string>
+				> = new Map()
 
-			const coordsToHighlight: Map<
-				{
-					simplifiedStart: number
-					simplifiedStop: number
-					originalStart: number
-					originalStop: number
-					innerPrefix?: string
-					innerSuffix?: string
-					outerPrefix?: string
-					outerSuffix?: string
-				},
-				{ parameters: Array<string> }
-			> = new Map()
+				const coordsToHighlight: Map<
+					{
+						simplifiedStart: number
+						simplifiedStop: number
+						originalStart: number
+						originalStop: number
+						innerPrefix?: string
+						innerSuffix?: string
+						outerPrefix?: string
+						outerSuffix?: string
+					},
+					{ parameters: Array<string> }
+				> = new Map()
 
-			parameterReferences.get(previousLawArticle)?.forEach((param) => {
-				const simplifiedCoordToHighlight =
-					getSimplifiedCoordOfValuesToHighlight(textPlain, param, pjlDate)
-				if (simplifiedCoordToHighlight.length > 0) {
-					simplifiedCoordToHighlight.forEach(
-						(coord: { start: number; stop: number }) => {
+				for (const param of params) {
+					const simplifiedCoordToHighlight =
+						getSimplifiedCoordOfValuesToHighlight(textPlain, param, pjlDate)
+					if (simplifiedCoordToHighlight.length > 0) {
+						for (const coord of simplifiedCoordToHighlight) {
 							// Chercher une clé existante avec les mêmes coordonnées
 							let existingKey = null
 							for (const [key] of simplifiedCoordWithParameters) {
@@ -847,51 +837,54 @@ function highlightParameterValuesInHTML(
 							} else {
 								simplifiedCoordWithParameters.set(coord, [param.name!])
 							}
-						},
+						}
+					}
+				}
+
+				const sortedSimplifiedCoord = simplifiedCoordWithParameters
+					.keys()
+					.toArray()
+					.filter(
+						(item, index, self) =>
+							index ===
+							self.findIndex(
+								(r) => r.start === item.start && r.stop === item.stop,
+							),
+					)
+					.sort((a, b) => a.start - b.start)
+				const originalPositionsIterator =
+					newReverseTransformationsMergedFromPositionsIterator(simplified)
+				const coordsInOriginal: FragmentReverseTransformation[] = []
+				for (const simplifiedCoord of sortedSimplifiedCoord) {
+					const result = originalPositionsIterator.next(simplifiedCoord)
+					coordsInOriginal.push(result.value!)
+				}
+				if (sortedSimplifiedCoord.length > 0) {
+					sortedSimplifiedCoord.forEach((coord, index) => {
+						coordsToHighlight.set(
+							{
+								simplifiedStart: coord.start,
+								simplifiedStop: coord.stop,
+								originalStart: coordsInOriginal[index].position.start,
+								originalStop: coordsInOriginal[index].position.stop,
+								innerPrefix: coordsInOriginal[index].innerPrefix,
+								outerPrefix: coordsInOriginal[index].outerPrefix,
+								innerSuffix: coordsInOriginal[index].innerSuffix,
+								outerSuffix: coordsInOriginal[index].outerSuffix,
+							},
+							{ parameters: simplifiedCoordWithParameters.get(coord)! },
+						)
+					})
+				}
+				if (coordsToHighlight.size > 0) {
+					// Réinjecter les highlights dans le HTML original
+					processedHtml = injectHighlightsIntoHtml(
+						textBefore,
+						coordsToHighlight,
 					)
 				}
-			})
-
-			const sortedSimplifiedCoord = simplifiedCoordWithParameters
-				.keys()
-				.toArray()
-				.filter(
-					(item, index, self) =>
-						index ===
-						self.findIndex(
-							(r) => r.start === item.start && r.stop === item.stop,
-						),
-				)
-				.sort((a, b) => a.start - b.start)
-			const originalPositionsIterator =
-				newReverseTransformationsMergedFromPositionsIterator(simplified)
-			const coordsInOriginal: FragmentReverseTransformation[] = []
-			for (const simplifiedCoord of sortedSimplifiedCoord) {
-				const result = originalPositionsIterator.next(simplifiedCoord)
-				coordsInOriginal.push(result.value!)
+				parts.push(processedHtml)
 			}
-			if (sortedSimplifiedCoord.length > 0) {
-				sortedSimplifiedCoord.forEach((coord, index) => {
-					coordsToHighlight.set(
-						{
-							simplifiedStart: coord.start,
-							simplifiedStop: coord.stop,
-							originalStart: coordsInOriginal[index].position.start,
-							originalStop: coordsInOriginal[index].position.stop,
-							innerPrefix: coordsInOriginal[index].innerPrefix,
-							outerPrefix: coordsInOriginal[index].outerPrefix,
-							innerSuffix: coordsInOriginal[index].innerSuffix,
-							outerSuffix: coordsInOriginal[index].outerSuffix,
-						},
-						{ parameters: simplifiedCoordWithParameters.get(coord)! },
-					)
-				})
-			}
-			if (coordsToHighlight.size > 0) {
-				// Réinjecter les highlights dans le HTML original
-				processedHtml = injectHighlightsIntoHtml(textBefore, coordsToHighlight)
-			}
-			parts.push(processedHtml)
 		} else {
 			parts.push(textBefore)
 		}
