@@ -86,12 +86,13 @@
 				const target = mouseEvent.target as HTMLElement
 
 				const link = target.closest('a[href^="#"]') as HTMLAnchorElement
+				const lawLink = target.closest("a.law-article-link")
 
 				if (link) {
 					e.preventDefault()
 					const hash = link.getAttribute("href")
 					if (hash) {
-						pushState(resolve(hash as Pathname & {}), {})
+						pushState(resolve(("#" + hash) as Pathname & {}), {})
 						scrollToAnchor(hash, shadow)
 					}
 				}
@@ -100,6 +101,14 @@
 					showParameterModal = false
 					activeParam = null
 					updateButtonColors()
+				}
+
+				if (lawLink) {
+					e.preventDefault()
+					const href = lawLink.getAttribute("href")
+					const currentHash = window.location.hash
+					const newUrl = href + currentHash
+					goto(resolve(newUrl as Pathname & {}))
 				}
 			}
 
