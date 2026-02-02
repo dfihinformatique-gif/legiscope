@@ -247,7 +247,7 @@ export const load: LayoutServerLoad = async ({
 						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
 					}
 
-						.article { /* class Sénat */
+					  .tableauComparatifCell.article { /* class Sénat */
 						font-size: 1.5rem !important;
 						font-weight: 700 !important;
 						color: #2f406a !important;
