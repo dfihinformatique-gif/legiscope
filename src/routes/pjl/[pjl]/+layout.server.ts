@@ -86,7 +86,6 @@ export const load: LayoutServerLoad = async ({
 						}
 						.has-custom-color {
 							color: #2f406a !important;
-							background-color: gray !important;
 						}
 						body {
 							width: 100%; /* prendre toute la largeur */
