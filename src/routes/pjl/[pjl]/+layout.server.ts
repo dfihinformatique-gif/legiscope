@@ -91,6 +91,12 @@ export const load: LayoutServerLoad = async ({
 							width: 100%; /* prendre toute la largeur */
 							box-sizing: border-box;
 						}
+						h6 span {
+							font-weight: normal !important;
+						}
+						h6 span[style*="font-weight:bold"] {
+							font-weight: bold !important;
+						}
 						img {
 							max-width: 100%; /* images adaptatives */
 							height: auto !important;
