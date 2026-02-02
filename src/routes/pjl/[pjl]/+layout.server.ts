@@ -97,10 +97,10 @@ export const load: LayoutServerLoad = async ({
 							display: block !important;
 							margin: 0 auto !important;
 						}
-						table {
+						.real-table table {
 							table-layout: auto;
 							width: 100% !important;
-							border: 1px solid #ced3e0 !important;
+			        border: 1px solid #ced3e0 !important;
 						}
 						div:not([id^="formCorrection:panel"]) > div.table-container > table {
 							font-size: 1rem;
@@ -552,6 +552,7 @@ function processDocument(document: Document) {
 					wrapper.appendChild(element)
 					element.style.border = "1px solid black"
 					element.style.borderCollapse = "collapse"
+					element.classList.add("real-table")
 				}
 			}
 		}
