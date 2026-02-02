@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from "$app/navigation"
+	import { goto, pushState } from "$app/navigation"
 	import { resolve } from "$app/paths"
 	import type { Pathname } from "$app/types"
 
@@ -91,7 +91,7 @@
 					e.preventDefault()
 					const hash = link.getAttribute("href")
 					if (hash) {
-						window.history.pushState(null, "", hash)
+						pushState(resolve(hash as Pathname & {}), {})
 						scrollToAnchor(hash, shadow)
 					}
 				}
