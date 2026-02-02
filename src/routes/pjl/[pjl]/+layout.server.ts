@@ -478,12 +478,6 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			return `font-size: calc(${ratio.toFixed(3)} * var(--base-font-size))`
 		})
 
-		// 4. Suppression des marges globales qui cassent souvent le layout
-		cssText = cssText.replace(
-			/margin-(?:top|bottom|left|right)\s*:[^;!}]+(!important)?/gi,
-			"margin: 0",
-		)
-
 		tag.textContent = cssText
 	})
 
