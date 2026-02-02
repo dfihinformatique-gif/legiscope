@@ -266,12 +266,7 @@ export const load: LayoutServerLoad = async ({
 				`
 
 	try {
-		const { document } = parseHTML(rawHtml)
-		processDocument(document)
-
-		const htmlContent = document.toString()
-
-		const htmlWithLinks = htmlContent.replace(
+		const htmlWithLinks = rawHtml.replace(
 			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr\/legifrance\/(?:sections|articles|textes)\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/g,
 			(_match, p1, p2) => {
 				const lawArticle = p1.replace(".md", "")
@@ -295,7 +290,7 @@ export const load: LayoutServerLoad = async ({
 			},
 		)
 
-		let HTMLToReturn: string = ""
+		let HTMLWithButtons: string = ""
 
 		if (pjl === "PRJLANR5L17B1907") {
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
@@ -336,18 +331,23 @@ ${articles
 				`${sommaire}$1`,
 			)
 
-			HTMLToReturn = highlightParameterValuesInHTML(
+			HTMLWithButtons = highlightParameterValuesInHTML(
 				htmlWithLinksAndSummaryFinal,
 				currentParameterReferences!,
 				pjlDate,
 			)
 		} else {
-			HTMLToReturn = highlightParameterValuesInHTML(
+			HTMLWithButtons = highlightParameterValuesInHTML(
 				htmlWithLinks,
 				currentParameterReferences!,
 				pjlDate,
 			)
 		}
+
+		const { document } = parseHTML(HTMLWithButtons)
+		processDocument(document)
+		const HTMLToReturn = document.toString()
+
 		return {
 			pjlHTML: `<style>${style}</style>
 				<div class="content-wrapper">${HTMLToReturn}</div>`,
