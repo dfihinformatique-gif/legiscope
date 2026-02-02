@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state"
 	import Article from "$lib/components/Article.svelte"
-	import ArticleCitant from "$lib/components/article_citations/ArticleCitant.svelte"
+	import { default as ArticleCitantPanel } from "$lib/components/article_citations/ArticleCitantPanel.svelte"
 	import ArticleSummaryPanel from "$lib/components/ArticleSummaryPanel.svelte"
 	import Bill from "$lib/components/Bill.svelte"
 	import SkeletonArticleLoader from "$lib/components/SkeletonArticleLoader.svelte"
@@ -196,10 +196,10 @@
 				{:else if citingArticleError}
 					<p>Erreur: {citingArticleError.message}</p>
 				{:else}
-					<ArticleCitant
+					<ArticleCitantPanel
 						{citingArticleInfo}
 						versionsArticle={articleInfo!.versions}
-					></ArticleCitant>
+					></ArticleCitantPanel>
 				{/if}
 			</aside>
 		{/if}
@@ -277,10 +277,10 @@
 			{:else if citingArticleError}
 				<p>Erreur: {citingArticleError.message}</p>
 			{:else if citingArticleInfo}
-				<ArticleCitant
+				<ArticleCitantPanel
 					{citingArticleInfo}
 					versionsArticle={articleInfo!.versions}
-				></ArticleCitant>
+				></ArticleCitantPanel>
 			{:else}
 				<aside
 					class="@container/section-citations flex h-screen flex-col items-center justify-center p-4 text-center"
