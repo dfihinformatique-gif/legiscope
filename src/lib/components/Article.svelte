@@ -1238,13 +1238,22 @@
 				{/if}
 				<!--Sommaire-->
 
-				<div class="flex items-center justify-end">
-					<!--<p>
-						Contexte : {articleInfo.sectionTitle?.replaceAll("\\n", " ") ??
-							articleInfo.textTitle?.replaceAll("\\n", " ")}
-					</p>-->
+				<div class="flex flex-col items-center justify-center justify-self-end">
+					{#if articleInfo.sectionTitle}
+						<p class="mx-4 text-center text-xs text-neutral-500">
+							Section directe de l'article :
+						</p>
+						<p
+							class="mx-4 border-b pb-1 text-center font-serif text-neutral-600 @md/section-article:mx-10"
+						>
+							<span class=" italic">
+								{articleInfo.sectionTitle?.replaceAll("\\n", " ") ??
+									articleInfo.textTitle?.replaceAll("\\n", " ")}
+							</span>
+						</p>
+					{/if}
 					<button
-						class="lx-link-uppercase font-sans text-nowrap text-gray-500"
+						class="lx-link-uppercase mt-2 font-sans text-sm text-nowrap text-gray-500"
 						onclick={() => {
 							const url = new URL(page.url)
 							if (url.searchParams.has("summary")) {
@@ -1271,7 +1280,8 @@
 						>
 						</iconify-icon>
 						{#if !page.url.searchParams.has("summary")}
-							Sommaire
+							sommaire {#if !articleInfo.sectionTitle}
+								du texte{/if}
 						{:else}Fermer le sommaire
 						{/if}
 					</button>
