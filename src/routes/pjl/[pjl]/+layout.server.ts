@@ -224,15 +224,16 @@ export const load: LayoutServerLoad = async ({
 							font-family: sans-serif;
 					}
 
-					/* Agrandir et colorer les numéros d'alinéas */
+					/* Agrandir et colorer les numéros d'articles de certains textes */
 					p.assnat9ArticleNum {
 						font-size: 2rem !important;
 						color: #2f406a !important;
-						margin-top: 2rem !important;
+						margin-top: 3rem !important;
+						margin-bottom: 2rem !important;
 						padding-left: 1rem !important;
 						text-align: left !important;
-						border-bottom: 1px solid #2f406a !important;
-						border-left: 1px solid #2f406a !important;
+						border-bottom: 1px solid #ced3e0 !important;
+						border-left: 1px solid #ced3e0 !important;
 						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
 					}
 
