@@ -86,6 +86,7 @@ export const load: LayoutServerLoad = async ({
 						}
 						.has-custom-color {
 							color: #2f406a !important;
+							background-color: gray !important;
 						}
 						body {
 							width: 100%; /* prendre toute la largeur */
@@ -103,11 +104,6 @@ export const load: LayoutServerLoad = async ({
 							display: block !important;
 							margin: 0 auto !important;
 						}
-						.real-table table {
-							table-layout: auto;
-							width: 100% !important;
-			        border: 1px solid #ced3e0 !important;
-						}
 						div:not([id^="formCorrection:panel"]) > div.table-container > table {
 							font-size: 1rem;
 						}
@@ -121,6 +117,13 @@ export const load: LayoutServerLoad = async ({
 						.table-container table {
 							width: max-content;
 							table-layout: auto;
+							border: 1px solid #ced3e0 !important;
+              border-collapse = collapse !important;
+						}
+
+						table {
+							table-layout: auto;
+							width: 100% !important;
 						}
 
 						td, th {
