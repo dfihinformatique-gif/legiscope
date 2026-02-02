@@ -688,6 +688,7 @@
 	>
 		<!--Titre-->
 		<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
+			Cité par :
 			<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:book-marked-fill">
 			</iconify-icon>
 			{#if citingArticleInfo !== undefined && citingArticleInfo.article.num !== undefined}

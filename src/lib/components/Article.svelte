@@ -1263,6 +1263,7 @@
 								url.searchParams.delete("citant")
 								shared.activePanelMobile = "summary"
 								shared.showSummaryDesktop = true
+								shared.showCitingDesktop = false
 								if (!shared.showLawDesktop) shared.showLawDesktop = true
 							}
 

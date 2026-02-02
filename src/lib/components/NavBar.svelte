@@ -75,6 +75,9 @@
 						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
+						if (shared.showCitingDesktop) {
+							shared.showSummaryDesktop = false
+						}
 						if (
 							!shared.showBillDesktop &&
 							!shared.showLawDesktop &&
@@ -104,6 +107,9 @@
 						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
 					onclick={() => {
 						shared.showSummaryDesktop = !shared.showSummaryDesktop
+						if (shared.showSummaryDesktop) {
+							shared.showCitingDesktop = false
+						}
 						if (
 							!shared.showBillDesktop &&
 							!shared.showLawDesktop &&
