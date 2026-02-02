@@ -47,16 +47,12 @@
 >
 	<!--Titre-->
 	<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
-		<iconify-icon class="align-[-0.2rem] text-2xl" icon="ri:list-unordered">
+		<iconify-icon class="align-[-0.25rem] text-2xl" icon="ri:menu-fold-2-line">
 		</iconify-icon>
-		Sommaire
+		Sommaire ・ {articleInfo.textTitle}
 	</h1>
 </header>
 
-<div
-	class="mb-20 h-fit w-full max-w-6xl min-w-0 bg-blue-50 p-4 pb-20 text-justify shadow-md"
-	class:md:p-16={!shared.showBillDesktop}
-	style="transform: translateZ(0); backface-visibility: hidden; will-change: transform;"
->
+<div class="mb-20 bg-blue-50 p-4 pb-20 shadow-md">
 	<Toc {articleInfo} {date}></Toc>
 </div>

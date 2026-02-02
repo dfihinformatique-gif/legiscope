@@ -120,14 +120,7 @@
 		<p>Ci-dessous est reproduit le sommaire du texte à la date demandée.</p>
 	</AlertDatabaseMessage>
 {/if}
-<p
-	class="my-0.5 mt-4 -ml-1 cursor-default text-left text-neutral-700 xl:text-lg"
->
-	<iconify-icon
-		class="mr-2 align-[-0.2rem] text-lg no-underline"
-		icon="ri-book-2-fill"
-	></iconify-icon>{articleInfo.textTitle}
-</p>
+
 <ul class="translate-1">
 	{#if topLevelItems !== undefined}
 		{#each topLevelItems as item, indexItem (indexItem)}
@@ -142,7 +135,11 @@
 		allTocItems: tocData!,
 		currentActiveChemin: activeArticleChemin,
 	})}
-	<li class="border-le-gris-dispositif-light border-l py-1 pl-3">
+	<li
+		class="border-le-gris-dispositif-light border-l py-1 pl-3"
+		class:border-l={item.niveau !== 1}
+		class:border-le-gris-dispositif-light={item.niveau !== 1}
+	>
 		<button
 			class="text-le-gris-dispositif-dark lx-link-text my-0.5 -ml-1 cursor-pointer text-left xl:text-lg"
 			onclick={() => {
