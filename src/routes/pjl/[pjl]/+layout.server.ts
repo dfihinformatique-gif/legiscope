@@ -232,7 +232,8 @@ export const load: LayoutServerLoad = async ({
 
 					/* Agrandir et colorer les numéros d'articles de certains textes */
 					p.assnat9ArticleNum {
-						font-size: 2rem !important;
+						font-size: 1.5rem !important;
+						font-weight: 700 !important;
 						color: #2f406a !important;
 						margin-top: 3rem !important;
 						margin-bottom: 2rem !important;
@@ -240,6 +241,17 @@ export const load: LayoutServerLoad = async ({
 						text-align: left !important;
 						border-bottom: 1px solid #ced3e0 !important;
 						border-left: 1px solid #ced3e0 !important;
+						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
+					}
+
+						.article { /* class Sénat */
+						font-size: 1.5rem !important;
+						font-weight: 700 !important;
+						color: #2f406a !important;
+						margin-top: 3rem !important;
+						margin-bottom: 2rem !important;
+						padding-left: 1rem !important;
+						text-align: left !important;
 						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
 					}
 
@@ -556,9 +568,6 @@ function processDocument(document: Document) {
 					/* Insérer le conteneur autour de la table */
 					element.parentNode?.insertBefore(wrapper, element)
 					wrapper.appendChild(element)
-					element.style.border = "1px solid black"
-					element.style.borderCollapse = "collapse"
-					element.classList.add("real-table")
 				}
 			}
 		}
