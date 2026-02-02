@@ -100,7 +100,7 @@ export const load: LayoutServerLoad = async ({
 						table {
 							table-layout: auto;
 							width: 100% !important;
-							border: 1px solid black !important;
+							border: 1px solid #ced3e0 !important;
 						}
 						div:not([id^="formCorrection:panel"]) > div.table-container > table {
 							font-size: 1rem;
