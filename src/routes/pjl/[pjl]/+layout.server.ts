@@ -193,20 +193,21 @@ export const load: LayoutServerLoad = async ({
 						}
 						.law-article-link:hover .law-article-icon path {
 							fill: #2f406a !important;
-							text-underline-offset: 4px !important;
+							text-decoration: none !important;
+						}
+						law-link-text {
+							display: inline; /* Crucial pour le retour à la ligne */
+							border-bottom: 0.2rem solid #ccd3e7 !important;
 						}
 						.law-article-link {
 							color: #000000;
-							text-decoration: underline;
-							text-underline-offset: 4px !important;
-							text-decoration-color: #ccd3e7 !important;
-							text-decoration-thickness: 0.2rem !important;
-							text-decoration-style: solid !important;
+							text-decoration: none !important;
+						}
+						.law-article-link:hover law-link-text {
+							border-bottom: 0.15rem solid #2f406a !important;
 						}
 						.law-article-link:hover {
 							color: #2f406a;
-							text-decoration-color: #2f406a !important;
-							text-decoration-thickness: 0.1rem !important;
 						}
 
 						/* STYLES des numéros d'alinéas dans les articles du projet de loi */
@@ -283,9 +284,9 @@ export const load: LayoutServerLoad = async ({
 							parameter.short_label?.replace("'", " "),
 						)
 					}
-					return `<a title='${referredParametersLabels.join("|")}' class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'><svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg>${p2}*</a>`
+					return `<a title='${referredParametersLabels.join("|")}' class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'><svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg><law-link-text>${p2}</law-link-text>*</a>`
 				} else {
-					return `<a class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'><svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg>${p2}</a>`
+					return `<a class='law-article-link' href='/pjl/${pjl}?article=${lawArticle}'><svg class="law-article-icon" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path d="M20 22H6.5A3.5 3.5 0 0 1 3 18.5V5a3 3 0 0 1 3-3h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1m-1-2v-3H6.5a1.5 1.5 0 0 0 0 3zM10 4v8l3.5-2l3.5 2V4z"></path></svg><law-link-text>${p2}</law-link-text></a>`
 				}
 			},
 		)
