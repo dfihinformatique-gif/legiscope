@@ -10,11 +10,13 @@
 	}
 	let { articleInfo, date, isSummaryOfCitingArticle }: Props = $props()
 
-	const requestedId = isSummaryOfCitingArticle
-		? page.url.searchParams.get("citant")
-		: page.url.searchParams.get("article")
+	const requestedId = $derived(
+		isSummaryOfCitingArticle
+			? page.url.searchParams.get("citant")
+			: page.url.searchParams.get("article"),
+	)
 
-	let tocIsOpen = $state(
+	let tocIsOpen = $derived(
 		requestedId !== null &&
 			(requestedId.startsWith("LEGITEXT") ||
 				requestedId.startsWith("JORFTEXT") ||

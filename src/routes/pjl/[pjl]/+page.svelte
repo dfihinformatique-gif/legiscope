@@ -10,7 +10,7 @@
 	import type { PageProps } from "./$types"
 
 	let { data }: PageProps = $props()
-	let pjlHTML = $state(data.pjlHTML)
+	let pjlHTML = $derived(data.pjlHTML)
 
 	let showParameterModal = $state(false)
 	let parametersToVariables = $state<Record<string, string[]>>({})
