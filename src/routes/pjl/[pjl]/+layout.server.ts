@@ -219,35 +219,41 @@ export const load: LayoutServerLoad = async ({
 						}
 
 
-					/* TITRES */
+					/* TITRES ET SECTIONS GÉNÉRIQUES */
 
-										/* Titre Niveau 2 */
-
-					.assnat2PartieNum,
-					.assnat2PartieIntit,
-					p.assnat2PartieNum,
-					p.assnat2PartieIntit,
-					p.assnat2PartieNum span,
-					p.assnat2PartieIntit span {
-						margin-top: 1rem !important;
-						font-size: 1.8rem !important; /* taille spécifique au niveau 2 */
+					/* Niveau 1 : Titres Majeurs */
+					[class*="TITRE1"], [class*="TITREPLR"], .TCPrLoi, [class*="assnatTITREOBJET"], [class*="Titre-PJL"], .assnatINTITULETITRE {
+						margin-top: 2.5rem !important;
+						margin-bottom: 2rem !important;
+						font-weight: bold !important;
 						color: #2f406a !important;
-						line-height: 1.4 !important;
+						text-align: center !important;
+						line-height: 1.2 !important;
+						text-transform: uppercase !important;
+						font-size: 120% !important;
 					}
 
-
-					/* Titre Niveau 4 */
-
-					.assnat4TitreNum,
-					.assnat4TitreIntit,
-					p.assnat4TitreNum,
-					p.assnat4TitreIntit,
-					p.assnat4TitreNum span,
-					p.assnat4TitreIntit span {
-						margin-top: 0.8rem !important; /* par exemple un peu moins que niveau 2 */
-						font-size: 1.5rem !important; /* taille spécifique au niveau 4 */
+					/* Niveaux Intermédiaires : Parties, Livres, Titres, Chapitres */
+					[class*="Partie"], [class*="PARTIE"], [class*="atitre2"], [class*="assnat2Partie"], [class*="assnatGrandesparties"],
+					[class*="Livre"], [class*="LIVRE"], [class*="atitre3"], [class*="titre1"], [class*="Titre1"], [class*="LigneTitre1"],
+					[class*="titre2"], [class*="Titre2"], [class*="TITRE"], .TCNumTitre, .TCIntTitre, [class*="TitreNum"], [class*="TitreIntit"], [class*="LigneTitre2"], [class*="assnat4Titre"],
+					[class*="Chapitre"], [class*="CHAPITRE"], [class*="atitre4"], .TCNumChapitre, .TCIntChapitre, [class*="titre3"], [class*="Titre3"], [class*="LigneTitre3"], [class*="assnat5Chapitre"] {
+						margin-top: 1.5rem !important;
+						margin-bottom: 1rem !important;
 						color: #2f406a !important;
-						line-height: 1.3 !important;
+						line-height: 1.4 !important;
+						font-weight: bold !important;
+						font-size: 120% !important;
+					}
+
+					/* Niveau 6 & 7 : Sections et Sous-sections */
+					p[class*="Section"], p[class*="SECTION"], li[class*="Section"], span[class*="Section"], [class*="SectionNum"], [class*="SectionIntit"], [class*="titre4"], [class*="Titre4"], [class*="atitre5"], [class*="assnat6Section"],
+					p[class*="Sous-section"], p[class*="Sous-Section"], li[class*="Sous-section"], [class*="Sous-sectionNum"], [class*="Sous-sectionIntit"], [class*="titre5"], [class*="Titre5"], [class*="assnat7Sous-section"] {
+						margin-top: 1.2rem !important;
+						margin-bottom: 0.8rem !important;
+						color: #2f406a !important;
+						font-weight: bold !important;
+						font-size: 120% !important;
 					}
 
 
