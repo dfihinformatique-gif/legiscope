@@ -117,7 +117,7 @@ export const load: LayoutServerLoad = async ({
 							width: max-content;
 							table-layout: auto;
 							border: 1px solid #ced3e0 !important;
-              border-collapse = collapse !important;
+              border-collapse: collapse !important;
 						}
 
 						table {
