@@ -560,6 +560,7 @@ function isLikelyFooter(text: string | null | undefined) {
 }
 
 function processDocument(document: Document) {
+	const BORDER_REGEX = /(?<!-)border(-top|-right|-left|-bottom)?\s*:/i
 	const baseSize = getBaseFontSize(document)
 	const chromaticClasses = processStyleTags(document, baseSize)
 	const tagsToExcludeFromRemoving: string[] = [
@@ -707,7 +708,7 @@ function processDocument(document: Document) {
 				}
 
 				// Nettoyage margin/padding/font-family
-				const cleanedStyle = newStyle
+				let cleanedStyle = newStyle
 					.split(";")
 					.map((r) => r.trim())
 					.filter((r) => {
@@ -730,6 +731,15 @@ function processDocument(document: Document) {
 						)
 					})
 					.join("; ")
+
+				// Ajoute une marge intérieure aux éléments ayant une bordure pour éviter que le texte ne soit collé à la bordure
+				if (
+					(element.tagName === "DIV" || element.tagName === "P") &&
+					newStyle.toLowerCase().includes("border") &&
+					BORDER_REGEX.test(newStyle)
+				) {
+					cleanedStyle += (cleanedStyle ? "; " : "") + "padding-left: 1em"
+				}
 
 				if (cleanedStyle) {
 					element.setAttribute("style", cleanedStyle)
