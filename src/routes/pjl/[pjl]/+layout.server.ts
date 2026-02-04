@@ -147,7 +147,7 @@ export const load: LayoutServerLoad = async ({
 							overflow-x: hidden !important;
 						}
 						div[class^="assnatSection"] { /*Retire les marges des sections en ciblant le début de la class */
-							margin: 2rem !important;
+							margin: 0.5rem !important;
 						}
 
 						html, p, div, ol, ul { /* Remplace toutes les marges top et bottom par 1rem pour éviter les grands écarts dans le html */

@@ -11,7 +11,6 @@
 		rootParameter,
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
-	import { shared } from "$lib/shared.svelte"
 	import { simplifyHtml } from "@tricoteuses/tisseuse"
 
 	interface Props {
@@ -266,8 +265,7 @@
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1"
-		class:md:p-10={!shared.showLawDesktop}
+		class="w-full flex-1 px-3 pb-64 @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
 	></div>
 </div>
 
