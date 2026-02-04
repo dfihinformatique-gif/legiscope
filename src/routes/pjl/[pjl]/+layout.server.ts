@@ -218,7 +218,7 @@ export const load: LayoutServerLoad = async ({
 							color: #2f406a;
 						}
 
-						/* STYLES des numéros d'alinéas dans les articles du projet de loi */
+					/* STYLES des numéros d'alinéas dans les articles du projet de loi */
 
 						li.assnatFPFprojetloiartexte::before {
 							margin-right: 0.9em;
@@ -232,7 +232,8 @@ export const load: LayoutServerLoad = async ({
 							font-family: sans-serif;
 					}
 
-					/* Agrandir et colorer les numéros d'articles de certains textes */
+					/* Numéros d'articles */
+
 					p.assnat9ArticleNum {
 						font-size: 1.5rem !important;
 						font-weight: 700 !important;
@@ -255,6 +256,41 @@ export const load: LayoutServerLoad = async ({
 						padding-left: 1rem !important;
 						text-align: left !important;
 						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
+					}
+					/* Style des pastilles des documents Sénat */
+
+
+					p.TCNumArticle {
+						font-size: 1.5rem !important;
+						font-weight: 700 !important;
+						color: #2f406a !important;
+					}
+
+
+					.TCGlobal td {
+						vertical-align: top !important;
+					}
+
+					.TCGlobal p.pastille {
+						margin-top: 0 !important;
+						padding-top: 0 !important;
+					}
+					p.pastille span {
+							display: inline-flex;
+							align-items: center;
+							justify-content: center;
+							background-color: #f5f5f5;
+							border: 1px solid #737373;
+							color: #737373;
+							border-radius: 100%;
+							min-width: 1em;
+							height: 1em;
+							font-size: 0.7em !important;
+							margin-top: 0.5em;
+							font-family: sans-serif;
+
+							padding-top: 0.1em;
+							vertical-align: top;
 					}
 
 					/* Titre Niveau 2 */
@@ -474,7 +510,7 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 		cssText = cssText.replaceAll(
 			/font-family\s*:\s*(?:(?:'[^']*'|"[^"]*"|[^;}])+?)(?=\s*[;}])/gi,
 			(match) => {
-				if (/marianne|arial/i.test(match)) {
+				if (/marianne|arial|numero/i.test(match)) {
 					return ""
 				}
 				return match
@@ -541,6 +577,21 @@ function processDocument(document: Document) {
 
 	document.querySelectorAll("*").forEach((el) => {
 		const element = el as HTMLElement
+
+		// Restaure les pastilles Sénat
+		if (element.classList.contains("pastille")) {
+			const span = element.querySelector("span")
+			if (span) {
+				const ariaLabel = span.getAttribute("aria-label")
+				if (ariaLabel && ariaLabel.toLowerCase().startsWith("pastille")) {
+					const numMatch = ariaLabel.match(/\d+/)
+					if (numMatch) {
+						span.textContent = numMatch[0]
+					}
+				}
+			}
+		}
+
 		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
@@ -663,10 +714,12 @@ function processDocument(document: Document) {
 						if (!r) return false
 						const lowerRule = r.toLowerCase()
 
-						// Filtre font-family (Marianne, Arial)
+						// Filtre font-family (Marianne, Arial, Numero)
 						if (lowerRule.startsWith("font-family")) {
 							return !(
-								lowerRule.includes("marianne") || lowerRule.includes("arial")
+								lowerRule.includes("marianne") ||
+								lowerRule.includes("arial") ||
+								lowerRule.includes("numero")
 							)
 						}
 
