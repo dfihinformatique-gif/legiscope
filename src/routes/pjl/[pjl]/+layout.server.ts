@@ -218,19 +218,38 @@ export const load: LayoutServerLoad = async ({
 							color: #2f406a;
 						}
 
-					/* STYLES des numéros d'alinéas dans les articles du projet de loi */
 
-						li.assnatFPFprojetloiartexte::before {
-							margin-right: 0.9em;
-							padding:0.1em;
-							counter-increment: li;
-							content: counter(li);
-							background-color: #f5f5f5;
-							color: #737373;
-							border-radius: 40%;
-							font-size: 0.7em;
-							font-family: sans-serif;
+					/* TITRES */
+
+										/* Titre Niveau 2 */
+
+					.assnat2PartieNum,
+					.assnat2PartieIntit,
+					p.assnat2PartieNum,
+					p.assnat2PartieIntit,
+					p.assnat2PartieNum span,
+					p.assnat2PartieIntit span {
+						margin-top: 1rem !important;
+						font-size: 1.8rem !important; /* taille spécifique au niveau 2 */
+						color: #2f406a !important;
+						line-height: 1.4 !important;
 					}
+
+
+					/* Titre Niveau 4 */
+
+					.assnat4TitreNum,
+					.assnat4TitreIntit,
+					p.assnat4TitreNum,
+					p.assnat4TitreIntit,
+					p.assnat4TitreNum span,
+					p.assnat4TitreIntit span {
+						margin-top: 0.8rem !important; /* par exemple un peu moins que niveau 2 */
+						font-size: 1.5rem !important; /* taille spécifique au niveau 4 */
+						color: #2f406a !important;
+						line-height: 1.3 !important;
+					}
+
 
 					/* Numéros d'articles */
 
@@ -257,15 +276,29 @@ export const load: LayoutServerLoad = async ({
 						text-align: left !important;
 						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
 					}
-					/* Style des pastilles des documents Sénat */
+					/* PASTILLES ET ALINEAS */
 
+					/* Style des numéros d'alinéas dans les articles du projet de loi */
+
+					li.assnatFPFprojetloiartexte::before {
+						margin-right: 0.9em;
+						padding:0.1em;
+						counter-increment: li;
+						content: counter(li);
+						background-color: #f5f5f5;
+						color: #737373;
+						border-radius: 40%;
+						font-size: 0.7em;
+						font-family: sans-serif;
+					}
+
+					/*Style des pastilles des documents Sénat */
 
 					p.TCNumArticle {
 						font-size: 1.5rem !important;
 						font-weight: 700 !important;
 						color: #2f406a !important;
 					}
-
 
 					.TCGlobal td {
 						vertical-align: top !important;
@@ -293,34 +326,7 @@ export const load: LayoutServerLoad = async ({
 							vertical-align: top;
 					}
 
-					/* Titre Niveau 2 */
 
-					.assnat2PartieNum,
-					.assnat2PartieIntit,
-					p.assnat2PartieNum,
-					p.assnat2PartieIntit,
-					p.assnat2PartieNum span,
-					p.assnat2PartieIntit span {
-						margin-top: 1rem !important;
-						font-size: 2rem !important; /* taille spécifique au niveau 2 */
-						color: #2f406a !important;
-						line-height: 1.4 !important;
-					}
-
-
-					/* Titre Niveau 4 */
-
-					.assnat4TitreNum,
-					.assnat4TitreIntit,
-					p.assnat4TitreNum,
-					p.assnat4TitreIntit,
-					p.assnat4TitreNum span,
-					p.assnat4TitreIntit span {
-						margin-top: 0.8rem !important; /* par exemple un peu moins que niveau 2 */
-						font-size: 1.5rem !important; /* taille spécifique au niveau 4 */
-						color: #2f406a !important;
-						line-height: 1.3 !important;
-					}
 				`
 
 	try {
