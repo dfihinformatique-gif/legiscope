@@ -252,20 +252,6 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			}
 		}
 
-		/* 		// Supprimer certaines polices
-		cssText = cssText.replaceAll(
-			/font-family\s*:\s*(?:(?:'[^']*'|"[^"]*"|[^;}])+?)(?=\s*[;}])/gi,
-			(match) => {
-				if (/marianne|arial|numero|times/i.test(match)) {
-					return ""
-				}
-				return match
-			},
-		)
- */
-		// Neutralisation des alignements forcés (Justify -> Left)
-		//	cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
-
 		// Mise à l'échelle des polices dans le CSS interne
 		// On utilise la même logique de variable CSS que pour l'inline
 		cssText = cssText.replace(FONT_SIZE_REGEX, (_, value, unit) => {
@@ -311,7 +297,6 @@ function isLikelyFooter(text: string | null | undefined) {
 }
 
 function processDocument(document: Document) {
-	const BORDER_REGEX = /(?<!-)border(-top|-right|-left|-bottom)?\s*:/i
 	const baseSize = getBaseFontSize(document)
 	const chromaticClasses = processStyleTags(document, baseSize)
 	const tagsToExcludeFromRemoving: string[] = [
@@ -488,7 +473,7 @@ function processDocument(document: Document) {
 				if (
 					(element.tagName === "DIV" || element.tagName === "P") &&
 					newStyle.toLowerCase().includes("border") &&
-					BORDER_REGEX.test(newStyle)
+					/(?<!-)border(-top|-right|-left|-bottom)?\s*:/i.test(newStyle)
 				) {
 					cleanedStyle += (cleanedStyle ? "; " : "") + "padding-left: 1em"
 				}
