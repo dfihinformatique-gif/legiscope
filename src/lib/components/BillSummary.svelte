@@ -105,8 +105,8 @@
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
 		>
 			<iconify-icon
-				class="align-[-0.3rem] text-xl"
-				icon={summaryIsOpen ? "ri:menu-fold-line" : "ri:menu-fold-2-line"}
+				class="align-[-0.25rem] text-xl"
+				icon={summaryIsOpen ? "ri:menu-fold-3-line" : "ri:menu-unfold-3-line"}
 			>
 			</iconify-icon>
 			{#if summaryIsOpen}Fermer Sommaire{:else}Sommaire{/if}

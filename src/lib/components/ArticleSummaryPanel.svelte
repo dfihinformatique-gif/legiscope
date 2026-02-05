@@ -47,9 +47,13 @@
 >
 	<!--Titre-->
 	<h1 class="flex-wrap text-left font-sans text-2xl text-neutral-900">
-		<iconify-icon class="align-[-0.25rem] text-2xl" icon="ri:menu-fold-2-line">
+		<iconify-icon
+			class="align-[-0.25rem] text-2xl"
+			icon="ri:menu-unfold-3-line"
+		>
 		</iconify-icon>
-		Sommaire ・ {articleInfo.textTitle}
+		<span class="font-light"> Sommaire ・</span>
+		{articleInfo.textTitle}
 	</h1>
 </header>
 

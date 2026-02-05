@@ -1276,8 +1276,8 @@
 						<iconify-icon
 							class="align-[-0.3rem] text-xl"
 							icon={page.url.searchParams.has("summary")
-								? "ri:menu-fold-line"
-								: "ri:menu-fold-2-line"}
+								? "ri:menu-fold-3-line"
+								: "ri:menu-unfold-3-line"}
 						>
 						</iconify-icon>
 						{#if !page.url.searchParams.has("summary")}
