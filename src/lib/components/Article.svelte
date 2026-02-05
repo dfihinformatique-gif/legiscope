@@ -1292,7 +1292,7 @@
 			<!--Texte de la version-->
 			<section>
 				<h2 class="sr-only">Texte de l’article</h2>
-				{#if articleInfo.versions}
+				{#if articleInfo.versions && articleInfo.versions.length > 1}
 					<div class="my-4 flex w-full justify-end text-left">
 						<label class="inline-flex cursor-pointer items-center">
 							<input
@@ -1300,14 +1300,13 @@
 								type="checkbox"
 								bind:checked={showDiff}
 							/>
-							{#if articleInfo.versions.length > 1}
-								<div
-									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-								></div>
-								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
-									Voir les changements apportés <br /> à la version précédente
-								</span>
-							{/if}
+
+							<div
+								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+							></div>
+							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+								Voir les changements apportés <br /> à la version précédente
+							</span>
 						</label>
 					</div>
 				{/if}
