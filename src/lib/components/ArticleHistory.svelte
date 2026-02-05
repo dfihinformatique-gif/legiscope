@@ -20,15 +20,17 @@
 	let historyData: HistoryData | undefined = $state(undefined)
 	let historyByText: HistoryByText | undefined = $state(undefined)
 
-	fetch(`/api/history/${articleInfo.article?.legi_id}`)
-		.then((res) => (res.ok ? res.json() : null))
-		.then((data) => {
-			historyData = data
-			if (historyData && historyData?.length > 0) {
-				historyByText = historyDataToHistoryByText(historyData)
-			}
-		})
-		.catch(() => (historyData = undefined))
+	$effect(() => {
+		fetch(`/api/history/${articleInfo.article?.legi_id}`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => {
+				historyData = data
+				if (historyData && historyData?.length > 0) {
+					historyByText = historyDataToHistoryByText(historyData)
+				}
+			})
+			.catch(() => (historyData = undefined))
+	})
 
 	/* Récupère l'année */
 	function getYear(publicationDate: HistoryByTextRow["date_publi"]) {

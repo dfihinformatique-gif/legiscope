@@ -32,17 +32,19 @@
 		}
 	})
 
-	fetch(`/api/toc/${articleInfo.text}/${date}`)
-		.then((res) => (res.ok ? res.json() : null))
-		.then((data) => {
-			tocData = data
-			const articleRow = (tocData as TocData).find(
-				(scta: TocDataRow) =>
-					scta.dernier_segment === articleInfo.article?.legi_id,
-			)
-			articleIsNotInValidSection = articleRow?.invalid_sections === "1"
-		})
-		.catch(() => (tocData = undefined))
+	$effect(() => {
+		fetch(`/api/toc/${articleInfo.text}/${date}`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => {
+				tocData = data
+				const articleRow = (tocData as TocData).find(
+					(scta: TocDataRow) =>
+						scta.dernier_segment === articleInfo.article?.legi_id,
+				)
+				articleIsNotInValidSection = articleRow?.invalid_sections === "1"
+			})
+			.catch(() => (tocData = undefined))
+	})
 
 	const TocItemRecursive = ({
 		item,

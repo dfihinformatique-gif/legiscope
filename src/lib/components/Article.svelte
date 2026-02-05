@@ -339,26 +339,30 @@
 
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const currentBlocTextuel = articleInfo.article?.bloc_textuel
-		? articleInfo.article.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
-				(_match, p1, p2) => {
-					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
-				},
-			)
-		: undefined
+	const currentBlocTextuel = $derived(
+		articleInfo.article?.bloc_textuel
+			? articleInfo.article.bloc_textuel.replace(
+					/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
+					(_match, p1, p2) => {
+						const lawArticle = p1.replace(".md", "")
+						return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					},
+				)
+			: undefined,
+	)
 	// !!! ATTENTION !!!
 	// Il faut impérativement que la chaine générée pour currentBlockTextuel soit *exactement* la même que pour previousBlocTextuel
-	const previousBlocTextuel = articleInfo.articlePreviousVersion?.bloc_textuel
-		? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
-				/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
-				(_match, p1, p2) => {
-					const lawArticle = p1.replace(".md", "")
-					return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
-				},
-			)
-		: undefined
+	const previousBlocTextuel = $derived(
+		articleInfo.articlePreviousVersion?.bloc_textuel
+			? articleInfo.articlePreviousVersion?.bloc_textuel.replace(
+					/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr[^"]*\/([^/]+(?:\.md)?)"[^>]*>(.*?)<\/a>/g,
+					(_match, p1, p2) => {
+						const lawArticle = p1.replace(".md", "")
+						return `<a class="text-black underline !decoration-solid !decoration-gray-400 !decoration-[0.2rem] hover:text-le-gris-dispositif-dark hover:!decoration-le-gris-dispositif-dark" href='/pjl/${page.params.pjl}?article=${lawArticle}'>${p2}</a>`
+					},
+				)
+			: undefined,
+	)
 
 	let showDiff = $state(false)
 	const generateHtmlSplitDiff = (
@@ -878,10 +882,11 @@
 		}
 	})
 
-	const allVersions =
+	const allVersions = $derived(
 		articleInfo.versions !== undefined && articleInfo.versions.length > 1
 			? new Set(articleInfo.versions.map((article) => article.legi_id_lien))
-			: new Set(articleInfo.article?.legi_id)
+			: new Set(articleInfo.article?.legi_id),
+	)
 
 	const articleParameterReferences = Array.from(
 		new Set(
@@ -891,9 +896,11 @@
 		),
 	)
 
-	const historyByText = articleInfo.historyLinks
-		? historyDataToHistoryByText(articleInfo.historyLinks)
-		: undefined
+	const historyByText = $derived(
+		articleInfo.historyLinks
+			? historyDataToHistoryByText(articleInfo.historyLinks)
+			: undefined,
+	)
 </script>
 
 {#if articleInfo.article}
@@ -1319,8 +1326,8 @@
 				<!-- Étape 1 : liste des paramètres -->
 
 				<p>
-					Cette valeur semble correspondre à {parameterCount} paramètres dans le
-					simulateur LexImpact.
+					Cette valeur semble correspondre à {parameterCount} paramètres dans le simulateur
+					LexImpact.
 					<strong>Choisissez celui que vous souhaitez examiner :</strong>
 				</p>
 
