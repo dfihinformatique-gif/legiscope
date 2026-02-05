@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import { parseHTML } from "linkedom"
-import path from "path"
+import path, { join } from "path"
 
 import {
 	encodeParametersToVariables,
@@ -16,6 +16,7 @@ import {
 	simplifyHtml,
 	type FragmentReverseTransformation,
 } from "@tricoteuses/tisseuse"
+import { readFileSync } from "fs"
 import type { LayoutServerLoad } from "./$types"
 
 const PJL_DATES = new Map<string, string>([
@@ -68,187 +69,6 @@ export const load: LayoutServerLoad = async ({
 		fs.readFile(filePath, "utf-8"),
 		getCurrentLegiIds(parameterReferences, pjlDate),
 	])
-
-	const style = `
-						/* STYLES POUR RENDRE LISIBLE LE HTML */
-
-					 	:host {
-							display: block;
-							font-size: 1.125rem;
-							width: 96%;
-							height: 100%;
-							overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
-							overflow-x: hidden; /* pas de scroll horizontal */
-						}
-						:host, :host * {
-							line-height: 1.5 !important;  /* Augmente aussi l'interligne */
-							outline-color: #ced3e0;
-						}
-						.has-custom-color {
-							color: #2f406a !important;
-						}
-						body {
-							width: 100%; /* prendre toute la largeur */
-							box-sizing: border-box;
-						}
-
-						img {
-							max-width: 100%; /* images adaptatives */
-							height: auto !important;
-							display: block !important;
-							margin: 0 auto !important;
-						}
-						div:not([id^="formCorrection:panel"]) > div.table-container > table {
-							font-size: 1rem;
-						}
-						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
-							overflow-x: auto;
-							width: 100%;
-							margin-top: 2rem !important;
-							margin-bottom: 2rem !important;
-						}
-
-						.table-container table {
-							width: max-content;
-							table-layout: auto;
-							border: 1px solid #ced3e0 !important;
-              border-collapse: collapse !important;
-						}
-
-						table {
-							table-layout: auto;
-							width: 100% !important;
-						}
-
-						td, th {
-							border-color: #ced3e0 !important;
-							border-top-color: #ced3e0 !important;
-							border-right-color: #ced3e0 !important;
-							border-bottom-color: #ced3e0 !important;
-							border-left-color: #ced3e0 !important;
-							width: auto !important;
-							word-wrap: break-word !important;
-							overflow-wrap: break-word !important;
-							padding: 0.5rem !important;
-						}
-
-						pre, code {
-							white-space: pre-wrap !important;
-							word-break: break-word !important;
-						}
-						.content-wrapper {
-							position: relative;
-							min-height: 100%;
-							overflow-x: hidden !important;
-						}
-						div[class^="assnatSection"] { /*Retire les marges des sections en ciblant le début de la class */
-							margin: 0.5rem !important;
-						}
-
-
-						.expose-motif {
-							border-left: 2px solid #ccc;
-							padding-left: 1rem;
-						}
- */
-						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
-
-/* 						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
-							margin-top: 3rem !important;
-						}
- */
-
-
-						a[href^="#"] { /*Crée un style pour mettre en avant les liens au sein du document */
-							text-decoration: underline !important;
-							text-decoration-style: dotted !important;
-							text-decoration-color: #bbbbbb !important;
-							text-underline-offset: 4px !important;
-							text-decoration-thickness: 1px !important;
-						}
-						a[href^="#"]:hover,
-						a[href^="#"]:focus {
-							text-decoration-style: solid !important;
-							text-decoration-color: black !important;
-							text-underline-offset: 4px !important;
-							text-decoration-thickness: 2px !important;
-						}
-						.law-article-icon {
-							margin-right: 0.1em !important;
-							margin-left: 0.15em !important;
-							position: relative; top: 0.15em;
-						}
-						.law-article-icon path {
-							fill: #5e709e !important;
-						}
-						.law-article-link:hover .law-article-icon path {
-							fill: #2f406a !important;
-							text-decoration: none !important;
-						}
-						law-link-text {
-							display: inline; /* Crucial pour le retour à la ligne */
-							border-bottom: 0.2rem solid #ccd3e7 !important;
-						}
-						.law-article-link {
-							color: #000000;
-							text-decoration: none !important;
-						}
-						.law-article-link:hover law-link-text {
-							border-bottom: 0.15rem solid #2f406a !important;
-						}
-						.law-article-link:hover {
-							color: #2f406a;
-						}
-
-
-
-
-					/* PASTILLES ET ALINEAS */
-
-					/* Style des numéros d'alinéas Assemblée nationale */
-
-					li.assnatFPFprojetloiartexte::before {
-						margin-right: 0.9em;
-						padding:0.1em;
-						counter-increment: li;
-						content: counter(li);
-						background-color: #f5f5f5;
-						color: #737373;
-						border-radius: 40%;
-						font-size: 0.7em;
-						font-family: sans-serif;
-					}
-
-					/*Style des pastilles des documents Sénat */
-
-
-
-					.TCGlobal td {
-						vertical-align: top !important;
-					}
-
-					.TCGlobal p.pastille {
-						margin-top: 0 !important;
-						padding-top: 0 !important;
-					}
-					p.pastille span {
-							display: inline-flex;
-							align-items: center;
-							justify-content: center;
-							background-color: #f5f5f5;
-							border: 1px solid #737373;
-							color: #737373;
-							border-radius: 100%;
-							min-width: 1em;
-							height: 1em;
-							font-size: 0.7em !important;
-							margin-top: 0.5em;
-							font-family: sans-serif;
-
-							padding-top: 0.1em;
-							vertical-align: top;
-					}
-				`
 
 	try {
 		const htmlWithLinks = rawHtml.replace(
@@ -334,8 +154,7 @@ ${articles
 		const HTMLToReturn = document.toString()
 
 		return {
-			pjlHTML: `<style>${style}</style>
-				<div class="content-wrapper">${HTMLToReturn}</div>`,
+			pjlHTML: HTMLToReturn,
 			pjlDate,
 			currentParameterReferences,
 		}
@@ -419,7 +238,7 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 	const styleTags = document.querySelectorAll("style")
 	const chromaticClasses = new Set<string>()
 
-	styleTags.forEach((tag) => {
+	styleTags.forEach((tag, index) => {
 		let cssText = tag.textContent || ""
 
 		// Détection des classes avec couleurs chromatiques
@@ -461,6 +280,11 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			}
 			return `font-size: calc(${ratio.toFixed(3)} * var(--base-font-size))`
 		})
+
+		if (index === 0) {
+			const style = readFileSync(join("static/style-shadow-pjl.css"), "utf-8")
+			cssText = style + cssText
+		}
 
 		tag.textContent = cssText
 	})
