@@ -91,12 +91,7 @@ export const load: LayoutServerLoad = async ({
 							width: 100%; /* prendre toute la largeur */
 							box-sizing: border-box;
 						}
-						h6 span {
-							font-weight: normal !important;
-						}
-						h6 span[style*="font-weight:bold"] {
-							font-weight: bold !important;
-						}
+
 						img {
 							max-width: 100%; /* images adaptatives */
 							height: auto !important;
@@ -150,32 +145,19 @@ export const load: LayoutServerLoad = async ({
 							margin: 0.5rem !important;
 						}
 
-						html, p, div, ol, ul { /* Remplace toutes les marges top et bottom par 1rem pour éviter les grands écarts dans le html */
-							margin-top: 0.5rem !important;
-							margin-bottom: 0.5rem !important;
-						}
-
-						span { /* Ajoute un padding pour éviter que les textes ne soient collés */
-							padding-right: 0.1rem !important;
-							padding-left: 0.1rem !important;
-						}
 
 						.expose-motif {
 							border-left: 2px solid #ccc;
 							padding-left: 1rem;
 						}
-
+ */
 						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
 
-
-						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
+/* 						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
 							margin-top: 3rem !important;
 						}
+ */
 
-						[class^="assnatFPFprojetloiartexte"] { /*Cible les textes des articles TODO a mettre en lora */
-							margin-top: 1rem !important;
-							font-family: "Lora", serif !important;
-						}
 
 						a[href^="#"] { /*Crée un style pour mettre en avant les liens au sein du document */
 							text-decoration: underline !important;
@@ -219,72 +201,11 @@ export const load: LayoutServerLoad = async ({
 						}
 
 
-					/* TITRES ET SECTIONS GÉNÉRIQUES */
-
-					/* Niveau 1 : Titres Majeurs */
-					[class*="TITRE1"], [class*="TITREPLR"], .TCPrLoi, [class*="assnatTITREOBJET"], [class*="Titre-PJL"], .assnatINTITULETITRE {
-						margin-top: 2.5rem !important;
-						margin-bottom: 2rem !important;
-						font-weight: bold !important;
-						color: #2f406a !important;
-						text-align: center !important;
-						line-height: 1.2 !important;
-						text-transform: uppercase !important;
-						font-size: 120% !important;
-					}
-
-					/* Niveaux Intermédiaires : Parties, Livres, Titres, Chapitres */
-					[class*="Partie"], [class*="PARTIE"], [class*="atitre2"], [class*="assnat2Partie"], [class*="assnatGrandesparties"],
-					[class*="Livre"], [class*="LIVRE"], [class*="atitre3"], [class*="titre1"], [class*="Titre1"], [class*="LigneTitre1"],
-					[class*="titre2"], [class*="Titre2"], [class*="TITRE"], .TCNumTitre, .TCIntTitre, [class*="TitreNum"], [class*="TitreIntit"], [class*="LigneTitre2"], [class*="assnat4Titre"],
-					[class*="Chapitre"], [class*="CHAPITRE"], [class*="atitre4"], .TCNumChapitre, .TCIntChapitre, [class*="titre3"], [class*="Titre3"], [class*="LigneTitre3"], [class*="assnat5Chapitre"] {
-						margin-top: 1.5rem !important;
-						margin-bottom: 1rem !important;
-						color: #2f406a !important;
-						line-height: 1.4 !important;
-						font-weight: bold !important;
-						font-size: 120% !important;
-					}
-
-					/* Niveau 6 & 7 : Sections et Sous-sections */
-					p[class*="Section"], p[class*="SECTION"], li[class*="Section"], span[class*="Section"], [class*="SectionNum"], [class*="SectionIntit"], [class*="titre4"], [class*="Titre4"], [class*="atitre5"], [class*="assnat6Section"],
-					p[class*="Sous-section"], p[class*="Sous-Section"], li[class*="Sous-section"], [class*="Sous-sectionNum"], [class*="Sous-sectionIntit"], [class*="titre5"], [class*="Titre5"], [class*="assnat7Sous-section"] {
-						margin-top: 1.2rem !important;
-						margin-bottom: 0.8rem !important;
-						color: #2f406a !important;
-						font-weight: bold !important;
-						font-size: 120% !important;
-					}
 
 
-					/* Numéros d'articles */
-
-					p.assnat9ArticleNum {
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-						margin-top: 3rem !important;
-						margin-bottom: 2rem !important;
-						padding-left: 1rem !important;
-						text-align: left !important;
-						border-bottom: 1px solid #ced3e0 !important;
-						border-left: 1px solid #ced3e0 !important;
-						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
-					}
-
-					  .tableauComparatifCell.article { /* class Sénat */
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-						margin-top: 3rem !important;
-						margin-bottom: 2rem !important;
-						padding-left: 1rem !important;
-						text-align: left !important;
-						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
-					}
 					/* PASTILLES ET ALINEAS */
 
-					/* Style des numéros d'alinéas dans les articles du projet de loi */
+					/* Style des numéros d'alinéas Assemblée nationale */
 
 					li.assnatFPFprojetloiartexte::before {
 						margin-right: 0.9em;
@@ -300,11 +221,7 @@ export const load: LayoutServerLoad = async ({
 
 					/*Style des pastilles des documents Sénat */
 
-					p.TCNumArticle {
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-					}
+
 
 					.TCGlobal td {
 						vertical-align: top !important;
@@ -331,8 +248,6 @@ export const load: LayoutServerLoad = async ({
 							padding-top: 0.1em;
 							vertical-align: top;
 					}
-
-
 				`
 
 	try {
@@ -518,19 +433,19 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			}
 		}
 
-		// Supprimer certaines polices
+		/* 		// Supprimer certaines polices
 		cssText = cssText.replaceAll(
 			/font-family\s*:\s*(?:(?:'[^']*'|"[^"]*"|[^;}])+?)(?=\s*[;}])/gi,
 			(match) => {
-				if (/marianne|arial|numero/i.test(match)) {
+				if (/marianne|arial|numero|times/i.test(match)) {
 					return ""
 				}
 				return match
 			},
 		)
-
+ */
 		// Neutralisation des alignements forcés (Justify -> Left)
-		cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
+		//	cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
 
 		// Mise à l'échelle des polices dans le CSS interne
 		// On utilise la même logique de variable CSS que pour l'inline
@@ -727,14 +642,15 @@ function processDocument(document: Document) {
 						if (!r) return false
 						const lowerRule = r.toLowerCase()
 
-						// Filtre font-family (Marianne, Arial, Numero)
+						/* 						// Filtre font-family (Marianne, Arial, Numero)
 						if (lowerRule.startsWith("font-family")) {
 							return !(
 								lowerRule.includes("marianne") ||
 								lowerRule.includes("arial") ||
-								lowerRule.includes("numero")
+								lowerRule.includes("numero") ||
+								lowerRule.includes("times")
 							)
-						}
+						} */
 
 						// Filtre Margins/Paddings (en préservant les images)
 						return (
@@ -754,7 +670,7 @@ function processDocument(document: Document) {
 				}
 
 				if (cleanedStyle) {
-					element.setAttribute("style", cleanedStyle)
+					element.setAttribute("style", newStyle)
 				} else {
 					element.removeAttribute("style")
 				}
