@@ -97,7 +97,7 @@
 </script>
 
 <h2 class="flex items-center pb-2 text-base font-bold text-gray-700">
-	Historique de l'article
+	Sources de l'article
 </h2>
 {#if historyByText !== undefined}
 	{#each historyByYear as group, index (index)}
