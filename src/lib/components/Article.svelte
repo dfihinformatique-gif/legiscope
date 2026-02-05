@@ -6,6 +6,7 @@
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
+		type Legiarti,
 		type VersionArticle,
 	} from "$lib/db_data_types"
 	import {
@@ -991,8 +992,6 @@
 
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
-	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
-
 	const ongletsArticle = [
 		{ id: "content", label: "Texte" },
 		{ id: "history", label: "Historique" },
@@ -1036,6 +1035,42 @@
 			? historyDataToHistoryByText(articleInfo.historyLinks)
 			: undefined,
 	)
+
+	function getVersionLabel(
+		version: VersionArticle | Legiarti | undefined | null,
+		options: { dateNumerique?: boolean } = {},
+	): string {
+		const { dateNumerique = false } = options
+
+		if (!version) return ""
+
+		const id =
+			"legi_id_lien" in version
+				? version.legi_id_lien
+				: version.id === undefined
+					? ""
+					: (version as Legiarti).legi_id
+		const debut =
+			"debut" in version ? version.debut : (version as Legiarti).date_debut
+		const fin = "fin" in version ? version.fin : (version as Legiarti).date_fin
+
+		if (!debut || !id) return ""
+		const format = dateNumerique ? formatDateFrNumerique : formatDateFr
+
+		if (id.startsWith("JORF")) {
+			return (
+				(dateNumerique ? "J0 du " : "Journal officiel du ") +
+				format(articleInfo.jorfTextDatePubli!)
+			)
+		}
+		if (debut === "2999-01-01") return "Version de versement"
+		if (fin === "2999-01-01") {
+			if (debut === "2222-02-22")
+				return "Version en vigueur différée ou article mort-né"
+			return "Version en vigueur depuis le " + format(debut)
+		}
+		return "Version du " + format(debut) + " au " + format(fin)
+	}
 </script>
 
 {#if articleInfo.article}
@@ -1158,24 +1193,7 @@
 									selected={articleInfo.article.legi_id ===
 										version.legi_id_lien}
 								>
-									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}Journal
-											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
-										{:else if version.debut === "2999-01-01"}
-											Version de versement
-										{:else if version.fin === "2999-01-01"}
-											{#if version.debut === "2222-02-22"}
-												Version en vigueur différée ou article mort-né
-											{:else}
-												Version en vigueur depuis le {formatDateFr(
-													version.debut,
-												)}
-											{/if}
-										{:else}
-											Version du {formatDateFr(version.debut)}
-											au {formatDateFr(version.fin)}
-										{/if}
-									{/if}
+									{getVersionLabel(version)}
 								</option>
 							{/each}
 						</select>
@@ -1209,25 +1227,7 @@
 									selected={articleInfo.article.legi_id ===
 										version.legi_id_lien}
 								>
-									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatDateFrNumerique(
-												articleInfo.jorfTextDatePubli!,
-											)}
-										{:else if version.debut === "2999-01-01"}
-											Version de versement
-										{:else if version.fin === "2999-01-01"}
-											{#if version.debut === "2222-02-22"}
-												Version en vigueur différée ou article mort-né
-											{:else}
-												Version en vigueur depuis le {formatDateFrNumerique(
-													version.debut,
-												)}
-											{/if}
-										{:else}
-											Version du {formatDateFrNumerique(version.debut)}
-											au {formatDateFrNumerique(version.fin)}
-										{/if}
-									{/if}
+									{getVersionLabel(version, { dateNumerique: true })}
 								</option>
 							{/each}
 						</select>
@@ -1241,7 +1241,7 @@
 				<div class="flex flex-col items-center justify-center justify-self-end">
 					{#if articleInfo.sectionTitle}
 						<p class="mx-4 text-center text-xs text-neutral-500">
-							Section directe de l'article :
+							Section de l'article :
 						</p>
 						<p
 							class="mx-4 border-b pb-1 text-center font-serif text-neutral-600 @md/section-article:mx-10"
@@ -1312,7 +1312,15 @@
 				{/if}
 
 				{#if showDiff === true}
-					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+					<div class="rounded-t-md bg-[#C9D7ED] px-5 py-3 text-left">
+						<span class="font-light">Changements apportés par la</span>
+						{getVersionLabel(articleInfo.article)}
+						<span class="font-light">sur la</span>
+						{getVersionLabel(articleInfo.articlePreviousVersion)}<span
+							class="font-light">.</span
+						>
+					</div>
+					<div class="rounded-b-md bg-blue-100 px-5 py-4">
 						<span class="font-serif text-lg leading-8 md:text-left">
 							<!--
 							Le warning eslint porte sur le risque de XSS.
