@@ -1312,16 +1312,20 @@
 				{/if}
 
 				{#if showDiff === true}
-					<div
-						class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm text-neutral-700"
-					>
-						<span class="font-light">Changements apportés par la</span>
-						{getVersionLabel(articleInfo.article)}
-						<span class="font-light">sur la</span>
-						{getVersionLabel(articleInfo.articlePreviousVersion)}<span
-							class="font-light">.</span
+					{#if showDiff === true && currentBlocTextuel && previousBlocTextuel}
+						<div
+							class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm text-neutral-700"
 						>
-					</div>
+							Changements apportés par <span
+								title={getVersionLabel(articleInfo.article)}>cette version</span
+							>
+							sur la
+							<span class="font-serif text-neutral-700 italic"
+								>{getVersionLabel(articleInfo.articlePreviousVersion)}.</span
+							>
+						</div>
+					{/if}
+
 					<div class="rounded-b-md bg-blue-100 px-5 py-4">
 						<span class="font-serif text-lg leading-8 md:text-left">
 							<!--
