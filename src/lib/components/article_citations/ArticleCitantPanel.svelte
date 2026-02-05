@@ -793,7 +793,9 @@
 				</div>
 			{/if}
 			{#if showDiff === true}
-				<div class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm">
+				<div
+					class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm text-neutral-700"
+				>
 					<span class="font-light">Changements apportés par la</span>
 					{getVersionLabel(citingArticleInfo.article)}
 					<span class="font-light">sur la</span>
