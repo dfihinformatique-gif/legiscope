@@ -6,9 +6,14 @@
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
+		type Legiarti,
 		type VersionArticle,
 	} from "$lib/db_data_types"
-	import { formatDateFr, shared } from "$lib/shared.svelte"
+	import {
+		formatDateFr,
+		formatDateFrNumerique,
+		shared,
+	} from "$lib/shared.svelte"
 	import {
 		assertNever,
 		reversePositionsSplitFromPositions,
@@ -633,6 +638,41 @@
 			? historyDataToHistoryByText(citingArticleInfo.historyLinks)
 			: undefined,
 	)
+
+	function getVersionLabel(
+		version: VersionArticle | Legiarti | undefined | null,
+		options: { dateNumerique?: boolean } = {},
+	): string {
+		const { dateNumerique = false } = options
+		if (!version) return ""
+
+		const id =
+			"legi_id_lien" in version
+				? version.legi_id_lien
+				: version.id === undefined
+					? ""
+					: (version as Legiarti).legi_id
+		const debut =
+			"debut" in version ? version.debut : (version as Legiarti).date_debut
+		const fin = "fin" in version ? version.fin : (version as Legiarti).date_fin
+
+		if (!debut || !id) return ""
+		const format = dateNumerique ? formatDateFrNumerique : formatDateFr
+
+		if (id.startsWith("JORF")) {
+			return (
+				(dateNumerique ? "J0 du " : "Journal officiel du ") +
+				format(citingArticleInfo.jorfTextDatePubli!)
+			)
+		}
+		if (debut === "2999-01-01") return "Version de versement"
+		if (fin === "2999-01-01") {
+			if (debut === "2222-02-22")
+				return "Version en vigueur différée ou article mort-né"
+			return "Version en vigueur depuis le " + format(debut)
+		}
+		return "Version du " + format(debut) + " au " + format(fin)
+	}
 </script>
 
 <button
@@ -722,22 +762,7 @@
 					<p
 						class="grow rounded-t-sm border-b-3 border-neutral-200 bg-white p-2 text-left font-serif text-black italic sm:text-base"
 					>
-						{#if selectedVersion?.debut}
-							{#if selectedVersion.legi_id_lien.startsWith("JORF")}
-								Journal officiel du {formatDateFr(
-									citingArticleInfo.jorfTextDatePubli!,
-								)}
-							{:else if selectedVersion.debut === "2999-01-01"}
-								Version de versement
-							{:else if selectedVersion.fin === "2999-01-01"}
-								Version en vigueur depuis le {formatDateFr(
-									selectedVersion.debut,
-								)}
-							{:else}
-								Version du {formatDateFr(selectedVersion.debut)}
-								au {formatDateFr(selectedVersion.fin)}
-							{/if}
-						{/if}
+						{getVersionLabel(selectedVersion)}
 					</p>
 				{/if}
 			</div>
@@ -768,7 +793,15 @@
 				</div>
 			{/if}
 			{#if showDiff === true}
-				<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
+				<div class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm">
+					<span class="font-light">Changements apportés par la</span>
+					{getVersionLabel(citingArticleInfo.article)}
+					<span class="font-light">sur la</span>
+					{getVersionLabel(citingArticleInfo.articlePreviousVersion)}<span
+						class="font-light">.</span
+					>
+				</div>
+				<div class="rounded-b-md bg-blue-100 px-5 py-4">
 					<span class="font-serif text-lg leading-8 md:text-left">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html diffContent}

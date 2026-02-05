@@ -1312,7 +1312,7 @@
 				{/if}
 
 				{#if showDiff === true}
-					<div class="rounded-t-md bg-[#C9D7ED] px-5 py-3 text-left">
+					<div class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm">
 						<span class="font-light">Changements apportés par la</span>
 						{getVersionLabel(articleInfo.article)}
 						<span class="font-light">sur la</span>
