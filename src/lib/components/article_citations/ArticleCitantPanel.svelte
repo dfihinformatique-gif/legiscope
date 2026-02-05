@@ -25,6 +25,7 @@
 	import { SvelteURLSearchParams } from "svelte/reactivity"
 	import ArticlesModificateurs from "../ArticlesModificateurs.svelte"
 	import InformationMessage from "../ui_transverse_components/InformationMessage.svelte"
+	import Tooltip from "../ui_transverse_components/Tooltip.svelte"
 
 	interface Props {
 		citingArticleInfo: ArticleInfo
@@ -797,10 +798,23 @@
 					<div
 						class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm text-neutral-700"
 					>
-						Changements apportés par <span
-							title={getVersionLabel(citingArticleInfo.article)}
-							>cette version</span
+						Changements apportés par <Tooltip
+							arrowClass="bg-white"
+							widthClass="w-60"
+							initialPlacement="top"
 						>
+							<span
+								class="font-normal underline decoration-dotted hover:text-black"
+								>cette version</span
+							>
+							{#snippet tooltip()}
+								<div
+									class="overflow-hidden rounded-lg border border-gray-200 bg-white p-2 text-start text-sm font-normal shadow-md"
+								>
+									{getVersionLabel(citingArticleInfo.article)}
+								</div>
+							{/snippet}
+						</Tooltip>
 						sur la
 						<span class="font-serif text-neutral-700 italic"
 							>{getVersionLabel(
