@@ -296,18 +296,6 @@ function isLikelyFooter(text: string | null | undefined) {
 function processDocument(document: Document) {
 	const baseSize = getBaseFontSize(document)
 	const chromaticClasses = processStyleTags(document, baseSize)
-	const tagsToExcludeFromRemoving: string[] = [
-		"IMG",
-		"IFRAME",
-		"VIDEO",
-		"AUDIO",
-		"SVG",
-		"CANVAS",
-		"INPUT",
-		"BUTTON",
-		"HR",
-		"PATH",
-	]
 
 	document.querySelectorAll("*").forEach((el) => {
 		const element = el as HTMLElement
@@ -356,20 +344,6 @@ function processDocument(document: Document) {
 					element.parentNode?.insertBefore(wrapper, element)
 					wrapper.appendChild(element)
 				}
-			}
-		}
-
-		// Suppression des éléments vides
-		if (
-			!tagsToExcludeFromRemoving.includes(element.tagName) &&
-			!isInsidetable
-		) {
-			const hasChildren = el.children.length > 0
-			const hasText = el.textContent?.trim().length > 0
-
-			if (!hasChildren && !hasText) {
-				el.remove()
-				return
 			}
 		}
 
@@ -426,59 +400,12 @@ function processDocument(document: Document) {
 			if (styleAttr) {
 				let newStyle = styleAttr
 
-				// Alignement
-				if (newStyle.toLowerCase().includes("justify")) {
-					newStyle = newStyle.replace(
-						/text-align\s*:\s*justify/gi,
-						"text-align: left",
-					)
-				}
-
 				// Polices
 				if (newStyle.toLowerCase().includes("font-size")) {
 					newStyle = convertToRelativeEm(newStyle, baseSize)
 				}
 
-				// Nettoyage margin/padding/font-family
-				let cleanedStyle = newStyle
-					.split(";")
-					.map((r) => r.trim())
-					.filter((r) => {
-						if (!r) return false
-						const lowerRule = r.toLowerCase()
-
-						/* 						// Filtre font-family (Marianne, Arial, Numero)
-						if (lowerRule.startsWith("font-family")) {
-							return !(
-								lowerRule.includes("marianne") ||
-								lowerRule.includes("arial") ||
-								lowerRule.includes("numero") ||
-								lowerRule.includes("times")
-							)
-						} */
-
-						// Filtre Margins/Paddings (en préservant les images)
-						return (
-							!lowerRule.startsWith("margin") &&
-							!lowerRule.startsWith("padding")
-						)
-					})
-					.join("; ")
-
-				// Ajoute une marge intérieure aux éléments ayant une bordure pour éviter que le texte ne soit collé à la bordure
-				if (
-					(element.tagName === "DIV" || element.tagName === "P") &&
-					newStyle.toLowerCase().includes("border") &&
-					/(?<!-)border(-top|-right|-left|-bottom)?\s*:/i.test(newStyle)
-				) {
-					cleanedStyle += (cleanedStyle ? "; " : "") + "padding-left: 1em"
-				}
-
-				if (cleanedStyle) {
-					element.setAttribute("style", newStyle)
-				} else {
-					element.removeAttribute("style")
-				}
+				element.setAttribute("style", newStyle)
 			}
 		}
 	})
