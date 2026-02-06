@@ -92,26 +92,44 @@ export const load: LayoutServerLoad = async ({
 
 		let HTMLWithButtons: string = ""
 
-		if (pjl === "PRJLANR5L17B1907") {
+		if (pjl.startsWith("PRJLANR")) {
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
-				/<p class="assnat9ArticleNum">/g,
-				(match, offset, string) => {
+				/<p\s+([^>]*class="[^"]*assnat9ArticleNum[^"]*"[^>]*)>/g,
+				(match, attributes, offset, string) => {
 					const articleMatch = string.slice(offset).match(/Article\s+(\w+)/)
-					return articleMatch
-						? `<p class="assnat9ArticleNum" id="_TocArt${articleMatch[1]}">`
-						: match
+
+					if (!articleMatch) return match
+
+					// Vérifier si l'attribut id existe déjà
+					if (attributes.includes("id=")) {
+						// Remplacer l'id existant
+						const newAttributes = attributes.replace(
+							/id="[^"]*"/,
+							`id="_TocArt${articleMatch[1]}"`,
+						)
+						return `<p ${newAttributes}>`
+					} else {
+						// Ajouter l'attribut id
+						return `<p ${attributes} id="_TocArt${articleMatch[1]}">`
+					}
 				},
 			)
 
 			const articles: Array<{ num: string; id: string }> = []
+			const seenNums = new Set<string>()
 			const articleRegex =
-				/<p class="assnat9ArticleNum" id="(_TocArt\w+)">\s*Article\s+(\w+)\s*<\/p>/g
+				/<p\s+(?=(?:[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*id="(_TocArt\w+)"|(?:[^>]*id="(_TocArt\w+)")[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*>(?:\s|<[^>]+>)*Article\s+(\w+)/g
 			let match
 
 			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
+				const num = match[3]
+
+				if (seenNums.has(num)) continue
+
+				seenNums.add(num)
 				articles.push({
-					id: match[1],
-					num: match[2],
+					id: match[1] || match[2],
+					num: num,
 				})
 			}
 
