@@ -152,9 +152,11 @@ ${articles
 		const { document } = parseHTML(HTMLWithButtons)
 		processDocument(document)
 		const HTMLToReturn = document.toString()
+		const style = readFileSync(join("static/style-shadow-pjl.css"), "utf-8")
 
 		return {
-			pjlHTML: HTMLToReturn,
+			pjlHTML: `<style>${style}</style>
+				<div class="pjl-content-wrapper">${HTMLToReturn}</div>`,
 			pjlDate,
 			currentParameterReferences,
 		}
@@ -238,7 +240,7 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 	const styleTags = document.querySelectorAll("style")
 	const chromaticClasses = new Set<string>()
 
-	styleTags.forEach((tag, index) => {
+	styleTags.forEach((tag) => {
 		let cssText = tag.textContent || ""
 
 		// Détection des classes avec couleurs chromatiques
@@ -266,11 +268,6 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 			}
 			return `font-size: calc(${ratio.toFixed(3)} * var(--base-font-size))`
 		})
-
-		if (index === 0) {
-			const style = readFileSync(join("static/style-shadow-pjl.css"), "utf-8")
-			cssText = style + cssText
-		}
 
 		tag.textContent = cssText
 	})

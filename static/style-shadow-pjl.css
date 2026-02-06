@@ -13,6 +13,11 @@
   line-height: 1.5 !important; /* Augmente aussi l'interligne */
   outline-color: #ced3e0;
 }
+.pjl-content-wrapper {
+  position: relative;
+  min-height: 100%;
+  overflow-x: hidden !important;
+}
 .has-custom-color {
   color: #2f406a !important;
 }
