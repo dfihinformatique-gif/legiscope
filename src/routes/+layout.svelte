@@ -29,13 +29,13 @@
 	<NavBarHome />
 	<main class="">{@render children()}</main>
 {:else}
-	<NavBarHome />
-	<!-- Zone principale -->
-	<main
-		class="absolute inset-0 mt-12 min-h-full overflow-hidden bg-neutral-200 2xl:mt-14"
-	>
-		{@render children()}
-	</main>
-	<!-- Navbar -->
-	<NavBar />
+	<div class="grid h-screen grid-rows-[auto_1fr_auto]">
+		<NavBarHome />
+		<!-- Zone principale -->
+		<main class="overflow-hidden bg-neutral-200">
+			{@render children()}
+		</main>
+		<!-- Navbar -->
+		<NavBar />
+	</div>
 {/if}

@@ -9,7 +9,7 @@
 {#if !shared.isMobilePhone}
 	<nav
 		aria-label="Navigation principale"
-		class="fixed bottom-8 flex h-12 w-full flex-row flex-nowrap items-center overflow-hidden bg-neutral-300 py-5 text-center 2xl:h-14"
+		class="flex h-12 w-full flex-row flex-nowrap items-center justify-center gap-1 bg-neutral-300 text-center md:gap-2 2xl:h-14 2xl:gap-4"
 	>
 		<div class="flex-1">
 			<button
@@ -139,7 +139,7 @@
 	</nav>
 {/if}
 <div
-	class="fixed bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
+	class="bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
 >
 	<p class="pb-1 pl-5 text-sm">
 		<span class="hidden md:inline-flex"
