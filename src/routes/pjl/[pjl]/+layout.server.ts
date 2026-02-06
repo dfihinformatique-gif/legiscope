@@ -388,8 +388,7 @@ function processDocument(document: Document) {
 				["DIV", "P", "TABLE", "SECTION", "FOOTER"].includes(element.tagName)
 			) {
 				if (!isInsidetable || element.tagName !== "TABLE") {
-					const text = el.textContent
-					if (isLikelyFooter(text)) {
+					if (isLikelyFooter(el.textContent)) {
 						el.remove()
 						return
 					}
