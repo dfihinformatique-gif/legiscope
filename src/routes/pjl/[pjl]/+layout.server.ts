@@ -175,7 +175,7 @@ ${articles
 
 					// Chercher "Article" suivi du numéro (possiblement composé)
 					const articleMatch = textOnly.match(
-						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies))?([A-Z]+)?|\w+)/i,
+						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
 					)
 
 					if (!articleMatch) return match
@@ -216,7 +216,7 @@ ${articles
 					.trim()
 
 				const articleMatch = textOnly.match(
-					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies))?([A-Z]+)?|\w+)/i,
+					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
 				)
 
 				if (!articleMatch) continue
