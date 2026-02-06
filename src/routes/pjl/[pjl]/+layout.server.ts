@@ -214,45 +214,11 @@ function convertToRelativeEm(styleString: string, baseSize: number): string {
 	})
 }
 
-function isColorChromatic(color: string): boolean {
-	const hexMatch = color.match(/^#([0-9a-f]{3}){1,2}$/i)
-	if (hexMatch) {
-		const hex = hexMatch[0].replace("#", "")
-		if (hex.length === 3) {
-			return !(hex[0] === hex[1] && hex[1] === hex[2])
-		}
-		const r = hex.substring(0, 2),
-			g = hex.substring(2, 4),
-			b = hex.substring(4, 6)
-		return !(r === g && g === b)
-	}
-
-	const rgbMatch = color.match(/rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/i)
-	if (rgbMatch) {
-		const [, r, g, b] = rgbMatch
-		return !(r === g && g === b)
-	}
-
-	return !["gray", "grey", "black"].includes(color.toLowerCase())
-}
-
-function processStyleTags(document: Document, baseSize: number): Set<string> {
+function processStyleTags(document: Document, baseSize: number) {
 	const styleTags = document.querySelectorAll("style")
-	const chromaticClasses = new Set<string>()
 
 	styleTags.forEach((tag) => {
 		let cssText = tag.textContent || ""
-
-		// Détection des classes avec couleurs chromatiques
-		// On cherche le nom de la classe et la valeur de la couleur
-		const colorRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
-		let match
-		while ((match = colorRegex.exec(cssText)) !== null) {
-			const [, className, colorValue] = match
-			if (isColorChromatic(colorValue.trim())) {
-				chromaticClasses.add(className)
-			}
-		}
 
 		// Mise à l'échelle des polices dans le CSS interne
 		// On utilise la même logique de variable CSS que pour l'inline
@@ -271,8 +237,6 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 
 		tag.textContent = cssText
 	})
-
-	return chromaticClasses
 }
 
 function isLikelyFooter(text: string | null | undefined) {
@@ -295,7 +259,7 @@ function isLikelyFooter(text: string | null | undefined) {
 
 function processDocument(document: Document) {
 	const baseSize = getBaseFontSize(document)
-	const chromaticClasses = processStyleTags(document, baseSize)
+	processStyleTags(document, baseSize)
 
 	document.querySelectorAll("*").forEach((el) => {
 		const element = el as HTMLElement
@@ -314,7 +278,6 @@ function processDocument(document: Document) {
 			}
 		}
 
-		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
 		if (element.tagName === "TABLE") {
@@ -368,35 +331,10 @@ function processDocument(document: Document) {
 					}
 				}
 			}
-			let hasChromatism = false
-			// A. Vérification des classes internes
-			// On vérifie si l'élément possède une des classes détectées comme colorées
-			for (const className of element.classList) {
-				if (chromaticClasses.has(className)) {
-					hasChromatism = true
-					break
-				}
-			}
 
-			// B. Vérification du style Inline
-			const colorMatch = styleAttr.match(
-				/(?:color|background-color)\s*:\s*([^;]+)/i,
-			)
-			if (colorMatch) {
-				const colorValue = colorMatch[1].trim()
-				// Le style inline a le dernier mot : s'il est chromatique, on marque,
-				// s'il est gris/noir, on invalide le marquage de la classe.
-				hasChromatism = isColorChromatic(colorValue)
-			}
+			// Ajustement des font-size inline
+			const styleAttr = element.getAttribute("style") || ""
 
-			// C. Application de la classe
-			if (hasChromatism) {
-				element.classList.add("has-custom-color")
-			} else {
-				element.classList.remove("has-custom-color")
-			}
-
-			// D. Transformations structurelles du style
 			if (styleAttr) {
 				let newStyle = styleAttr
 
