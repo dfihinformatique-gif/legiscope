@@ -179,7 +179,6 @@ ${articles
 					)
 
 					if (!articleMatch) return match
-					console.log({ articleMatch })
 					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
 
 					// Vérifier si l'attribut id existe déjà
@@ -216,8 +215,6 @@ ${articles
 					) // Décoder les entités hexadécimales
 					.trim()
 
-				console.log({ textOnly })
-
 				const articleMatch = textOnly.match(
 					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies))?([A-Z]+)?|\w+)/i,
 				)
@@ -225,8 +222,6 @@ ${articles
 				if (!articleMatch) continue
 
 				const num = articleMatch[1].replace(/\s+/g, "")
-
-				console.log({ num })
 
 				if (seenNums.has(num)) continue
 
