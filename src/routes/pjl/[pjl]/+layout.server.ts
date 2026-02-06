@@ -96,21 +96,39 @@ export const load: LayoutServerLoad = async ({
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
 				/<p\s+([^>]*class="[^"]*assnat9ArticleNum[^"]*"[^>]*)>/g,
 				(match, attributes, offset, string) => {
-					const articleMatch = string.slice(offset).match(/Article\s+(\w+)/)
+					const contentMatch = string.slice(offset).match(/<p[^>]*>(.*?)<\/p>/s)
+
+					if (!contentMatch) return match
+
+					const content = contentMatch[1]
+
+					// Retirer les balises HTML et les commentaires, garder le texte
+					const textOnly = content
+						.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+						.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+						.replace(/&nbsp;/g, " ")
+						.replace(/&#xa0;/g, " ") // Remplacer &nbsp; par espace
+						.trim()
+
+					// Chercher "Article" suivi du numéro (possiblement composé)
+					const articleMatch = textOnly.match(
+						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
+					)
 
 					if (!articleMatch) return match
+					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
 
 					// Vérifier si l'attribut id existe déjà
 					if (attributes.includes("id=")) {
 						// Remplacer l'id existant
 						const newAttributes = attributes.replace(
 							/id="[^"]*"/,
-							`id="_TocArt${articleMatch[1]}"`,
+							`id="_TocArt${articleNum}"`,
 						)
 						return `<p ${newAttributes}>`
 					} else {
 						// Ajouter l'attribut id
-						return `<p ${attributes} id="_TocArt${articleMatch[1]}">`
+						return `<p ${attributes} id="_TocArt${articleNum}">`
 					}
 				},
 			)
@@ -118,11 +136,30 @@ export const load: LayoutServerLoad = async ({
 			const articles: Array<{ num: string; id: string }> = []
 			const seenNums = new Set<string>()
 			const articleRegex =
-				/<p\s+(?=(?:[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*id="(_TocArt\w+)"|(?:[^>]*id="(_TocArt\w+)")[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*>(?:\s|<[^>]+>)*Article\s+(\w+)/g
+				/<p\s+(?=(?:[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*id="(_TocArt[\w]+)"|(?:[^>]*id="(_TocArt[\w]+)")[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*>(.*?)<\/p>/gs
 			let match
 
 			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
-				const num = match[3]
+				const content = match[3]
+
+				const textOnly = content
+					.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+					.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+					.replace(/&nbsp;/g, " ") // Remplacer &nbsp; par espace
+					.replace(/&#xa0;/g, " ") // Remplacer &#xa0; (espace insécable) par espace
+					.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)) // Décoder les entités numériques décimales
+					.replace(/&#x([0-9a-f]+);/gi, (match, hex) =>
+						String.fromCharCode(parseInt(hex, 16)),
+					) // Décoder les entités hexadécimales
+					.trim()
+
+				const articleMatch = textOnly.match(
+					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
+				)
+
+				if (!articleMatch) continue
+
+				const num = articleMatch[1].replace(/\s+/g, "")
 
 				if (seenNums.has(num)) continue
 
