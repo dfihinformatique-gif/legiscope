@@ -77,12 +77,7 @@ export const load: LayoutServerLoad = async ({
 				const lawArticle = p1.replace(".md", "")
 				const referredParameters = currentParameterReferences.get(lawArticle)
 				const referredParametersLabels = []
-				if (
-					referredParameters !== undefined &&
-					(pjl === "plf-2026-Cplt_avec_liens" ||
-						pjl === "pre-plfss_2026" ||
-						(pjl === "PRJLANR5L17B1906" && user === "leximpact"))
-				) {
+				if (referredParameters !== undefined && user === "leximpact") {
 					for (const parameter of referredParameters) {
 						referredParametersLabels.push(
 							parameter.short_label?.replace("'", " "),
