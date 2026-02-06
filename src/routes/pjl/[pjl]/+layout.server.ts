@@ -91,6 +91,17 @@ export const load: LayoutServerLoad = async ({
 		)
 
 		let HTMLWithButtons: string = ""
+		const latinMultiplicativeAdverbRegExp =
+			/^(?:un(?:de?)?|duo(?:de)?|ter|quater|quin(?:que)?|sex?|sept|octo|novo)?(?:dec|v[ei]c|tr[ei]c|quadrag|quinquag|sexag|septuag|octog|nonag)ies|semel|bis|ter|quater|(?:quinqu|sex|sept|oct|no[nv])ies$/i
+
+		const adverbPattern = latinMultiplicativeAdverbRegExp.source.replace(
+			/^\^|\$$/g,
+			"",
+		)
+		const articlePattern = new RegExp(
+			String.raw`Article\s+(liminaire|\d+(?:\s*(?:${adverbPattern}))?([A-Z]+)?|\w+)`,
+			"i",
+		)
 
 		if (pjl.startsWith("PRJLANR")) {
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
@@ -111,9 +122,8 @@ export const load: LayoutServerLoad = async ({
 						.trim()
 
 					// Chercher "Article" suivi du numéro (possiblement composé)
-					const articleMatch = textOnly.match(
-						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
-					)
+
+					const articleMatch = textOnly.match(articlePattern)
 
 					if (!articleMatch) return match
 					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
@@ -153,9 +163,7 @@ export const load: LayoutServerLoad = async ({
 					) // Décoder les entités hexadécimales
 					.trim()
 
-				const articleMatch = textOnly.match(
-					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
-				)
+				const articleMatch = textOnly.match(articlePattern)
 
 				if (!articleMatch) continue
 
@@ -211,9 +219,7 @@ ${articles
 						.trim()
 
 					// Chercher "Article" suivi du numéro (possiblement composé)
-					const articleMatch = textOnly.match(
-						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
-					)
+					const articleMatch = textOnly.match(articlePattern)
 
 					if (!articleMatch) return match
 					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
@@ -252,9 +258,7 @@ ${articles
 					) // Décoder les entités hexadécimales
 					.trim()
 
-				const articleMatch = textOnly.match(
-					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies|undecies|duodecies|terdecies|quaterdecies|quindecies|sexdecies))?([A-Z]+)?|\w+)/i,
-				)
+				const articleMatch = textOnly.match(articlePattern)
 
 				if (!articleMatch) continue
 
