@@ -154,6 +154,110 @@ ${articles
 				currentParameterReferences!,
 				pjlDate,
 			)
+		} else if (pjl.startsWith("pjl")) {
+			const htmlWithLinksAndSummary = htmlWithLinks.replace(
+				/<p\s+([^>]*class="[^"]*TCNumArticle[^"]*"[^>]*)>/g,
+				(match, attributes, offset, string) => {
+					// Extraire tout le contenu jusqu'à la balise de fermeture </p>
+					const contentMatch = string.slice(offset).match(/<p[^>]*>(.*?)<\/p>/s)
+
+					if (!contentMatch) return match
+
+					const content = contentMatch[1]
+
+					// Retirer les balises HTML et les commentaires, garder le texte
+					const textOnly = content
+						.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+						.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+						.replace(/&nbsp;/g, " ")
+						.replace(/&#xa0;/g, " ") // Remplacer &nbsp; par espace
+						.trim()
+
+					// Chercher "Article" suivi du numéro (possiblement composé)
+					const articleMatch = textOnly.match(
+						/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies))?([A-Z]+)?|\w+)/i,
+					)
+
+					if (!articleMatch) return match
+					console.log({ articleMatch })
+					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
+
+					// Vérifier si l'attribut id existe déjà
+					if (attributes.includes("id=")) {
+						// Remplacer l'id existant
+						const newAttributes = attributes.replace(
+							/id="[^"]*"/,
+							`id="_TocArt${articleNum}"`,
+						)
+						return `<p ${newAttributes}>`
+					} else {
+						// Ajouter l'attribut id
+						return `<p ${attributes} id="_TocArt${articleNum}">`
+					}
+				},
+			)
+			const articles: Array<{ num: string; id: string }> = []
+			const seenNums = new Set<string>()
+			const articleRegex =
+				/<p\s+(?=(?:[^>]*class="[^"]*TCNumArticle[^"]*")[^>]*id="(_TocArt[\w]+)"|(?:[^>]*id="(_TocArt[\w]+)")[^>]*class="[^"]*TCNumArticle[^"]*")[^>]*>(.*?)<\/p>/gs
+			let match
+
+			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
+				const content = match[3]
+
+				const textOnly = content
+					.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+					.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+					.replace(/&nbsp;/g, " ") // Remplacer &nbsp; par espace
+					.replace(/&#xa0;/g, " ") // Remplacer &#xa0; (espace insécable) par espace
+					.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)) // Décoder les entités numériques décimales
+					.replace(/&#x([0-9a-f]+);/gi, (match, hex) =>
+						String.fromCharCode(parseInt(hex, 16)),
+					) // Décoder les entités hexadécimales
+					.trim()
+
+				console.log({ textOnly })
+
+				const articleMatch = textOnly.match(
+					/Article\s+(liminaire|\d+(?:\s*(?:bis|ter|quater|quinquies|sexies|septies|octies|novies|decies))?([A-Z]+)?|\w+)/i,
+				)
+
+				if (!articleMatch) continue
+
+				const num = articleMatch[1].replace(/\s+/g, "")
+
+				console.log({ num })
+
+				if (seenNums.has(num)) continue
+
+				seenNums.add(num)
+				articles.push({
+					id: match[1] || match[2],
+					num: num,
+				})
+			}
+
+			const sommaire = `
+\t\t<div style="display: none;">
+${articles
+	.map(
+		(article) => `\t\t\t<p class="assnatTOC6">
+\t\t\t\t<a href="#${article.id}"><span class="assnatHyperlink" style="font-weight:bold; text-decoration:none; color:#000000">ARTICLE ${article.num.toUpperCase()}</span></a>
+\t\t\t</p>`,
+	)
+	.join("\n")}
+\t\t</div>
+\t\t`
+			const htmlWithLinksAndSummaryFinal = htmlWithLinksAndSummary.replace(
+				/(<div id="formCorrection:panel:1:table">)/,
+				`${sommaire}$1`,
+			)
+
+			HTMLWithButtons = highlightParameterValuesInHTML(
+				htmlWithLinksAndSummaryFinal,
+				currentParameterReferences!,
+				pjlDate,
+			)
 		} else {
 			HTMLWithButtons = highlightParameterValuesInHTML(
 				htmlWithLinks,
