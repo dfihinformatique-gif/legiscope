@@ -116,8 +116,14 @@
 			while (i < segments.length) {
 				const current = segments[i]
 
+				// Vérifier si c'est le début d'une référence légale
+				if (this.isStartOfLegalReference(segments, i)) {
+					const merged = this.mergeLegalReference(segments, i)
+					result.push(merged.segment)
+					i = merged.newIndex
+				}
 				// Vérifier si c'est un segment qui commence une séquence numérique avec espaces
-				if (this.isStartOfNumberSequence(segments, i)) {
+				else if (this.isStartOfNumberSequence(segments, i)) {
 					const merged = this.mergeNumberSequence(segments, i)
 					result.push(merged.segment)
 					i = merged.newIndex
@@ -136,12 +142,99 @@
 			return Array.from(this.segment(text)).map((seg) => seg.segment)
 		}
 
+		private isStartOfLegalReference(
+			segments: Intl.SegmentData[],
+			index: number,
+		): boolean {
+			const current = segments[index]
+			// Doit commencer par L ou R (majuscule)
+			return current.isWordLike === true && /^[LR]$/.test(current.segment)
+		}
+
+		private mergeLegalReference(
+			segments: Intl.SegmentData[],
+			startIndex: number,
+		): { segment: Intl.SegmentData; newIndex: number } {
+			let i = startIndex
+			const parts = [segments[i].segment] // L ou R
+
+			// Vérifier si suivi par un point et éventuellement un espace
+			if (i + 1 < segments.length && segments[i + 1].segment === ".") {
+				parts.push(".")
+				i += 1
+
+				// Espace optionnel après le point
+				if (i + 1 < segments.length && segments[i + 1].segment === " ") {
+					parts.push(" ")
+					i += 1
+				}
+			}
+			// Sinon, continuer directement avec les chiffres (ex: L5125-1-1)
+
+			// Maintenant, capturer la séquence de chiffres, tirets et espaces
+			while (i + 1 < segments.length) {
+				const next = segments[i + 1]
+
+				// Accepter les chiffres
+				if (next.isWordLike && /^\d+$/.test(next.segment)) {
+					parts.push(next.segment)
+					i += 1
+				}
+				// Accepter les tirets
+				else if (next.segment === "-") {
+					parts.push(next.segment)
+					i += 1
+				}
+				// Accepter les espaces seulement s'ils sont suivis de chiffres ou de lettres (pour le suffixe A, B, etc.)
+				else if (next.segment === " " && i + 2 < segments.length) {
+					const afterSpace = segments[i + 2]
+					if (
+						(afterSpace.isWordLike && /^\d+$/.test(afterSpace.segment)) ||
+						(afterSpace.isWordLike && /^[A-Z]$/.test(afterSpace.segment))
+					) {
+						parts.push(next.segment)
+						i += 1
+					} else {
+						break
+					}
+				}
+				// Accepter une lettre majuscule finale (A, B, etc.)
+				else if (
+					next.isWordLike &&
+					/^[A-Z]$/.test(next.segment) &&
+					parts.length > 2
+				) {
+					parts.push(next.segment)
+					i += 1
+					break // Une lettre finale termine la référence
+				} else {
+					break
+				}
+			}
+
+			// Vérifier qu'on a bien une référence légale complète (au moins L/R + . + chiffres ou L/R + chiffres)
+			const merged = parts.join("")
+			if (/^[LR]\.?\s?\d+[\d\s-]*[A-Z]?$/.test(merged)) {
+				const mergedSegment = {
+					segment: merged,
+					index: segments[startIndex].index,
+					isWordLike: true,
+					input: segments[startIndex].input,
+				}
+				return { segment: mergedSegment, newIndex: i + 1 }
+			} else {
+				// Pas une référence légale valide, retourner juste le premier segment
+				return { segment: segments[startIndex], newIndex: startIndex + 1 }
+			}
+		}
+
 		private isStartOfNumberSequence(
 			segments: Intl.SegmentData[],
 			index: number,
 		): boolean {
 			const current = segments[index]
 			// Doit être un segment word-like contenant uniquement des chiffres
+			// ET ne pas être le début d'une référence légale
 			return (current.isWordLike && /^\d+$/.test(current.segment)) ?? false
 		}
 
