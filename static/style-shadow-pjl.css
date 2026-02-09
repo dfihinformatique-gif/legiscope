@@ -87,8 +87,9 @@ code {
 
 /* LIENS ET BOUTONS PARAMÈTRES */
 
+/* Liens du sommaire ou ancres dans le document */
+
 a[href^="#"] {
-  /*Crée un style pour mettre en avant les liens au sein du document */
   text-decoration: underline !important;
   text-decoration-style: dotted !important;
   text-decoration-color: #bbbbbb !important;
@@ -102,6 +103,8 @@ a[href^="#"]:focus {
   text-underline-offset: 4px !important;
   text-decoration-thickness: 2px !important;
 }
+
+/* Liens vers la loi, qui ouvrent le volet de droite */
 .law-article-icon {
   margin-right: 0.1em !important;
   margin-left: 0.15em !important;
@@ -116,7 +119,7 @@ a[href^="#"]:focus {
   text-decoration: none !important;
 }
 law-link-text {
-  display: inline; /* Crucial pour le retour à la ligne */
+  display: inline;
   border-bottom: 0.2rem solid #ccd3e7 !important;
 }
 .law-article-link {
