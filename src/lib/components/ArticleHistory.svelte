@@ -160,6 +160,6 @@
 	{/each}
 {:else}
 	<AlertDatabaseMessage
-		>Aucun élément d'historique n'est disponible pour cet article</AlertDatabaseMessage
+		>Aucune source n'est disponible pour cet article</AlertDatabaseMessage
 	>
 {/if}
