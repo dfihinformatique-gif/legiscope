@@ -11,6 +11,7 @@ import {
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
+import { latinMultiplicativeAdverbRegExp } from "@tricoteuses/legifrance"
 import {
 	newReverseTransformationsMergedFromPositionsIterator,
 	simplifyHtml,
@@ -91,9 +92,6 @@ export const load: LayoutServerLoad = async ({
 		)
 
 		let HTMLWithButtons: string = ""
-		const latinMultiplicativeAdverbRegExp =
-			/^(?:un(?:de?)?|duo(?:de)?|ter|quater|quin(?:que)?|sex?|sept|octo|novo)?(?:dec|v[ei]c|tr[ei]c|quadrag|quinquag|sexag|septuag|octog|nonag)ies|semel|bis|ter|quater|(?:quinqu|sex|sept|oct|no[nv])ies$/i
-
 		const adverbPattern = latinMultiplicativeAdverbRegExp.source.replace(
 			/^\^|\$$/g,
 			"",
