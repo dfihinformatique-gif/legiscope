@@ -32,7 +32,7 @@
 		type FragmentPosition,
 		type FragmentReverseTransformation,
 	} from "@tricoteuses/tisseuse"
-	import { diffArrays, diffSentences, type ChangeObject } from "diff"
+	import { Diff, diffArrays, type Change, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
 	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
@@ -59,6 +59,46 @@
 
 	interface MergeOptions {
 		countThreshold?: number
+	}
+
+	class SentenceDiff extends Diff<string, string, string> {
+		constructor() {
+			super()
+		}
+
+		tokenize(value: string): string[] {
+			const sentences: string[] = []
+			let current = ""
+			const delimiters = [".", "!", "?", ";", ":"]
+			const whitespace = [" ", "\n", "\r", "\t"]
+
+			for (let i = 0; i < value.length; i++) {
+				current += value[i]
+
+				if (
+					delimiters.includes(value[i]) &&
+					whitespace.includes(value[i + 1])
+				) {
+					const beforeDelimiter = current.slice(-2, -1)
+					const isExceptionCase =
+						value[i] === "." &&
+						(beforeDelimiter === "L" || beforeDelimiter === "R")
+
+					if (!isExceptionCase) {
+						current += value[i + 1]
+						sentences.push(current)
+						current = ""
+						i++
+					}
+				}
+			}
+
+			if (current) {
+				sentences.push(current)
+			}
+
+			return sentences.length > 0 ? sentences : [value]
+		}
 	}
 
 	class LegiSegmenter {
@@ -409,7 +449,9 @@
 		const protectedCurrentText = simplifyHtml()(protectedCurrentHtml).output
 		const protectedPreviousText = simplifyHtml()(protectedPreviousHtml).output
 
-		const sentenceChanges = diffSentences(
+		const sentenceDiff = new SentenceDiff()
+
+		const sentenceChanges: Change[] = sentenceDiff.diff(
 			protectedPreviousText,
 			protectedCurrentText,
 		)
