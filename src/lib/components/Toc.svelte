@@ -71,7 +71,11 @@
 		)
 
 		const title =
-			item.type_objet === "scta" ? item.titre : `Article ${item.num}`
+			item.type_objet === "scta"
+				? item.titre
+				: item.num
+					? `Article ${item.num}`
+					: "Article sans numéro"
 
 		return {
 			get item() {
