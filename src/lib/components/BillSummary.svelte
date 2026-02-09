@@ -118,11 +118,6 @@
 		class:max-h-0={!summaryIsOpen}
 		class:max-h-[80vh]={summaryIsOpen}
 	>
-		<h2 class="mt-5 font-serif text-2xl">
-			Projet de loi de finances <span
-				class="font-sans font-light tracking-wider">| Sommaire</span
-			>
-		</h2>
 		{#each summaryItems as item, indexItem (indexItem)}
 			<li class="my-2" style="padding-left:{item.level * 5}px;">
 				<a
