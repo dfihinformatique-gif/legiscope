@@ -733,6 +733,17 @@
 
 		table?.getColumn("etat_citant")?.setFilterValue(selectedVersionEtats)
 	}
+
+	// Fonction pour réinitialiser tous les filtres
+	function resetFilters() {
+		selectedArticleTypes = []
+		selectedTextNatures = []
+		selectedVersionEtats = []
+		filterEnVigueurOnly = false
+		table?.getColumn("article_type_citant")?.setFilterValue(undefined)
+		table?.getColumn("article_citant_texte_nature")?.setFilterValue(undefined)
+		table?.getColumn("etat_citant")?.setFilterValue(undefined)
+	}
 </script>
 
 <h2 class="flex items-center pb-2 text-base font-bold text-gray-700">
@@ -851,19 +862,7 @@
 					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedVersionEtats.length > 0}
 						<button
 							class="mt-3 cursor-pointer text-xs text-blue-600 underline hover:text-blue-800"
-							onclick={() => {
-								selectedArticleTypes = []
-								selectedTextNatures = []
-								selectedVersionEtats = []
-								filterEnVigueurOnly = false
-								table
-									?.getColumn("article_type_citant")
-									?.setFilterValue(undefined)
-								table
-									?.getColumn("article_citant_texte_nature")
-									?.setFilterValue(undefined)
-								table?.getColumn("etat_citant")?.setFilterValue(undefined)
-							}}
+							onclick={resetFilters}
 						>
 							Réinitialiser les filtres
 						</button>
@@ -1103,19 +1102,7 @@
 							<p>Aucune citation ne correspond aux filtres sélectionnés.</p>
 							<button
 								class="text-sm text-blue-600 underline hover:text-blue-800 cursor-pointer not-italic"
-								onclick={() => {
-									selectedArticleTypes = []
-									selectedTextNatures = []
-									selectedVersionEtats = []
-									filterEnVigueurOnly = false
-									table
-										?.getColumn("article_type_citant")
-										?.setFilterValue(undefined)
-									table
-										?.getColumn("article_citant_texte_nature")
-										?.setFilterValue(undefined)
-									table?.getColumn("etat_citant")?.setFilterValue(undefined)
-								}}
+								onclick={resetFilters}
 							>
 								Réinitialiser les filtres
 							</button>
