@@ -265,7 +265,7 @@
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1 px-3 pb-64 @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
+		class="w-full flex-1 overflow-y-auto px-3 @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
 	></div>
 </div>
 

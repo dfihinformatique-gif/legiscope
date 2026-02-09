@@ -1,6 +1,6 @@
 import fs from "fs/promises"
 import { parseHTML } from "linkedom"
-import path from "path"
+import path, { join } from "path"
 
 import {
 	encodeParametersToVariables,
@@ -11,11 +11,13 @@ import {
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
+import { latinMultiplicativeAdverbRegExp } from "@tricoteuses/legifrance"
 import {
 	newReverseTransformationsMergedFromPositionsIterator,
 	simplifyHtml,
 	type FragmentReverseTransformation,
 } from "@tricoteuses/tisseuse"
+import { readFileSync } from "fs"
 import type { LayoutServerLoad } from "./$types"
 
 const PJL_DATES = new Map<string, string>([
@@ -69,272 +71,6 @@ export const load: LayoutServerLoad = async ({
 		getCurrentLegiIds(parameterReferences, pjlDate),
 	])
 
-	const style = `
-						/* STYLES POUR RENDRE LISIBLE LE HTML */
-
-					 	:host {
-							display: block;
-							font-size: 1.125rem;
-							width: 96%;
-							height: 100%;
-							overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
-							overflow-x: hidden; /* pas de scroll horizontal */
-						}
-						:host, :host * {
-							line-height: 1.5 !important;  /* Augmente aussi l'interligne */
-							outline-color: #ced3e0;
-						}
-						.has-custom-color {
-							color: #2f406a !important;
-						}
-						body {
-							width: 100%; /* prendre toute la largeur */
-							box-sizing: border-box;
-						}
-						h6 span {
-							font-weight: normal !important;
-						}
-						h6 span[style*="font-weight:bold"] {
-							font-weight: bold !important;
-						}
-						img {
-							max-width: 100%; /* images adaptatives */
-							height: auto !important;
-							display: block !important;
-							margin: 0 auto !important;
-						}
-						div:not([id^="formCorrection:panel"]) > div.table-container > table {
-							font-size: 1rem;
-						}
-						.table-container { /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
-							overflow-x: auto;
-							width: 100%;
-							margin-top: 2rem !important;
-							margin-bottom: 2rem !important;
-						}
-
-						.table-container table {
-							width: max-content;
-							table-layout: auto;
-							border: 1px solid #ced3e0 !important;
-              border-collapse: collapse !important;
-						}
-
-						table {
-							table-layout: auto;
-							width: 100% !important;
-						}
-
-						td, th {
-							border-color: #ced3e0 !important;
-							border-top-color: #ced3e0 !important;
-							border-right-color: #ced3e0 !important;
-							border-bottom-color: #ced3e0 !important;
-							border-left-color: #ced3e0 !important;
-							width: auto !important;
-							word-wrap: break-word !important;
-							overflow-wrap: break-word !important;
-							padding: 0.5rem !important;
-						}
-
-						pre, code {
-							white-space: pre-wrap !important;
-							word-break: break-word !important;
-						}
-						.content-wrapper {
-							position: relative;
-							min-height: 100%;
-							overflow-x: hidden !important;
-						}
-						div[class^="assnatSection"] { /*Retire les marges des sections en ciblant le début de la class */
-							margin: 0.5rem !important;
-						}
-
-						html, p, div, ol, ul { /* Remplace toutes les marges top et bottom par 1rem pour éviter les grands écarts dans le html */
-							margin-top: 0.5rem !important;
-							margin-bottom: 0.5rem !important;
-						}
-
-						span { /* Ajoute un padding pour éviter que les textes ne soient collés */
-							padding-right: 0.1rem !important;
-							padding-left: 0.1rem !important;
-						}
-
-						.expose-motif {
-							border-left: 2px solid #ccc;
-							padding-left: 1rem;
-						}
-
-						/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
-
-
-						p[class^="assnatFPFexpogentitre"] { /*Ajoute une marge au dessus du titre exposé des motifs */
-							margin-top: 3rem !important;
-						}
-
-						[class^="assnatFPFprojetloiartexte"] { /*Cible les textes des articles TODO a mettre en lora */
-							margin-top: 1rem !important;
-							font-family: "Lora", serif !important;
-						}
-
-						a[href^="#"] { /*Crée un style pour mettre en avant les liens au sein du document */
-							text-decoration: underline !important;
-							text-decoration-style: dotted !important;
-							text-decoration-color: #bbbbbb !important;
-							text-underline-offset: 4px !important;
-							text-decoration-thickness: 1px !important;
-						}
-						a[href^="#"]:hover,
-						a[href^="#"]:focus {
-							text-decoration-style: solid !important;
-							text-decoration-color: black !important;
-							text-underline-offset: 4px !important;
-							text-decoration-thickness: 2px !important;
-						}
-						.law-article-icon {
-							margin-right: 0.1em !important;
-							margin-left: 0.15em !important;
-							position: relative; top: 0.15em;
-						}
-						.law-article-icon path {
-							fill: #5e709e !important;
-						}
-						.law-article-link:hover .law-article-icon path {
-							fill: #2f406a !important;
-							text-decoration: none !important;
-						}
-						law-link-text {
-							display: inline; /* Crucial pour le retour à la ligne */
-							border-bottom: 0.2rem solid #ccd3e7 !important;
-						}
-						.law-article-link {
-							color: #000000;
-							text-decoration: none !important;
-						}
-						.law-article-link:hover law-link-text {
-							border-bottom: 0.15rem solid #2f406a !important;
-						}
-						.law-article-link:hover {
-							color: #2f406a;
-						}
-
-
-					/* TITRES ET SECTIONS GÉNÉRIQUES */
-
-					/* Niveau 1 : Titres Majeurs */
-					[class*="TITRE1"], [class*="TITREPLR"], .TCPrLoi, [class*="assnatTITREOBJET"], [class*="Titre-PJL"], .assnatINTITULETITRE {
-						margin-top: 2.5rem !important;
-						margin-bottom: 2rem !important;
-						font-weight: bold !important;
-						color: #2f406a !important;
-						text-align: center !important;
-						line-height: 1.2 !important;
-						text-transform: uppercase !important;
-						font-size: 120% !important;
-					}
-
-					/* Niveaux Intermédiaires : Parties, Livres, Titres, Chapitres */
-					[class*="Partie"], [class*="PARTIE"], [class*="atitre2"], [class*="assnat2Partie"], [class*="assnatGrandesparties"],
-					[class*="Livre"], [class*="LIVRE"], [class*="atitre3"], [class*="titre1"], [class*="Titre1"], [class*="LigneTitre1"],
-					[class*="titre2"], [class*="Titre2"], [class*="TITRE"], .TCNumTitre, .TCIntTitre, [class*="TitreNum"], [class*="TitreIntit"], [class*="LigneTitre2"], [class*="assnat4Titre"],
-					[class*="Chapitre"], [class*="CHAPITRE"], [class*="atitre4"], .TCNumChapitre, .TCIntChapitre, [class*="titre3"], [class*="Titre3"], [class*="LigneTitre3"], [class*="assnat5Chapitre"] {
-						margin-top: 1.5rem !important;
-						margin-bottom: 1rem !important;
-						color: #2f406a !important;
-						line-height: 1.4 !important;
-						font-weight: bold !important;
-						font-size: 120% !important;
-					}
-
-					/* Niveau 6 & 7 : Sections et Sous-sections */
-					p[class*="Section"], p[class*="SECTION"], li[class*="Section"], span[class*="Section"], [class*="SectionNum"], [class*="SectionIntit"], [class*="titre4"], [class*="Titre4"], [class*="atitre5"], [class*="assnat6Section"],
-					p[class*="Sous-section"], p[class*="Sous-Section"], li[class*="Sous-section"], [class*="Sous-sectionNum"], [class*="Sous-sectionIntit"], [class*="titre5"], [class*="Titre5"], [class*="assnat7Sous-section"] {
-						margin-top: 1.2rem !important;
-						margin-bottom: 0.8rem !important;
-						color: #2f406a !important;
-						font-weight: bold !important;
-						font-size: 120% !important;
-					}
-
-
-					/* Numéros d'articles */
-
-					p.assnat9ArticleNum {
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-						margin-top: 3rem !important;
-						margin-bottom: 2rem !important;
-						padding-left: 1rem !important;
-						text-align: left !important;
-						border-bottom: 1px solid #ced3e0 !important;
-						border-left: 1px solid #ced3e0 !important;
-						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
-					}
-
-					  .tableauComparatifCell.article { /* class Sénat */
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-						margin-top: 3rem !important;
-						margin-bottom: 2rem !important;
-						padding-left: 1rem !important;
-						text-align: left !important;
-						padding-bottom: 0.25rem !important; /* petit espace avant la bordure */
-					}
-					/* PASTILLES ET ALINEAS */
-
-					/* Style des numéros d'alinéas dans les articles du projet de loi */
-
-					li.assnatFPFprojetloiartexte::before {
-						margin-right: 0.9em;
-						padding:0.1em;
-						counter-increment: li;
-						content: counter(li);
-						background-color: #f5f5f5;
-						color: #737373;
-						border-radius: 40%;
-						font-size: 0.7em;
-						font-family: sans-serif;
-					}
-
-					/*Style des pastilles des documents Sénat */
-
-					p.TCNumArticle {
-						font-size: 1.5rem !important;
-						font-weight: 700 !important;
-						color: #2f406a !important;
-					}
-
-					.TCGlobal td {
-						vertical-align: top !important;
-					}
-
-					.TCGlobal p.pastille {
-						margin-top: 0 !important;
-						padding-top: 0 !important;
-					}
-					p.pastille span {
-							display: inline-flex;
-							align-items: center;
-							justify-content: center;
-							background-color: #f5f5f5;
-							border: 1px solid #737373;
-							color: #737373;
-							border-radius: 100%;
-							min-width: 1em;
-							height: 1em;
-							font-size: 0.7em !important;
-							margin-top: 0.5em;
-							font-family: sans-serif;
-
-							padding-top: 0.1em;
-							vertical-align: top;
-					}
-
-
-				`
-
 	try {
 		const htmlWithLinks = rawHtml.replace(
 			/<a\s+class="lien_(?:article|division|texte)_externe"\s+href="https:\/\/(?:git\.)?tricoteuses\.fr\/legifrance\/(?:sections|articles|textes)\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/g,
@@ -342,12 +78,7 @@ export const load: LayoutServerLoad = async ({
 				const lawArticle = p1.replace(".md", "")
 				const referredParameters = currentParameterReferences.get(lawArticle)
 				const referredParametersLabels = []
-				if (
-					referredParameters !== undefined &&
-					(pjl === "plf-2026-Cplt_avec_liens" ||
-						pjl === "pre-plfss_2026" ||
-						(pjl === "PRJLANR5L17B1906" && user === "leximpact"))
-				) {
+				if (referredParameters !== undefined && user === "leximpact") {
 					for (const parameter of referredParameters) {
 						referredParametersLabels.push(
 							parameter.short_label?.replace("'", " "),
@@ -361,27 +92,87 @@ export const load: LayoutServerLoad = async ({
 		)
 
 		let HTMLWithButtons: string = ""
+		const adverbPattern = latinMultiplicativeAdverbRegExp.source.replace(
+			/^\^|\$$/g,
+			"",
+		)
+		const articlePattern = new RegExp(
+			String.raw`Article\s+(liminaire|\d+(?:\s*(?:${adverbPattern}))?([A-Z]+)?|\w+)`,
+			"i",
+		)
 
-		if (pjl === "PRJLANR5L17B1907") {
+		if (pjl.startsWith("PRJLANR")) {
 			const htmlWithLinksAndSummary = htmlWithLinks.replace(
-				/<p class="assnat9ArticleNum">/g,
-				(match, offset, string) => {
-					const articleMatch = string.slice(offset).match(/Article\s+(\w+)/)
-					return articleMatch
-						? `<p class="assnat9ArticleNum" id="_TocArt${articleMatch[1]}">`
-						: match
+				/<p\s+([^>]*class="[^"]*assnat9ArticleNum[^"]*"[^>]*)>/g,
+				(match, attributes, offset, string) => {
+					const contentMatch = string.slice(offset).match(/<p[^>]*>(.*?)<\/p>/s)
+
+					if (!contentMatch) return match
+
+					const content = contentMatch[1]
+
+					// Retirer les balises HTML et les commentaires, garder le texte
+					const textOnly = content
+						.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+						.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+						.replace(/&nbsp;/g, " ")
+						.replace(/&#xa0;/g, " ") // Remplacer &nbsp; par espace
+						.trim()
+
+					// Chercher "Article" suivi du numéro (possiblement composé)
+
+					const articleMatch = textOnly.match(articlePattern)
+
+					if (!articleMatch) return match
+					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
+
+					// Vérifier si l'attribut id existe déjà
+					if (attributes.includes("id=")) {
+						// Remplacer l'id existant
+						const newAttributes = attributes.replace(
+							/id="[^"]*"/,
+							`id="_TocArt${articleNum}"`,
+						)
+						return `<p ${newAttributes}>`
+					} else {
+						// Ajouter l'attribut id
+						return `<p ${attributes} id="_TocArt${articleNum}">`
+					}
 				},
 			)
 
 			const articles: Array<{ num: string; id: string }> = []
+			const seenNums = new Set<string>()
 			const articleRegex =
-				/<p class="assnat9ArticleNum" id="(_TocArt\w+)">\s*Article\s+(\w+)\s*<\/p>/g
+				/<p\s+(?=(?:[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*id="(_TocArt[\w]+)"|(?:[^>]*id="(_TocArt[\w]+)")[^>]*class="[^"]*assnat9ArticleNum[^"]*")[^>]*>(.*?)<\/p>/gs
 			let match
 
 			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
+				const content = match[3]
+
+				const textOnly = content
+					.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+					.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+					.replace(/&nbsp;/g, " ") // Remplacer &nbsp; par espace
+					.replace(/&#xa0;/g, " ") // Remplacer &#xa0; (espace insécable) par espace
+					.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)) // Décoder les entités numériques décimales
+					.replace(/&#x([0-9a-f]+);/gi, (match, hex) =>
+						String.fromCharCode(parseInt(hex, 16)),
+					) // Décoder les entités hexadécimales
+					.trim()
+
+				const articleMatch = textOnly.match(articlePattern)
+
+				if (!articleMatch) continue
+
+				const num = articleMatch[1].replace(/\s+/g, "")
+
+				if (seenNums.has(num)) continue
+
+				seenNums.add(num)
 				articles.push({
-					id: match[1],
-					num: match[2],
+					id: match[1] || match[2],
+					num: num,
 				})
 			}
 
@@ -406,6 +197,101 @@ ${articles
 				currentParameterReferences!,
 				pjlDate,
 			)
+		} else if (pjl.startsWith("pjl")) {
+			const htmlWithLinksAndSummary = htmlWithLinks.replace(
+				/<p\s+([^>]*class="[^"]*TCNumArticle[^"]*"[^>]*)>/g,
+				(match, attributes, offset, string) => {
+					// Extraire tout le contenu jusqu'à la balise de fermeture </p>
+					const contentMatch = string.slice(offset).match(/<p[^>]*>(.*?)<\/p>/s)
+
+					if (!contentMatch) return match
+
+					const content = contentMatch[1]
+
+					// Retirer les balises HTML et les commentaires, garder le texte
+					const textOnly = content
+						.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+						.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+						.replace(/&nbsp;/g, " ")
+						.replace(/&#xa0;/g, " ") // Remplacer &nbsp; par espace
+						.trim()
+
+					// Chercher "Article" suivi du numéro (possiblement composé)
+					const articleMatch = textOnly.match(articlePattern)
+
+					if (!articleMatch) return match
+					const articleNum = articleMatch[1].replace(/\s+/g, "") // Enlever les espaces internes
+
+					// Vérifier si l'attribut id existe déjà
+					if (attributes.includes("id=")) {
+						// Remplacer l'id existant
+						const newAttributes = attributes.replace(
+							/id="[^"]*"/,
+							`id="_TocArt${articleNum}"`,
+						)
+						return `<p ${newAttributes}>`
+					} else {
+						// Ajouter l'attribut id
+						return `<p ${attributes} id="_TocArt${articleNum}">`
+					}
+				},
+			)
+			const articles: Array<{ num: string; id: string }> = []
+			const seenNums = new Set<string>()
+			const articleRegex =
+				/<p\s+(?=(?:[^>]*class="[^"]*TCNumArticle[^"]*")[^>]*id="(_TocArt[\w]+)"|(?:[^>]*id="(_TocArt[\w]+)")[^>]*class="[^"]*TCNumArticle[^"]*")[^>]*>(.*?)<\/p>/gs
+			let match
+
+			while ((match = articleRegex.exec(htmlWithLinksAndSummary)) !== null) {
+				const content = match[3]
+
+				const textOnly = content
+					.replace(/<!--.*?-->/gs, "") // Enlever les commentaires
+					.replace(/<[^>]+>/g, "") // Enlever les balises HTML
+					.replace(/&nbsp;/g, " ") // Remplacer &nbsp; par espace
+					.replace(/&#xa0;/g, " ") // Remplacer &#xa0; (espace insécable) par espace
+					.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)) // Décoder les entités numériques décimales
+					.replace(/&#x([0-9a-f]+);/gi, (match, hex) =>
+						String.fromCharCode(parseInt(hex, 16)),
+					) // Décoder les entités hexadécimales
+					.trim()
+
+				const articleMatch = textOnly.match(articlePattern)
+
+				if (!articleMatch) continue
+
+				const num = articleMatch[1].replace(/\s+/g, "")
+
+				if (seenNums.has(num)) continue
+
+				seenNums.add(num)
+				articles.push({
+					id: match[1] || match[2],
+					num: num,
+				})
+			}
+
+			const sommaire = `
+\t\t<div style="display: none;">
+${articles
+	.map(
+		(article) => `\t\t\t<p class="assnatTOC6">
+\t\t\t\t<a href="#${article.id}"><span class="assnatHyperlink" style="font-weight:bold; text-decoration:none; color:#000000">ARTICLE ${article.num.toUpperCase()}</span></a>
+\t\t\t</p>`,
+	)
+	.join("\n")}
+\t\t</div>
+\t\t`
+			const htmlWithLinksAndSummaryFinal = htmlWithLinksAndSummary.replace(
+				/(<div id="formCorrection:panel:1:table">)/,
+				`${sommaire}$1`,
+			)
+
+			HTMLWithButtons = highlightParameterValuesInHTML(
+				htmlWithLinksAndSummaryFinal,
+				currentParameterReferences!,
+				pjlDate,
+			)
 		} else {
 			HTMLWithButtons = highlightParameterValuesInHTML(
 				htmlWithLinks,
@@ -417,10 +303,11 @@ ${articles
 		const { document } = parseHTML(HTMLWithButtons)
 		processDocument(document)
 		const HTMLToReturn = document.toString()
+		const style = readFileSync(join("static/style-shadow-pjl.css"), "utf-8")
 
 		return {
 			pjlHTML: `<style>${style}</style>
-				<div class="content-wrapper">${HTMLToReturn}</div>`,
+				<div class="pjl-content-wrapper">${HTMLToReturn}</div>`,
 			pjlDate,
 			currentParameterReferences,
 		}
@@ -478,59 +365,11 @@ function convertToRelativeEm(styleString: string, baseSize: number): string {
 	})
 }
 
-function isColorChromatic(color: string): boolean {
-	const hexMatch = color.match(/^#([0-9a-f]{3}){1,2}$/i)
-	if (hexMatch) {
-		const hex = hexMatch[0].replace("#", "")
-		if (hex.length === 3) {
-			return !(hex[0] === hex[1] && hex[1] === hex[2])
-		}
-		const r = hex.substring(0, 2),
-			g = hex.substring(2, 4),
-			b = hex.substring(4, 6)
-		return !(r === g && g === b)
-	}
-
-	const rgbMatch = color.match(/rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/i)
-	if (rgbMatch) {
-		const [, r, g, b] = rgbMatch
-		return !(r === g && g === b)
-	}
-
-	return !["gray", "grey", "black"].includes(color.toLowerCase())
-}
-
-function processStyleTags(document: Document, baseSize: number): Set<string> {
+function processStyleTags(document: Document, baseSize: number) {
 	const styleTags = document.querySelectorAll("style")
-	const chromaticClasses = new Set<string>()
 
 	styleTags.forEach((tag) => {
 		let cssText = tag.textContent || ""
-
-		// Détection des classes avec couleurs chromatiques
-		// On cherche le nom de la classe et la valeur de la couleur
-		const colorRegex = /\.([\w-]+)\s*\{[^}]*color\s*:\s*([^;!}]+)/gi
-		let match
-		while ((match = colorRegex.exec(cssText)) !== null) {
-			const [, className, colorValue] = match
-			if (isColorChromatic(colorValue.trim())) {
-				chromaticClasses.add(className)
-			}
-		}
-
-		// Supprimer certaines polices
-		cssText = cssText.replaceAll(
-			/font-family\s*:\s*(?:(?:'[^']*'|"[^"]*"|[^;}])+?)(?=\s*[;}])/gi,
-			(match) => {
-				if (/marianne|arial|numero/i.test(match)) {
-					return ""
-				}
-				return match
-			},
-		)
-
-		// Neutralisation des alignements forcés (Justify -> Left)
-		cssText = cssText.replace(/text-align\s*:\s*justify/gi, "text-align: left")
 
 		// Mise à l'échelle des polices dans le CSS interne
 		// On utilise la même logique de variable CSS que pour l'inline
@@ -549,8 +388,6 @@ function processStyleTags(document: Document, baseSize: number): Set<string> {
 
 		tag.textContent = cssText
 	})
-
-	return chromaticClasses
 }
 
 function isLikelyFooter(text: string | null | undefined) {
@@ -572,21 +409,8 @@ function isLikelyFooter(text: string | null | undefined) {
 }
 
 function processDocument(document: Document) {
-	const BORDER_REGEX = /(?<!-)border(-top|-right|-left|-bottom)?\s*:/i
 	const baseSize = getBaseFontSize(document)
-	const chromaticClasses = processStyleTags(document, baseSize)
-	const tagsToExcludeFromRemoving: string[] = [
-		"IMG",
-		"IFRAME",
-		"VIDEO",
-		"AUDIO",
-		"SVG",
-		"CANVAS",
-		"INPUT",
-		"BUTTON",
-		"HR",
-		"PATH",
-	]
+	processStyleTags(document, baseSize)
 
 	document.querySelectorAll("*").forEach((el) => {
 		const element = el as HTMLElement
@@ -605,7 +429,6 @@ function processDocument(document: Document) {
 			}
 		}
 
-		const styleAttr = element.getAttribute("style") || ""
 		const isInsidetable = element.closest("table")
 
 		if (element.tagName === "TABLE") {
@@ -638,20 +461,6 @@ function processDocument(document: Document) {
 			}
 		}
 
-		// Suppression des éléments vides
-		if (
-			!tagsToExcludeFromRemoving.includes(element.tagName) &&
-			!isInsidetable
-		) {
-			const hasChildren = el.children.length > 0
-			const hasText = el.textContent?.trim().length > 0
-
-			if (!hasChildren && !hasText) {
-				el.remove()
-				return
-			}
-		}
-
 		// Ajustement du style des images
 		if (element.tagName === "IMG") {
 			element.removeAttribute("width")
@@ -667,97 +476,25 @@ function processDocument(document: Document) {
 				["DIV", "P", "TABLE", "SECTION", "FOOTER"].includes(element.tagName)
 			) {
 				if (!isInsidetable || element.tagName !== "TABLE") {
-					const text = el.textContent
-					if (isLikelyFooter(text)) {
+					if (isLikelyFooter(el.textContent)) {
 						el.remove()
 						return
 					}
 				}
 			}
-			let hasChromatism = false
-			// A. Vérification des classes internes
-			// On vérifie si l'élément possède une des classes détectées comme colorées
-			for (const className of element.classList) {
-				if (chromaticClasses.has(className)) {
-					hasChromatism = true
-					break
-				}
-			}
 
-			// B. Vérification du style Inline
-			const colorMatch = styleAttr.match(
-				/(?:color|background-color)\s*:\s*([^;]+)/i,
-			)
-			if (colorMatch) {
-				const colorValue = colorMatch[1].trim()
-				// Le style inline a le dernier mot : s'il est chromatique, on marque,
-				// s'il est gris/noir, on invalide le marquage de la classe.
-				hasChromatism = isColorChromatic(colorValue)
-			}
+			// Ajustement des font-size inline
+			const styleAttr = element.getAttribute("style") || ""
 
-			// C. Application de la classe
-			if (hasChromatism) {
-				element.classList.add("has-custom-color")
-			} else {
-				element.classList.remove("has-custom-color")
-			}
-
-			// D. Transformations structurelles du style
 			if (styleAttr) {
 				let newStyle = styleAttr
-
-				// Alignement
-				if (newStyle.toLowerCase().includes("justify")) {
-					newStyle = newStyle.replace(
-						/text-align\s*:\s*justify/gi,
-						"text-align: left",
-					)
-				}
 
 				// Polices
 				if (newStyle.toLowerCase().includes("font-size")) {
 					newStyle = convertToRelativeEm(newStyle, baseSize)
 				}
 
-				// Nettoyage margin/padding/font-family
-				let cleanedStyle = newStyle
-					.split(";")
-					.map((r) => r.trim())
-					.filter((r) => {
-						if (!r) return false
-						const lowerRule = r.toLowerCase()
-
-						// Filtre font-family (Marianne, Arial, Numero)
-						if (lowerRule.startsWith("font-family")) {
-							return !(
-								lowerRule.includes("marianne") ||
-								lowerRule.includes("arial") ||
-								lowerRule.includes("numero")
-							)
-						}
-
-						// Filtre Margins/Paddings (en préservant les images)
-						return (
-							!lowerRule.startsWith("margin") &&
-							!lowerRule.startsWith("padding")
-						)
-					})
-					.join("; ")
-
-				// Ajoute une marge intérieure aux éléments ayant une bordure pour éviter que le texte ne soit collé à la bordure
-				if (
-					(element.tagName === "DIV" || element.tagName === "P") &&
-					newStyle.toLowerCase().includes("border") &&
-					BORDER_REGEX.test(newStyle)
-				) {
-					cleanedStyle += (cleanedStyle ? "; " : "") + "padding-left: 1em"
-				}
-
-				if (cleanedStyle) {
-					element.setAttribute("style", cleanedStyle)
-				} else {
-					element.removeAttribute("style")
-				}
+				element.setAttribute("style", newStyle)
 			}
 		}
 	})

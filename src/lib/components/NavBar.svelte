@@ -9,7 +9,7 @@
 {#if !shared.isMobilePhone}
 	<nav
 		aria-label="Navigation principale"
-		class="fixed bottom-8 flex h-12 w-full flex-row flex-nowrap items-center overflow-hidden bg-neutral-300 py-5 text-center 2xl:h-14"
+		class="flex h-12 w-full flex-row flex-nowrap items-center justify-center gap-1 bg-neutral-300 text-center md:gap-2 2xl:h-14 2xl:gap-4"
 	>
 		<div class="flex-1">
 			<button
@@ -99,9 +99,9 @@
 			<div class="flex h-full flex-1">
 				<button
 					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide uppercase sm:text-xl md:text-lg
-    			${shared.activePanelMobile === "bill" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
-    			${shared.activePanelMobile === "law" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
-					${shared.activePanelMobile === "citing" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+    			${shared.activePanelMobile === "bill" ? "border-le-gris-dispositif-dark! text-le-gris-dispositif-dark bg-white font-bold" : ""}
+    			${shared.activePanelMobile === "law" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "citing" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
   				`}
 					onclick={() => (shared.activePanelMobile = "bill")}
 				>
@@ -111,9 +111,9 @@
 			<div class="flex h-full flex-1">
 				<button
 					class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
-					${shared.activePanelMobile === "law" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
-					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
-					${shared.activePanelMobile === "citing" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "law" ? "border-le-gris-dispositif-dark! text-le-gris-dispositif-dark bg-white font-bold" : ""}
+					${shared.activePanelMobile === "bill" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "citing" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
 				`}
 					onclick={() => (shared.activePanelMobile = "law")}
 				>
@@ -124,9 +124,9 @@
 				<div class="flex h-full flex-1">
 					<button
 						class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
-					${shared.activePanelMobile === "citing" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
-					${shared.activePanelMobile === "law" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
-					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "citing" ? "border-le-gris-dispositif-dark! text-le-gris-dispositif-dark bg-white font-bold" : ""}
+					${shared.activePanelMobile === "law" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "bill" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
 
 				`}
 						onclick={() => (shared.activePanelMobile = "citing")}
@@ -139,7 +139,7 @@
 	</nav>
 {/if}
 <div
-	class="fixed bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
+	class="bottom-0 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
 >
 	<p class="pb-1 pl-5 text-sm">
 		<span class="hidden md:inline-flex"

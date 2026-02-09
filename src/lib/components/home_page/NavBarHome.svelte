@@ -6,7 +6,7 @@
 	let isAccueilDesktopDropdownOpen = $state(false)
 </script>
 
-<header class="fixed top-0 z-50 w-full">
+<header class="relative z-50 w-full">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>
@@ -23,7 +23,7 @@
 					<!-- Accueil Dropdown -->
 					<DropdownMenu.Root bind:open={isAccueilDesktopDropdownOpen}>
 						<DropdownMenu.Trigger
-							class="cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900"
+							class="z-50 cursor-pointer rounded-lg text-sm text-white uppercase hover:bg-blue-950 focus:outline-none active:bg-blue-900 "
 						>
 							<div
 								class="flex items-center gap-1.5 rounded-lg py-2 pr-3 pl-2 lg:pl-4"

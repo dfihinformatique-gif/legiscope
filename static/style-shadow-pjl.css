@@ -1,0 +1,183 @@
+/* ***** STYLES DU HTML DES PROJETS ET PROPOSITIONS DE LOI ***** */
+
+/* MISE EN PAGE GÉNÉRALE */
+
+:host {
+  display: block;
+  font-size: 1.125rem;
+  isolation: isolate;
+  width: 96%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+:host,
+:host * {
+  line-height: 1.5 !important;
+  outline-color: #ced3e0;
+}
+
+.pjl-content-wrapper {
+  position: relative;
+  min-height: 100%;
+  overflow-x: hidden !important;
+}
+
+body {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+div[class^="assnatSection"] {
+  /*Retire les marges des sections en ciblant le début de la class */
+  margin: 0.5rem !important;
+}
+
+/* IMAGES RESPONSIVES */
+
+img {
+  max-width: 100%;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+/* TABLEAUX RESPONSIFS */
+
+div:not([id^="formCorrection:panel"]) > div.table-container > table {
+  font-size: 1rem;
+}
+.table-container {
+  /*Permet de scroller de scroller le tableau à l'horizontale */
+  overflow-x: auto;
+  width: 100%;
+  margin-top: 2rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.table-container table {
+  width: max-content;
+  table-layout: auto;
+  border: 1px solid #ced3e0 !important;
+  border-collapse: collapse !important;
+}
+
+table {
+  table-layout: auto;
+  width: 100% !important;
+}
+
+td,
+th {
+  border-color: #ced3e0 !important;
+  border-top-color: #ced3e0 !important;
+  border-right-color: #ced3e0 !important;
+  border-bottom-color: #ced3e0 !important;
+  border-left-color: #ced3e0 !important;
+  width: auto !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  padding: 0.5rem !important;
+}
+
+pre,
+code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* LIENS ET BOUTONS PARAMÈTRES */
+
+/* Liens du sommaire ou ancres dans le document */
+
+a[href^="#"] {
+  text-decoration: underline !important;
+  text-decoration-style: dotted !important;
+  text-decoration-color: #bbbbbb !important;
+  text-underline-offset: 4px !important;
+  text-decoration-thickness: 1px !important;
+}
+a[href^="#"]:hover,
+a[href^="#"]:focus {
+  text-decoration-style: solid !important;
+  text-decoration-color: black !important;
+  text-underline-offset: 4px !important;
+  text-decoration-thickness: 2px !important;
+}
+
+/* Liens vers la loi, qui ouvrent le volet de droite */
+.law-article-icon {
+  margin-right: 0.1em !important;
+  margin-left: 0.15em !important;
+  position: relative;
+  top: 0.15em;
+}
+.law-article-icon path {
+  fill: #5e709e !important;
+}
+.law-article-link:hover .law-article-icon path {
+  fill: #2f406a !important;
+  text-decoration: none !important;
+}
+law-link-text {
+  display: inline;
+  border-bottom: 0.2rem solid #ccd3e7 !important;
+}
+.law-article-link {
+  color: #000000;
+  text-decoration: none !important;
+}
+.law-article-link:hover law-link-text {
+  border-bottom: 0.15rem solid #2f406a !important;
+}
+.law-article-link:hover {
+  color: #2f406a;
+}
+
+/* PASTILLES ET ALINEAS */
+
+/* Numéros d'alinéas Assemblée nationale */
+
+li.assnatFPFprojetloiartexte::before {
+  margin-right: 0.9em;
+  padding: 0.1em;
+  counter-increment: li;
+  content: counter(li);
+  background-color: #f5f5f5;
+  color: #737373;
+  border-radius: 40%;
+  font-size: 0.7em;
+  font-family: sans-serif;
+}
+
+/* Pastilles des documents Sénat */
+
+.TCGlobal td {
+  vertical-align: top !important;
+}
+
+.TCGlobal p.pastille {
+  margin-top: 22px !important;
+  margin-bottom: 0px !important;
+}
+
+p.pastille span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f5f5f5;
+  border: 1px solid #737373;
+  color: #737373;
+
+  border-radius: 999px;
+
+  min-width: 1.4em;
+  height: 1.4em;
+
+  padding: 0 0.4em !important;
+
+  font-size: 0.7em !important;
+  font-family: sans-serif;
+  line-height: 1;
+}
