@@ -273,11 +273,11 @@
 					getValue() as string,
 				)
 			},
-			filterFn: (row, _columnId, filterValues) => {
+			filterFn: (row, columnId, filterValues) => {
 				if (!filterValues || filterValues.length === 0) return true
 
-				const id = row.original.article_citant_texte_nature_id
-				return id !== null && filterValues.includes(id)
+				const value = row.getValue(columnId)
+				return value !== null && filterValues.includes(value)
 			},
 			sortingFn: (rowA, rowB) => {
 				const natureA = rowA.getIsGrouped()
