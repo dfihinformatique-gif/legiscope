@@ -1338,18 +1338,18 @@
 						</div>
 					{/if}
 
-					<div class="rounded-b-md bg-blue-100 px-5 py-4">
-						<span class="font-serif text-lg leading-8 md:text-left">
-							<!--
+					<div
+						class="rounded-b-md bg-blue-100 px-5 py-4 font-serif text-lg leading-8 md:text-left"
+					>
+						<!--
 							Le warning eslint porte sur le risque de XSS.
 							Ici, on maîtrise ce qui arrive dans dffiContent
 							-->
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html diffContent}
-						</span>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html diffContent}
 					</div>
 				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-					<span class="font-serif text-lg leading-8 md:text-left">
+					<div class="font-serif text-lg leading-8 md:text-left">
 						<!--
 							Le warning eslint porte sur le risque de XSS.
 							Ici, on maîtrise ce qui arrive dans dffiContent
@@ -1357,8 +1357,8 @@
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html highlightParameterValuesInArticleHTML(
 							articleParameterReferences,
-						)}</span
-					>
+						)}
+					</div>
 				{/if}
 			</section>
 		{:else if activeTab === "history"}
