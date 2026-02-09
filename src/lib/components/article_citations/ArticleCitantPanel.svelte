@@ -813,7 +813,7 @@
 							{/snippet}
 						</Popover>
 						sur la
-						<span class="font-serif text-neutral-700 italic"
+						<span class="font-serif text-neutral-700 lowercase italic"
 							>{getVersionLabel(
 								citingArticleInfo.articlePreviousVersion,
 							)}.</span
