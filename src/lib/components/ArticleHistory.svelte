@@ -159,7 +159,7 @@
 		</section>
 	{/each}
 {:else}
-	<AlertDatabaseMessage
-		>Aucune source n'est disponible pour cet article</AlertDatabaseMessage
-	>
+	<AlertDatabaseMessage>
+		Aucune source n'est disponible pour cet article
+	</AlertDatabaseMessage>
 {/if}

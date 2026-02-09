@@ -41,7 +41,6 @@
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticlesModificateurs from "./ArticlesModificateurs.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
-	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
 
 	interface Props {
@@ -1365,14 +1364,6 @@
 			<ArticleHistory {articleInfo}></ArticleHistory>
 		{:else if activeTab === "citations"}
 			<ArticleCitations {articleInfo}></ArticleCitations>
-			<AlertDatabaseMessage>
-				<b
-					>Certaines versions ne citent pas cet article ? Il manque des
-					citations ?</b
-				>
-				Le Légiscope s'appuie sur la liste des citations mise à disposition par Légifrance.
-				Cette liste peut contenir des erreurs ou des manques.
-			</AlertDatabaseMessage>
 		{/if}
 	</div>
 {:else}
