@@ -1,42 +1,53 @@
-/* STYLES POUR RENDRE LISIBLE LE HTML */
+/* ***** STYLES DU HTML DES PROJETS ET PROPOSITIONS DE LOI ***** */
+
+/* MISE EN PAGE GÉNÉRALE */
 
 :host {
   display: block;
   font-size: 1.125rem;
   width: 96%;
   height: 100%;
-  overflow-y: auto; /* scroll vertical indispensable pour la taille du document */
-  overflow-x: hidden; /* pas de scroll horizontal */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 :host,
 :host * {
-  line-height: 1.5 !important; /* Augmente aussi l'interligne */
+  line-height: 1.5 !important;
   outline-color: #ced3e0;
 }
+
 .pjl-content-wrapper {
   position: relative;
   min-height: 100%;
   overflow-x: hidden !important;
 }
-.has-custom-color {
-  color: #2f406a !important;
-}
+
 body {
-  width: 100%; /* prendre toute la largeur */
+  width: 100%;
   box-sizing: border-box;
 }
 
+div[class^="assnatSection"] {
+  /*Retire les marges des sections en ciblant le début de la class */
+  margin: 0.5rem !important;
+}
+
+/* IMAGES RESPONSIVES */
+
 img {
-  max-width: 100%; /* images adaptatives */
+  max-width: 100%;
   height: auto !important;
   display: block !important;
   margin: 0 auto !important;
 }
+
+/* TABLEAUX RESPONSIFS */
+
 div:not([id^="formCorrection:panel"]) > div.table-container > table {
   font-size: 1rem;
 }
 .table-container {
-  /*Style qui intervient sur la div créée pour entourer le tableau et qui permet de scroller à l'horizontale */
+  /*Permet de scroller de scroller le tableau à l'horizontale */
   overflow-x: auto;
   width: 100%;
   margin-top: 2rem !important;
@@ -73,17 +84,8 @@ code {
   white-space: pre-wrap !important;
   word-break: break-word !important;
 }
-div[class^="assnatSection"] {
-  /*Retire les marges des sections en ciblant le début de la class */
-  margin: 0.5rem !important;
-}
 
-.expose-motif {
-  border-left: 2px solid #ccc;
-  padding-left: 1rem;
-}
-
-/* STYLES POUR AMÉLIORER LE DESIGN DU HTML */
+/* LIENS ET BOUTONS PARAMÈTRES */
 
 a[href^="#"] {
   /*Crée un style pour mettre en avant les liens au sein du document */
@@ -130,7 +132,7 @@ law-link-text {
 
 /* PASTILLES ET ALINEAS */
 
-/* Style des numéros d'alinéas Assemblée nationale */
+/* Numéros d'alinéas Assemblée nationale */
 
 li.assnatFPFprojetloiartexte::before {
   margin-right: 0.9em;
@@ -144,7 +146,7 @@ li.assnatFPFprojetloiartexte::before {
   font-family: sans-serif;
 }
 
-/*Style des pastilles des documents Sénat */
+/* Pastilles des documents Sénat */
 
 .TCGlobal td {
   vertical-align: top !important;
