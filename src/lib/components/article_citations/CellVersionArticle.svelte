@@ -84,6 +84,9 @@
 				onclick={() => {
 					shared.showCitingDesktop = true
 					shared.showSummaryDesktop = false
+					if (shared.isMobilePhone) {
+						shared.activePanelMobile = "citing"
+					}
 				}}
 				class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
 				>{labelVersion}</a

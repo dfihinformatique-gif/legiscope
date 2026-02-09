@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { goto } from "$app/navigation"
+	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { type Pathname } from "$app/types"
 	import { shared } from "$lib/shared.svelte"
 	let isCitantInUrl = $derived(
 		page.url.searchParams.get("citant") ? true : false,
@@ -131,9 +134,9 @@
 		{/if}
 	</nav>
 {:else}
-	<nav class="fixed bottom-8 flex w-full justify-between">
+	<nav class="fixed bottom-8 z-60 flex w-full justify-between">
 		<div
-			class="mx-2 mt-2 flex h-14 w-full flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
+			class="mx-2 mt-2 flex h-14 w-full flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 bg-white text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 		>
 			<div class="flex h-full flex-1">
 				<button
@@ -159,7 +162,7 @@
 					Loi
 				</button>
 			</div>
-			{#if !isCitantInUrl}
+			{#if !isSummaryInUrl}
 				<div class="flex h-full flex-1">
 					<button
 						class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
@@ -168,7 +171,15 @@
 					${shared.activePanelMobile === "bill" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
 
 				`}
-						onclick={() => (shared.activePanelMobile = "citing")}
+						onclick={() => {
+							shared.activePanelMobile = "citing"
+							const url = new URL(page.url)
+							url.searchParams.delete("summary")
+							goto(resolve(`${url.pathname}${url.search}` as Pathname & {}), {
+								replaceState: true,
+								noScroll: true,
+							})
+						}}
 					>
 						Citation
 					</button>
@@ -183,7 +194,15 @@
 					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
 
 				`}
-						onclick={() => (shared.activePanelMobile = "summary")}
+						onclick={() => {
+							shared.activePanelMobile = "summary"
+							const url = new URL(page.url)
+							url.searchParams.delete("citant")
+							goto(resolve(`${url.pathname}${url.search}` as Pathname & {}), {
+								replaceState: true,
+								noScroll: true,
+							})
+						}}
 					>
 						Sommaire
 					</button>
