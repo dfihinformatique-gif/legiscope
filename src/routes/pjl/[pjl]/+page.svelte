@@ -206,7 +206,7 @@
 
 		{#if page.url.searchParams.get("summary") === "true" && articleInfo}
 			<aside
-				class="@container/section-article-summary flex h-screen flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+				class="@container/section-article-summary flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
 				class:hidden={!shared.showSummaryDesktop}
 			>
 				<ArticleSummaryPanel

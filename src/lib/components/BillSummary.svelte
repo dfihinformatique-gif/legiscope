@@ -99,7 +99,7 @@
 		class:border-black={!summaryIsOpen}
 		class:border-gray-200={summaryIsOpen}
 	>
-		<span class="truncate text-lg tracking-wide">{currentTitle}</span>
+		<span class="truncate text-xl">{currentTitle}</span>
 		<button
 			class="lx-link-uppercase font-sans text-nowrap text-gray-500"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}
