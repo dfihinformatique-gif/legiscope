@@ -151,8 +151,9 @@ li.assnatFPFprojetloiartexte::before {
 }
 
 .TCGlobal p.pastille {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+  margin-top: 18px !important;
+
+  margin-bottom: 0px !important;
 }
 p.pastille span {
   display: inline-flex;
@@ -165,9 +166,7 @@ p.pastille span {
   min-width: 1em;
   height: 1em;
   font-size: 0.7em !important;
-  margin-top: 0.5em;
   font-family: sans-serif;
-
-  padding-top: 0.1em;
-  vertical-align: top;
+  padding: 0.01em !important;
+  padding-top: 0.1em !important;
 }
