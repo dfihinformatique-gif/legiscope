@@ -261,11 +261,11 @@
 	}
 </script>
 
-<div class="flex h-full w-full max-w-6xl flex-col bg-white shadow-md">
+<div class="flex h-full w-full max-w-6xl flex-col">
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
-		class="w-full flex-1 overflow-y-auto px-3 @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
+		class=" w-full flex-1 overflow-y-auto bg-white px-3 shadow-md @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
 	></div>
 </div>
 
