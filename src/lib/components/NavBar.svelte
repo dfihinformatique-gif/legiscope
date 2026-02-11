@@ -162,7 +162,7 @@
 					Loi
 				</button>
 			</div>
-			{#if !isSummaryInUrl}
+			{#if !isSummaryInUrl && isCitantInUrl}
 				<div class="flex h-full flex-1">
 					<button
 						class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
@@ -189,9 +189,9 @@
 				<div class="flex h-full flex-1">
 					<button
 						class={`flex w-full items-center justify-center border-b-[6px] border-transparent text-base tracking-wide text-black uppercase sm:text-xl md:text-lg
-					${shared.activePanelMobile === "summary" ? "!border-le-gris-dispositif-dark text-le-gris-dispositif-dark bg-white font-bold" : ""}
-					${shared.activePanelMobile === "law" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
-					${shared.activePanelMobile === "bill" ? "hover:!border-le-gris-dispositif hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "summary" ? "border-le-gris-dispositif-dark! text-le-gris-dispositif-dark bg-white font-bold" : ""}
+					${shared.activePanelMobile === "law" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
+					${shared.activePanelMobile === "bill" ? "hover:border-le-gris-dispositif! hover:text-le-gris-dispositif bg-neutral-200 text-gray-600  hover:bg-white hover:font-bold" : ""}
 
 				`}
 						onclick={() => {
