@@ -25,6 +25,7 @@
 	} from "@tanstack/table-core"
 	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 	import SkeletonArticleCitationsLoader from "./../SkeletonArticleCitationsLoader.svelte"
+	import AlertDatabaseMessage from "./../ui_transverse_components/AlertDatabaseMessage.svelte"
 	import CellVersionArticle from "./CellVersionArticle.svelte"
 	import DataTableVersionCitanteButton from "./DataTableVersionCitanteButton.svelte"
 
@@ -273,11 +274,11 @@
 					getValue() as string,
 				)
 			},
-			filterFn: (row, _columnId, filterValues) => {
+			filterFn: (row, columnId, filterValues) => {
 				if (!filterValues || filterValues.length === 0) return true
 
-				const id = row.original.article_citant_texte_nature_id
-				return id !== null && filterValues.includes(id)
+				const value = row.getValue(columnId)
+				return value !== null && filterValues.includes(value)
 			},
 			sortingFn: (rowA, rowB) => {
 				const natureA = rowA.getIsGrouped()
@@ -732,9 +733,23 @@
 
 		table?.getColumn("etat_citant")?.setFilterValue(selectedVersionEtats)
 	}
+
+	// Fonction pour réinitialiser tous les filtres
+	function resetFilters() {
+		selectedArticleTypes = []
+		selectedTextNatures = []
+		selectedVersionEtats = []
+		filterEnVigueurOnly = false
+		table?.getColumn("article_type_citant")?.setFilterValue(undefined)
+		table?.getColumn("article_citant_texte_nature")?.setFilterValue(undefined)
+		table?.getColumn("etat_citant")?.setFilterValue(undefined)
+	}
 </script>
 
-{#if table !== undefined}
+<h2 class="flex items-center pb-2 text-base font-bold text-gray-700">
+	Citations de l'article
+</h2>
+{#if table !== undefined && citationsData && citationsData.length > 0}
 	<div class="mt-2 flex w-full flex-col flex-wrap justify-end gap-y-2">
 		<div class="flex justify-end">
 			<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
@@ -846,20 +861,8 @@
 
 					{#if selectedArticleTypes.length > 0 || selectedTextNatures.length > 0 || selectedVersionEtats.length > 0}
 						<button
-							class="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
-							onclick={() => {
-								selectedArticleTypes = []
-								selectedTextNatures = []
-								selectedVersionEtats = []
-								filterEnVigueurOnly = false
-								table
-									?.getColumn("article_type_citant")
-									?.setFilterValue(undefined)
-								table
-									?.getColumn("article_citant_texte_nature")
-									?.setFilterValue(undefined)
-								table?.getColumn("etat_citant")?.setFilterValue(undefined)
-							}}
+							class="mt-3 cursor-pointer text-xs text-blue-600 underline hover:text-blue-800"
+							onclick={resetFilters}
 						>
 							Réinitialiser les filtres
 						</button>
@@ -1092,14 +1095,30 @@
 					</TableUI.Row>
 				{:else}
 					<TableUI.Row>
-						<TableUI.Cell colspan={columns.length} class="h-24 text-center">
-							Pas de citations
+						<TableUI.Cell
+							colspan={columns.length}
+							class="text-center text-gray-500 italic text-sm flex-col flex items-center my-10"
+						>
+							<p>Aucune citation ne correspond aux filtres sélectionnés.</p>
+							<button
+								class="text-sm text-blue-600 underline hover:text-blue-800 cursor-pointer not-italic"
+								onclick={resetFilters}
+							>
+								Réinitialiser les filtres
+							</button>
 						</TableUI.Cell>
 					</TableUI.Row>
 				{/each}
 			</TableUI.Body>
 		</TableUI.Root>
 	</div>
+	<AlertDatabaseMessage>
+		<b
+			>Certaines versions ne citent pas cet article ? Il manque des citations ?</b
+		>
+		Le Légiscope s'appuie sur la liste des citations mise à disposition par Légifrance.
+		Cette liste peut contenir des erreurs ou des manques.
+	</AlertDatabaseMessage>
 {:else if citationsData === undefined}
 	<SkeletonArticleCitationsLoader />
 {:else if error}
@@ -1107,8 +1126,9 @@
 		⚠️ Une erreur est survenue lors de la récupération des citations
 	</div>
 {:else}
-	<div class="border bg-white p-4">
-		Cet article ne semble pas être cité par un autre article. Aucun lien de
-		citation par un autre texte n'est référencé dans la base de données source.
-	</div>
+	<AlertDatabaseMessage>
+		<b>Aucun texte ne semble citer cet article.</b> Le Légiscope s'appuie sur la liste
+		des citations mise à disposition par Légifrance. Cette liste peut contenir des
+		erreurs ou des manques.
+	</AlertDatabaseMessage>
 {/if}

@@ -3,9 +3,11 @@
 	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
 	import { type Pathname } from "$app/types"
+	import Popover from "$lib/components/ui_transverse_components/Popover.svelte"
 	import {
 		historyDataToHistoryByText,
 		type ArticleInfo,
+		type Legiarti,
 		type VersionArticle,
 	} from "$lib/db_data_types"
 	import {
@@ -37,9 +39,8 @@
 	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
-	import ArticleSummary from "./ArticleSummary.svelte"
+	import ArticlesModificateurs from "./ArticlesModificateurs.svelte"
 	import ParameterLinkModal from "./ParameterLinkModal.svelte"
-	import AlertDatabaseMessage from "./ui_transverse_components/AlertDatabaseMessage.svelte"
 	import InformationMessage from "./ui_transverse_components/InformationMessage.svelte"
 
 	interface Props {
@@ -991,12 +992,10 @@
 
 	let selectedVersion: VersionArticle | undefined = $state(undefined)
 
-	const dateForSelect = page.url.searchParams.get("date") ?? shared.pjlDate
-
 	const ongletsArticle = [
 		{ id: "content", label: "Texte" },
-		{ id: "history", label: "Historique" },
-		{ id: "citations", label: "Articles citant cet article" },
+		{ id: "history", label: "Sources" },
+		{ id: "citations", label: "Citations" },
 	]
 	let activeTab = $state("content")
 	let tabsContainer = $state<HTMLElement | undefined>(undefined)
@@ -1036,6 +1035,42 @@
 			? historyDataToHistoryByText(articleInfo.historyLinks)
 			: undefined,
 	)
+
+	function getVersionLabel(
+		version: VersionArticle | Legiarti | undefined | null,
+		options: { dateNumerique?: boolean } = {},
+	): string {
+		const { dateNumerique = false } = options
+
+		if (!version) return ""
+
+		const id =
+			"legi_id_lien" in version
+				? version.legi_id_lien
+				: version.id === undefined
+					? ""
+					: (version as Legiarti).legi_id
+		const debut =
+			"debut" in version ? version.debut : (version as Legiarti).date_debut
+		const fin = "fin" in version ? version.fin : (version as Legiarti).date_fin
+
+		if (!debut || !id) return ""
+		const format = dateNumerique ? formatDateFrNumerique : formatDateFr
+
+		if (id.startsWith("JORF")) {
+			return (
+				(dateNumerique ? "J0 du " : "Journal officiel du ") +
+				format(articleInfo.jorfTextDatePubli!)
+			)
+		}
+		if (debut === "2999-01-01") return "Version de versement"
+		if (fin === "2999-01-01") {
+			if (debut === "2222-02-22")
+				return "Version en vigueur différée ou article mort-né"
+			return "Version en vigueur depuis le " + format(debut)
+		}
+		return "Version du " + format(debut) + " au " + format(fin)
+	}
 </script>
 
 {#if articleInfo.article}
@@ -1158,24 +1193,7 @@
 									selected={articleInfo.article.legi_id ===
 										version.legi_id_lien}
 								>
-									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}Journal
-											officiel du {formatDateFr(articleInfo.jorfTextDatePubli!)}
-										{:else if version.debut === "2999-01-01"}
-											Version de versement
-										{:else if version.fin === "2999-01-01"}
-											{#if version.debut === "2222-02-22"}
-												Version en vigueur différée ou article mort-né
-											{:else}
-												Version en vigueur depuis le {formatDateFr(
-													version.debut,
-												)}
-											{/if}
-										{:else}
-											Version du {formatDateFr(version.debut)}
-											au {formatDateFr(version.fin)}
-										{/if}
-									{/if}
+									{getVersionLabel(version)}
 								</option>
 							{/each}
 						</select>
@@ -1209,91 +1227,72 @@
 									selected={articleInfo.article.legi_id ===
 										version.legi_id_lien}
 								>
-									{#if version.debut}
-										{#if version.legi_id_lien.startsWith("JORF")}J0 du {formatDateFrNumerique(
-												articleInfo.jorfTextDatePubli!,
-											)}
-										{:else if version.debut === "2999-01-01"}
-											Version de versement
-										{:else if version.fin === "2999-01-01"}
-											{#if version.debut === "2222-02-22"}
-												Version en vigueur différée ou article mort-né
-											{:else}
-												Version en vigueur depuis le {formatDateFrNumerique(
-													version.debut,
-												)}
-											{/if}
-										{:else}
-											Version du {formatDateFrNumerique(version.debut)}
-											au {formatDateFrNumerique(version.fin)}
-										{/if}
-									{/if}
+									{getVersionLabel(version, { dateNumerique: true })}
 								</option>
 							{/each}
 						</select>
 					</div>
 				{/if}
 				{#if historyByText && historyByText.length > 0}
-					<ul>
-						{#each historyByText as historyText, indexText (indexText)}
-							<li
-								class="line-clamp-2 pb-1 text-left text-xs text-neutral-600 italic"
-							>
-								<span
-									class="cursor-default rounded-md border border-neutral-300 bg-neutral-100 px-1"
-									>Suite à {historyText.typelien} par</span
-								>
-
-								{#if historyText.articles_jorf && historyText.articles_jorf.length > 0}
-									{#each historyText.articles_jorf as historyArticle, indexArticle (indexArticle)}
-										{@const urlToNavigate = new URL(page.url)}
-										{urlToNavigate.searchParams.set(
-											"article",
-											historyArticle.id,
-										)}
-										<a
-											class="lx-link-text"
-											href={resolve(
-												`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
-											)}
-										>
-											{#if (historyArticle.num ?? "").length > 0}
-												art. {historyArticle.num}
-											{:else}
-												article
-											{/if}
-										</a>
-										{#if indexArticle < historyText.articles_jorf.length - 1}
-											,
-										{/if}
-									{/each}
-								{:else}
-									{@const urlToNavigate = new URL(page.url)}
-									{urlToNavigate.searchParams.set(
-										"article",
-										historyText.cidtexte,
-									)}
-									<a
-										class="lx-link-text"
-										href={resolve(
-											`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname & {},
-										)}>articles</a
-									>
-								{/if}
-								<span class="-mr-0.5 -ml-1" aria-hidden="true">・</span>
-								{historyText.titre_texte}
-							</li>
-						{/each}
-					</ul>
+					<ArticlesModificateurs {historyByText}></ArticlesModificateurs>
 				{/if}
 				<!--Sommaire-->
-				<ArticleSummary {articleInfo} date={dateForSelect}></ArticleSummary>
+
+				<div class="flex flex-col items-center justify-center justify-self-end">
+					{#if articleInfo.sectionTitle}
+						<p class="mx-4 text-center text-xs text-neutral-500">
+							Section de l'article :
+						</p>
+						<p
+							class="mx-4 border-b pb-1 text-center font-serif text-neutral-600 @md/section-article:mx-10"
+						>
+							<span class=" italic">
+								{articleInfo.sectionTitle?.replaceAll("\\n", " ") ??
+									articleInfo.textTitle?.replaceAll("\\n", " ")}
+							</span>
+						</p>
+					{/if}
+					<button
+						class="lx-link-uppercase mt-2 font-sans text-sm text-nowrap text-gray-500"
+						onclick={() => {
+							const url = new URL(page.url)
+							if (url.searchParams.has("summary")) {
+								url.searchParams.delete("summary")
+							} else {
+								url.searchParams.set("summary", "true")
+								url.searchParams.delete("citant")
+								shared.activePanelMobile = "summary"
+								shared.showSummaryDesktop = true
+								shared.showCitingDesktop = false
+								if (!shared.showLawDesktop) shared.showLawDesktop = true
+							}
+
+							goto(resolve(`${url.pathname}${url.search}` as Pathname & {}), {
+								replaceState: false,
+								noScroll: true,
+							})
+						}}
+					>
+						<iconify-icon
+							class="align-[-0.3rem] text-xl"
+							icon={page.url.searchParams.has("summary")
+								? "ri:menu-fold-3-line"
+								: "ri:menu-unfold-3-line"}
+						>
+						</iconify-icon>
+						{#if !page.url.searchParams.has("summary")}
+							sommaire {#if !articleInfo.sectionTitle}
+								du texte{/if}
+						{:else}Fermer le sommaire
+						{/if}
+					</button>
+				</div>
 			</section>
 
 			<!--Texte de la version-->
 			<section>
 				<h2 class="sr-only">Texte de l’article</h2>
-				{#if articleInfo.versions}
+				{#if articleInfo.versions && articleInfo.versions.length > 1}
 					<div class="my-4 flex w-full justify-end text-left">
 						<label class="inline-flex cursor-pointer items-center">
 							<input
@@ -1301,31 +1300,55 @@
 								type="checkbox"
 								bind:checked={showDiff}
 							/>
-							{#if articleInfo.versions.length > 1}
-								<div
-									class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-								></div>
-								<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
-									Voir les changements apportés <br /> à la version précédente
-								</span>
-							{/if}
+
+							<div
+								class="peer peer-checked:bg-le-gris-dispositif-dark relative h-6 w-11 shrink-0 rounded-full bg-gray-400 peer-focus:ring-0 peer-focus:outline-none after:absolute after:start-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+							></div>
+							<span class="ms-3 text-xs font-medium text-gray-900 sm:text-sm">
+								Voir les changements apportés <br /> à la version précédente
+							</span>
 						</label>
 					</div>
 				{/if}
 
 				{#if showDiff === true}
-					<div class="-mt-2 rounded-md bg-blue-100 px-2 pt-1">
-						<span class="font-serif text-lg leading-8 md:text-left">
-							<!--
+					{#if showDiff === true && currentBlocTextuel && previousBlocTextuel}
+						<div
+							class="rounded-t-md bg-[#C9D7ED] px-5 py-2 text-left text-sm text-neutral-700"
+						>
+							Changements apportés par <Popover
+								widthClass="max-w-[80vw]"
+								side="top"
+							>
+								<span
+									class="cursor-pointer font-normal underline decoration-dotted hover:text-black"
+									>cette version</span
+								>
+								{#snippet content()}
+									<div class="text-start text-sm font-normal">
+										{getVersionLabel(articleInfo.article)}
+									</div>
+								{/snippet}
+							</Popover>
+							sur la
+							<span class="font-serif text-neutral-700 lowercase italic"
+								>{getVersionLabel(articleInfo.articlePreviousVersion)}.</span
+							>
+						</div>
+					{/if}
+
+					<div
+						class="rounded-b-md bg-blue-100 px-5 py-4 font-serif text-lg leading-8 md:text-left"
+					>
+						<!--
 							Le warning eslint porte sur le risque de XSS.
 							Ici, on maîtrise ce qui arrive dans dffiContent
 							-->
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html diffContent}
-						</span>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html diffContent}
 					</div>
 				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
-					<span class="font-serif text-lg leading-8 md:text-left">
+					<div class="font-serif text-lg leading-8 md:text-left">
 						<!--
 							Le warning eslint porte sur le risque de XSS.
 							Ici, on maîtrise ce qui arrive dans dffiContent
@@ -1333,22 +1356,14 @@
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html highlightParameterValuesInArticleHTML(
 							articleParameterReferences,
-						)}</span
-					>
+						)}
+					</div>
 				{/if}
 			</section>
 		{:else if activeTab === "history"}
 			<ArticleHistory {articleInfo}></ArticleHistory>
 		{:else if activeTab === "citations"}
 			<ArticleCitations {articleInfo}></ArticleCitations>
-			<AlertDatabaseMessage>
-				<b
-					>Certaines versions ne citent pas cet article ? Il manque des
-					citations ?</b
-				>
-				Le Légiscope s'appuie sur la liste des citations mise à disposition par Légifrance.
-				Cette liste peut contenir des erreurs ou des manques.
-			</AlertDatabaseMessage>
 		{/if}
 	</div>
 {:else}

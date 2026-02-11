@@ -76,12 +76,17 @@
 		{#if !data?.is_version_citee && data?.legi_id}
 			{@const urlToNavigate = new URL(page.url)}
 			{urlToNavigate.searchParams.set("citant", data?.legi_id)}
+			{urlToNavigate.searchParams.delete("summary")}
 			<a
 				href={resolve(
 					`${urlToNavigate.pathname}${urlToNavigate.search}` as Pathname,
 				)}
 				onclick={() => {
 					shared.showCitingDesktop = true
+					shared.showSummaryDesktop = false
+					if (shared.isMobilePhone) {
+						shared.activePanelMobile = "citing"
+					}
 				}}
 				class="text-le-gris-dispositif-dark hover:text-le-gris-dispositif-darker underline underline-offset-4"
 				>{labelVersion}</a

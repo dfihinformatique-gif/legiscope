@@ -6,7 +6,7 @@
 	let isAccueilDesktopDropdownOpen = $state(false)
 </script>
 
-<header class="relative z-50 w-full">
+<header class="relative z-60 w-full">
 	<div
 		class="bg-le-gris-dispositif-dark mx-auto px-2 shadow-md md:h-12 md:px-3 2xl:h-14"
 	>

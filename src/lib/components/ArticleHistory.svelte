@@ -96,6 +96,9 @@
 	}
 </script>
 
+<h2 class="flex items-center pb-2 text-base font-bold text-gray-700">
+	Sources de l'article
+</h2>
 {#if historyByText !== undefined}
 	{#each historyByYear as group, index (index)}
 		<section class="flex gap-8 border-b border-neutral-200 pt-2 pb-4">
@@ -156,7 +159,7 @@
 		</section>
 	{/each}
 {:else}
-	<AlertDatabaseMessage
-		>Aucun élément d'historique n'est disponible pour cet article</AlertDatabaseMessage
-	>
+	<AlertDatabaseMessage>
+		Aucune source n'est disponible pour cet article
+	</AlertDatabaseMessage>
 {/if}
