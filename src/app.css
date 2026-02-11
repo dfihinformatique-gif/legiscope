@@ -12,6 +12,7 @@
   --font-serif: "Lora";
   --shadow-bottom: 0 10px 10px -10px rgba(0, 0, 0, 0.35);
   --shadow-bottom-extralight: 0 10px 10px -10px rgba(0, 0, 0, 0.05);
+  --shadow-left-light: -10px 0 10px -10px rgba(0, 0, 0, 0.1);
   --color-le-bleu: #343bff;
   --color-le-bleu-light: #d2dfff;
   --color-le-jaune-light: #eeea8a;

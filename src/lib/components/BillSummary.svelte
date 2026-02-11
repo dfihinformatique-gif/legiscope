@@ -91,7 +91,7 @@
 
 <div class="sticky top-0 z-10">
 	<div
-		class="flex h-8 items-center justify-between gap-5 bg-white px-4 py-2 xl:h-12"
+		class="flex h-10 items-center justify-between gap-5 bg-white px-4 @lg/section-bill:h-12"
 		class:border-b-2={!summaryIsOpen}
 		class:border-b={summaryIsOpen}
 		class:shadow-bottom={!summaryIsOpen}
@@ -99,7 +99,10 @@
 		class:border-black={!summaryIsOpen}
 		class:border-gray-200={summaryIsOpen}
 	>
-		<span class="truncate text-xl">{currentTitle}</span>
+		<span
+			class="truncate text-base @md/section-bill:text-lg @xl/section-bill:text-xl"
+			>{currentTitle}</span
+		>
 		<button
 			class="lx-link-uppercase font-sans text-nowrap text-gray-500"
 			onclick={() => (summaryIsOpen = !summaryIsOpen)}

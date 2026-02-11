@@ -188,7 +188,7 @@
 
 		{#if citingArticleInfo}
 			<aside
-				class="@container/section-citations flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+				class="shadow-left-light @container/section-citations flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
 				class:hidden={!shared.showCitingDesktop}
 			>
 				{#if isLoadingCitingArticle}
