@@ -15,7 +15,7 @@
 {#if !shared.isMobilePhone}
 	<nav
 		aria-label="Navigation principale"
-		class="z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center gap-1 bg-neutral-300 text-center md:gap-2 2xl:h-14 2xl:gap-4"
+		class="z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center bg-neutral-300 text-center 2xl:h-14"
 	>
 		<div class="flex-1">
 			<button
@@ -41,10 +41,9 @@
 			</button>
 		</div>
 
-		<div class="flex-1">
+		<div class="group relative flex-1 bg-green-300">
 			<button
-				class="
-    cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+				class="relative z-40 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
 					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
@@ -66,16 +65,24 @@
 
 				Loi
 			</button>
+			{#if isCitantInUrl}
+				<div
+					class="absolute top-0 right-0 z-30 h-full w-1/2 border-y-2 py-0.5
+	{shared.showCitingDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark group-hover:border-neutral-500 group-hover:bg-neutral-500'
+						: 'group-hover:border-le-gris-dispositif border-neutral-500 bg-neutral-400'}"
+				></div>
+			{/if}
 		</div>
 
 		{#if isCitantInUrl}
-			<div class="flex-1">
+			<div class="group relative flex-1 bg-red-300">
 				<button
-					class="
-    cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+					class="relative z-40
+    cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
-						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  text-white group-hover:border-neutral-600 group-hover:bg-neutral-600'
+						: 'border-neutral-500 bg-neutral-200 text-neutral-700 group-hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
 						if (shared.showCitingDesktop) {
@@ -97,6 +104,12 @@
 
 					Citation
 				</button>
+				<div
+					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
+	{shared.showCitingDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark group-hover:border-neutral-500 group-hover:bg-neutral-500'
+						: 'group-hover:border-le-gris-dispositif border-neutral-500 bg-neutral-400'}"
+				></div>
 			</div>
 		{/if}
 
