@@ -15,9 +15,13 @@
 {#if !shared.isMobilePhone}
 	<nav
 		aria-label="Navigation principale"
-		class="z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center bg-neutral-300 text-center 2xl:h-14"
+		class="relative z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center bg-neutral-300 text-center 2xl:h-14"
 	>
-		<div class="flex-1">
+		<div
+			class={shared.showBillDesktop
+				? "flex-1"
+				: "absolute top-1 left-0 z-60 ml-4 2xl:top-2"}
+		>
 			<button
 				class="
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
@@ -41,9 +45,13 @@
 			</button>
 		</div>
 
-		<div class="relative flex-1">
+		<div
+			class={shared.showLawDesktop
+				? "relative flex-1 "
+				: "absolute top-1 right-34  2xl:top-2"}
+		>
 			<button
-				class="relative z-40 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+				class="relative z-70 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
 					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
@@ -76,12 +84,16 @@
 		</div>
 
 		{#if isCitantInUrl}
-			<div class="group relative flex-1">
+			<div
+				class={shared.showCitingDesktop
+					? "relative flex-1"
+					: "absolute top-1 right-0 mr-4 2xl:top-2"}
+			>
 				<button
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  text-white hover:border-neutral-600 hover:bg-neutral-600'
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
 						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
@@ -114,13 +126,17 @@
 		{/if}
 
 		{#if isSummaryInUrl}
-			<div class="relative flex-1">
+			<div
+				class={shared.showSummaryDesktop
+					? "relative flex-1"
+					: "absolute top-1 right-0 mr-4 2xl:top-2"}
+			>
 				<button
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
 		{shared.showSummaryDesktop
-						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
-						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
+						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showSummaryDesktop = !shared.showSummaryDesktop
 						if (shared.showSummaryDesktop) {
