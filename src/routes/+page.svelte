@@ -26,7 +26,7 @@
 		class="relative z-10 my-16 flex h-full flex-col items-center justify-evenly text-2xl md:my-24"
 	>
 		<div class="flex w-full max-w-5xl flex-col gap-4 px-3 md:px-5">
-			<div class="mx-w-md min-w-md">
+			<div class="mx-w-md md:min-w-md">
 				<h1
 					class="mx-10 max-w-screen text-center font-serif text-4xl leading-snug"
 				>
