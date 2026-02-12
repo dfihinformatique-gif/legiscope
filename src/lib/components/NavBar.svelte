@@ -41,7 +41,7 @@
 			</button>
 		</div>
 
-		<div class="group relative flex-1 bg-green-300">
+		<div class="relative flex-1">
 			<button
 				class="relative z-40 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
@@ -68,21 +68,21 @@
 			{#if isCitantInUrl}
 				<div
 					class="absolute top-0 right-0 z-30 h-full w-1/2 border-y-2 py-0.5
-	{shared.showCitingDesktop
-						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark group-hover:border-neutral-500 group-hover:bg-neutral-500'
-						: 'group-hover:border-le-gris-dispositif border-neutral-500 bg-neutral-400'}"
+						{shared.showCitingDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark'
+						: 'group-hover:border-le-gris-dispositif border-neutral-400 bg-neutral-400'}"
 				></div>
 			{/if}
 		</div>
 
 		{#if isCitantInUrl}
-			<div class="group relative flex-1 bg-red-300">
+			<div class="group relative flex-1">
 				<button
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  text-white group-hover:border-neutral-600 group-hover:bg-neutral-600'
-						: 'border-neutral-500 bg-neutral-200 text-neutral-700 group-hover:bg-neutral-50'}"
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  text-white hover:border-neutral-600 hover:bg-neutral-600'
+						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
 						if (shared.showCitingDesktop) {
@@ -106,9 +106,9 @@
 				</button>
 				<div
 					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
-	{shared.showCitingDesktop
-						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark group-hover:border-neutral-500 group-hover:bg-neutral-500'
-						: 'group-hover:border-le-gris-dispositif border-neutral-500 bg-neutral-400'}"
+						{shared.showCitingDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
+						: 'border-neutral-400 bg-neutral-400'}"
 				></div>
 			</div>
 		{/if}
