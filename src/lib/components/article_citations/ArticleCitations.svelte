@@ -949,21 +949,21 @@
 							}
 						}}
 						><iconify-icon
-							class="align-[-0.25rem] text-xl text-gray-500 hover:bg-gray-100"
+							class="align-[-0.25rem] text-lg text-gray-500 hover:bg-gray-100"
 							icon={grouping[0] === "article_citant_texte_nature"
 								? "ri-list-ordered-2"
 								: "ri-list-unordered"}
 						>
 						</iconify-icon>
 						<p
-							class="lx-link-uppercase hidden text-gray-500 @md/section-article:inline-flex"
+							class="lx-link-uppercase hidden text-xs text-gray-500 @md/section-article:inline-flex"
 						>
 							{grouping[0] === "article_citant_texte_nature"
 								? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
 								: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 						</p>
 						<p
-							class="lx-link-uppercase inline-flex text-sm text-wrap text-gray-500 @md/section-article:hidden"
+							class="lx-link-uppercase inline-flex text-xs text-wrap text-gray-500 @md/section-article:hidden"
 						>
 							Grouper
 						</p>
