@@ -919,7 +919,7 @@
 		<TableUI.Root>
 			<TableUI.Header>
 				<div
-					class="mx-2 my-2 flex justify-center @lg/section-article:justify-end"
+					class="mx-2 my-2 flex justify-start @xs/section-article:justify-center @md/section-article:justify-end"
 				>
 					<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
 					<button
@@ -956,14 +956,14 @@
 						>
 						</iconify-icon>
 						<p
-							class="lx-link-uppercase hidden text-gray-500 @lg/section-article:inline-flex"
+							class="lx-link-uppercase hidden text-gray-500 @md/section-article:inline-flex"
 						>
 							{grouping[0] === "article_citant_texte_nature"
 								? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
 								: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
 						</p>
 						<p
-							class="lx-link-uppercase inline-flex text-sm text-wrap text-gray-500 @lg/section-article:hidden"
+							class="lx-link-uppercase inline-flex text-sm text-wrap text-gray-500 @md/section-article:hidden"
 						>
 							Grouper
 						</p>
