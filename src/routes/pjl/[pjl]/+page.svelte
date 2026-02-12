@@ -219,7 +219,7 @@
 		{/if}
 	</div>
 {:else}
-	<div class="flex h-full min-h-full w-full flex-row overflow-x-hidden">
+	<div class="flex h-full min-h-full w-full flex-row overflow-hidden">
 		<section
 			class="@container/section-bill z-10 h-full w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
@@ -285,7 +285,7 @@
 				></ArticleCitantPanel>
 			{:else}
 				<aside
-					class="@container/section-citations flex h-screen flex-col items-center justify-center p-4 text-center"
+					class="@container/section-citations flex h-full w-full flex-col items-center justify-center p-4 text-center"
 				>
 					<iconify-icon
 						class="text-8xl text-gray-500"
