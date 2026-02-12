@@ -65,10 +65,10 @@
 
 				Loi
 			</button>
-			{#if isCitantInUrl}
+			{#if isCitantInUrl || isSummaryInUrl}
 				<div
 					class="absolute top-0 right-0 z-30 h-full w-1/2 border-y-2 py-0.5
-						{shared.showCitingDesktop
+						{shared.showCitingDesktop || shared.showSummaryDesktop
 						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark'
 						: 'group-hover:border-le-gris-dispositif border-neutral-400 bg-neutral-400'}"
 				></div>
@@ -114,10 +114,10 @@
 		{/if}
 
 		{#if isSummaryInUrl}
-			<div class="flex-1">
+			<div class="relative flex-1">
 				<button
-					class="
-		cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+					class="relative z-40
+    cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
 		{shared.showSummaryDesktop
 						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
@@ -143,6 +143,12 @@
 
 					Sommaire
 				</button>
+				<div
+					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
+						{shared.showSummaryDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
+						: 'border-neutral-400 bg-neutral-400'}"
+				></div>
 			</div>
 		{/if}
 	</nav>
