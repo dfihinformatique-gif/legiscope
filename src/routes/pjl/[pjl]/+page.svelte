@@ -143,10 +143,10 @@
 		</section>
 
 		<section
-			class="@container/section-article flex h-full flex-1 overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+			class="@container/section-article flex h-full flex-1 overflow-y-auto bg-blue-100 transition-all duration-300"
 			class:hidden={!shared.showLawDesktop}
 		>
-			<div class="mx-auto flex max-w-6xl min-w-0 flex-col">
+			<div class="mx-auto flex max-w-6xl min-w-0 flex-col lg:px-6">
 				{#if isLoadingArticle}
 					<SkeletonArticleLoader />
 				{:else if articleError}
@@ -190,31 +190,35 @@
 
 		{#if citingArticleInfo && shared.showLawDesktop}
 			<aside
-				class="shadow-left-light @container/section-citations flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+				class="shadow-left-light @container/section-citations flex h-full flex-1 overflow-y-auto bg-blue-100 transition-all duration-300"
 				class:hidden={!shared.showCitingDesktop}
 			>
-				{#if isLoadingCitingArticle}
-					<SkeletonArticleLoader />
-				{:else if citingArticleError}
-					<p>Erreur: {citingArticleError.message}</p>
-				{:else}
-					<ArticleCitantPanel
-						{citingArticleInfo}
-						versionsArticle={articleInfo!.versions}
-					></ArticleCitantPanel>
-				{/if}
+				<div class="mx-auto flex h-full max-w-6xl min-w-0 flex-col lg:px-6">
+					{#if isLoadingCitingArticle}
+						<SkeletonArticleLoader />
+					{:else if citingArticleError}
+						<p>Erreur: {citingArticleError.message}</p>
+					{:else}
+						<ArticleCitantPanel
+							{citingArticleInfo}
+							versionsArticle={articleInfo!.versions}
+						></ArticleCitantPanel>
+					{/if}
+				</div>
 			</aside>
 		{/if}
 
 		{#if page.url.searchParams.get("summary") === "true" && articleInfo && shared.showLawDesktop}
 			<aside
-				class="shadow-left-light @container/section-article-summary flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+				class="shadow-left-light @container/section-article-summary flex h-full flex-1 overflow-y-auto bg-blue-100 transition-all duration-300"
 				class:hidden={!shared.showSummaryDesktop}
 			>
-				<ArticleSummaryPanel
-					{articleInfo}
-					date={page.url.searchParams.get("date") ?? shared.pjlDate}
-				></ArticleSummaryPanel>
+				<div class="mx-auto flex h-full max-w-6xl min-w-0 flex-col lg:px-6">
+					<ArticleSummaryPanel
+						{articleInfo}
+						date={page.url.searchParams.get("date") ?? shared.pjlDate}
+					></ArticleSummaryPanel>
+				</div>
 			</aside>
 		{/if}
 	</div>
