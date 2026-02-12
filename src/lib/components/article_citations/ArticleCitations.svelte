@@ -751,48 +751,6 @@
 </h2>
 {#if table !== undefined && citationsData && citationsData.length > 0}
 	<div class="mt-2 flex w-full flex-col flex-wrap justify-end gap-y-2">
-		<div class="flex justify-end">
-			<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
-			<button
-				class="lx-link-uppercase text-left font-sans text-sm text-wrap text-gray-500"
-				onclick={() => {
-					if (grouping[0] === "article_citant_texte_nature") {
-						grouping = [
-							"version_citee",
-							"article_citant_texte_nature",
-							"article_citant",
-						]
-						sorting = [{ id: "date_debut_cite", desc: true }]
-						columnOrder = [
-							"version_citee",
-							...defaultColumnOrder.filter((id) => id !== "version_citee"),
-						]
-					} else {
-						grouping = [
-							"article_citant_texte_nature",
-							"article_citant",
-							"version_citante",
-						]
-						sorting = [
-							{ id: "article_citant_texte_nature", desc: false },
-							{ id: "date_debut_cite", desc: true },
-						]
-						columnOrder = defaultColumnOrder
-					}
-				}}
-				><iconify-icon
-					class="align-[-0.25rem] text-xl hover:bg-gray-100"
-					icon={grouping[0] === "article_citant_texte_nature"
-						? "ri-list-ordered-2"
-						: "ri-list-unordered"}
-				>
-				</iconify-icon>
-
-				{grouping[0] === "article_citant_texte_nature"
-					? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
-					: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
-			</button>
-		</div>
 		<div class="mt-1 mb-3 flex items-center justify-end gap-2">
 			<div class="flex items-center">
 				<!--Toggle "en vigueur seulement" -->
@@ -851,6 +809,7 @@
 				{/if}
 			</button>
 		</div>
+
 		<!--Boutons des autres filtres lorsque le volet est ouvert-->
 		{#if showFiltersPanel}
 			<div class="rounded-t-md border bg-neutral-100 p-3">
@@ -959,6 +918,57 @@
 	>
 		<TableUI.Root>
 			<TableUI.Header>
+				<div
+					class="mx-2 my-2 flex justify-start @xs/section-article:justify-center @md/section-article:justify-end"
+				>
+					<!--Bouton "Grouper par" permettant de changer l'organisation du tableau -->
+					<button
+						onclick={() => {
+							if (grouping[0] === "article_citant_texte_nature") {
+								grouping = [
+									"version_citee",
+									"article_citant_texte_nature",
+									"article_citant",
+								]
+								sorting = [{ id: "date_debut_cite", desc: true }]
+								columnOrder = [
+									"version_citee",
+									...defaultColumnOrder.filter((id) => id !== "version_citee"),
+								]
+							} else {
+								grouping = [
+									"article_citant_texte_nature",
+									"article_citant",
+									"version_citante",
+								]
+								sorting = [
+									{ id: "article_citant_texte_nature", desc: false },
+									{ id: "date_debut_cite", desc: true },
+								]
+								columnOrder = defaultColumnOrder
+							}
+						}}
+						><iconify-icon
+							class="align-[-0.25rem] text-xl text-gray-500 hover:bg-gray-100"
+							icon={grouping[0] === "article_citant_texte_nature"
+								? "ri-list-ordered-2"
+								: "ri-list-unordered"}
+						>
+						</iconify-icon>
+						<p
+							class="lx-link-uppercase hidden text-gray-500 @md/section-article:inline-flex"
+						>
+							{grouping[0] === "article_citant_texte_nature"
+								? `Grouper par version de l'art. ${articleInfo.article?.num ?? "étudié"}`
+								: `Grouper par articles citant l'art. ${articleInfo.article?.num ?? "étudié"}`}
+						</p>
+						<p
+							class="lx-link-uppercase inline-flex text-sm text-wrap text-gray-500 @md/section-article:hidden"
+						>
+							Grouper
+						</p>
+					</button>
+				</div>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<TableUI.Row>
 						{#each headerGroup.headers as header (header.id)}

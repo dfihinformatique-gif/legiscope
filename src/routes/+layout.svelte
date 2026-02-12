@@ -32,7 +32,7 @@
 	<div class="grid h-screen grid-rows-[auto_1fr_auto]">
 		<NavBarHome />
 		<!-- Zone principale -->
-		<main class="overflow-hidden bg-neutral-200">
+		<main class="overflow-hidden bg-neutral-100">
 			{@render children()}
 		</main>
 		<!-- Navbar -->

@@ -143,47 +143,49 @@
 		</section>
 
 		<section
-			class="@container/section-article flex h-full flex-1 flex-col overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
+			class="@container/section-article flex h-full flex-1 overflow-y-auto bg-blue-100 transition-all duration-300 lg:px-6"
 			class:hidden={!shared.showLawDesktop}
 		>
-			{#if isLoadingArticle}
-				<SkeletonArticleLoader />
-			{:else if articleError}
-				<p>Erreur: {articleError.message}</p>
-			{:else if articleInfo}
-				<Article {articleInfo} {showParameterModal} bind:parametersToVariables
-				></Article>
-			{:else if page.url.searchParams.get("article") !== null}
-				<AlertDatabaseMessage>
-					<b
-						>Les données ne permettent pas l'affichage du contenu de cet
-						article.</b
-					>
-
-					<p>
-						Une version numérisée peut néanmoins être disponible sur <a
-							class="lx-link-text cursor-pointer font-bold"
-							href="https://www.legifrance.gouv.fr/loda/id/{page.url.searchParams.get(
-								'article',
-							)}"
-							target="_blank"
-							>Légifrance<iconify-icon
-								class="pl-0.5 align-[-0.15rem]"
-								icon="ri:external-link-line"
-							></iconify-icon></a
+			<div class="mx-auto flex max-w-6xl min-w-0 flex-col">
+				{#if isLoadingArticle}
+					<SkeletonArticleLoader />
+				{:else if articleError}
+					<p>Erreur: {articleError.message}</p>
+				{:else if articleInfo}
+					<Article {articleInfo} {showParameterModal} bind:parametersToVariables
+					></Article>
+				{:else if page.url.searchParams.get("article") !== null}
+					<AlertDatabaseMessage>
+						<b
+							>Les données ne permettent pas l'affichage du contenu de cet
+							article.</b
 						>
-					</p>
-				</AlertDatabaseMessage>
-			{:else}
-				<div
-					class="flex h-screen flex-col items-center justify-center p-4 text-center"
-				>
-					<iconify-icon
-						class="text-8xl text-gray-400"
-						icon="ri:book-marked-fill"
-					></iconify-icon>
-				</div>
-			{/if}
+
+						<p>
+							Une version numérisée peut néanmoins être disponible sur <a
+								class="lx-link-text cursor-pointer font-bold"
+								href="https://www.legifrance.gouv.fr/loda/id/{page.url.searchParams.get(
+									'article',
+								)}"
+								target="_blank"
+								>Légifrance<iconify-icon
+									class="pl-0.5 align-[-0.15rem]"
+									icon="ri:external-link-line"
+								></iconify-icon></a
+							>
+						</p>
+					</AlertDatabaseMessage>
+				{:else}
+					<div
+						class="flex h-screen flex-col items-center justify-center p-4 text-center"
+					>
+						<iconify-icon
+							class="text-8xl text-gray-400"
+							icon="ri:book-marked-fill"
+						></iconify-icon>
+					</div>
+				{/if}
+			</div>
 		</section>
 
 		{#if citingArticleInfo}

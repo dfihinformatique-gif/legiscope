@@ -15,9 +15,13 @@
 {#if !shared.isMobilePhone}
 	<nav
 		aria-label="Navigation principale"
-		class="z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center gap-1 bg-neutral-300 text-center md:gap-2 2xl:h-14 2xl:gap-4"
+		class="relative z-60 flex h-12 w-full flex-row flex-nowrap items-center justify-center bg-neutral-300 text-center 2xl:h-14"
 	>
-		<div class="flex-1">
+		<div
+			class={shared.showBillDesktop
+				? "flex-1"
+				: "absolute top-1 left-0 z-60 ml-4 2xl:top-2"}
+		>
 			<button
 				class="
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
@@ -41,10 +45,13 @@
 			</button>
 		</div>
 
-		<div class="flex-1">
+		<div
+			class={shared.showLawDesktop
+				? "relative flex-1 "
+				: "absolute top-1 right-34  2xl:top-2"}
+		>
 			<button
-				class="
-    cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+				class="relative z-70 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
 					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
@@ -66,16 +73,28 @@
 
 				Loi
 			</button>
+			{#if isCitantInUrl || isSummaryInUrl}
+				<div
+					class="absolute top-0 right-0 z-30 h-full w-1/2 border-y-2 py-0.5
+						{shared.showCitingDesktop || shared.showSummaryDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark'
+						: 'group-hover:border-le-gris-dispositif border-neutral-400 bg-neutral-400'}"
+				></div>
+			{/if}
 		</div>
 
 		{#if isCitantInUrl}
-			<div class="flex-1">
+			<div
+				class={shared.showCitingDesktop
+					? "relative flex-1"
+					: "absolute top-1 right-0 mr-4 2xl:top-2"}
+			>
 				<button
-					class="
-    cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+					class="relative z-40
+    cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
-						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
+						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
 						if (shared.showCitingDesktop) {
@@ -97,17 +116,27 @@
 
 					Citation
 				</button>
+				<div
+					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
+						{shared.showCitingDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
+						: 'border-neutral-400 bg-neutral-400'}"
+				></div>
 			</div>
 		{/if}
 
 		{#if isSummaryInUrl}
-			<div class="flex-1">
+			<div
+				class={shared.showSummaryDesktop
+					? "relative flex-1"
+					: "absolute top-1 right-0 mr-4 2xl:top-2"}
+			>
 				<button
-					class="
-		cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
+					class="relative z-40
+    cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
 		{shared.showSummaryDesktop
-						? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
-						: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
+						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
+						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
 					onclick={() => {
 						shared.showSummaryDesktop = !shared.showSummaryDesktop
 						if (shared.showSummaryDesktop) {
@@ -130,11 +159,17 @@
 
 					Sommaire
 				</button>
+				<div
+					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
+						{shared.showSummaryDesktop
+						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
+						: 'border-neutral-400 bg-neutral-400'}"
+				></div>
 			</div>
 		{/if}
 	</nav>
 {:else}
-	<nav class="fixed bottom-8 z-60 flex w-full justify-between">
+	<nav class="fixed bottom-6 z-60 flex w-full justify-between">
 		<div
 			class="mx-2 mt-2 flex h-14 w-full flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 bg-white text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 		>
@@ -212,7 +247,7 @@
 	</nav>
 {/if}
 <div
-	class="bottom-0 z-60 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
+	class="z-60 flex h-6 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
 >
 	<p class="pb-1 pl-5 text-sm">
 		<span class="hidden md:inline-flex"
