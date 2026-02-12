@@ -169,7 +169,7 @@
 		{/if}
 	</nav>
 {:else}
-	<nav class="fixed bottom-8 z-60 flex w-full justify-between">
+	<nav class="fixed bottom-6 z-60 flex w-full justify-between">
 		<div
 			class="mx-2 mt-2 flex h-14 w-full flex-row flex-nowrap items-center overflow-hidden rounded-t-3xl border-t border-neutral-200 bg-white text-center shadow-[0px_-5px_5px_-5px_rgba(0,0,0,0.25)]"
 		>
@@ -247,7 +247,7 @@
 	</nav>
 {/if}
 <div
-	class="bottom-0 z-60 flex h-8 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
+	class="z-60 flex h-6 w-full flex-row flex-nowrap items-center justify-center overflow-hidden border-t-2 border-t-black bg-amber-200 text-center"
 >
 	<p class="pb-1 pl-5 text-sm">
 		<span class="hidden md:inline-flex"
