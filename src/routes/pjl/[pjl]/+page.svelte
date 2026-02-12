@@ -219,9 +219,9 @@
 		{/if}
 	</div>
 {:else}
-	<div class="fixed flex min-h-full w-full flex-row overflow-x-hidden">
+	<div class="flex h-full min-h-full w-full flex-row overflow-x-hidden">
 		<section
-			class="@container/section-bill z-10 h-screen w-full overflow-y-auto shadow-md"
+			class="@container/section-bill z-10 h-full w-full overflow-y-auto shadow-md"
 			class:hidden={shared.activePanelMobile !== "bill"}
 		>
 			<Bill {pjlHTML} {showParameterModal} bind:parametersToVariables></Bill>
@@ -229,12 +229,12 @@
 
 		<section
 			bind:this={lawContainer}
-			class="@container/section-article h-screen w-full overflow-y-auto bg-blue-100"
+			class="@container/section-article h-full w-full overflow-y-auto bg-blue-100"
 			class:hidden={shared.activePanelMobile !== "law"}
 		>
 			{#if isLoadingArticle}
 				<div
-					class="flex h-screen flex-col items-center justify-center text-center"
+					class="flex h-full flex-col items-center justify-center text-center"
 				>
 					<SkeletonArticleLoader />
 				</div>
@@ -245,7 +245,7 @@
 				></Article>
 			{:else}
 				<div
-					class="flex h-screen flex-col items-center justify-center p-4 text-center"
+					class="flex h-full flex-col items-center justify-center p-4 text-center"
 				>
 					<iconify-icon
 						class="text-8xl text-gray-500"
@@ -267,12 +267,12 @@
 		</section>
 
 		<div
-			class="h-screen w-full overflow-y-auto bg-blue-100"
+			class="h-full w-full overflow-y-auto bg-blue-100"
 			class:hidden={shared.activePanelMobile !== "citing"}
 		>
 			{#if isLoadingCitingArticle}
 				<div
-					class="flex h-screen flex-col items-center justify-center text-center"
+					class="flex h-full flex-col items-center justify-center text-center"
 				>
 					<SkeletonArticleLoader />
 				</div>
