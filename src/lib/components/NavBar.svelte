@@ -26,7 +26,7 @@
 				class="
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showBillDesktop
-					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
+					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark hover:border-le-gris-dispositif-ultradark hover:text-le-gris-dispositif-ultradark  bg-white font-bold'
 					: 'border-neutral-500 bg-neutral-50  text-neutral-700 hover:bg-neutral-100'}
   "
 				onclick={() => {
@@ -53,7 +53,7 @@
 			<button
 				class="relative z-70 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
     {shared.showLawDesktop
-					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark bg-white font-bold  hover:border-blue-950 hover:text-blue-950'
+					? 'text-le-gris-dispositif-dark border-le-gris-dispositif-dark hover:border-le-gris-dispositif-ultradark hover:text-le-gris-dispositif-ultradark  bg-white font-bold'
 					: 'border-neutral-500 bg-neutral-50 text-neutral-700 hover:bg-neutral-100'}"
 				onclick={() => {
 					shared.showLawDesktop = !shared.showLawDesktop
@@ -93,7 +93,7 @@
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'hover:text-le-gris-dispositif-ultradark text-le-gris-dispositif-dark  border-white bg-white hover:bg-neutral-50'
+						? 'text-le-gris-dispositif-dark border-white  bg-white hover:bg-neutral-50 hover:text-neutral-600'
 						: ' border-neutral-200 bg-neutral-200 text-neutral-700 hover:border-white hover:bg-white hover:text-neutral-900'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
@@ -135,7 +135,7 @@
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
 		{shared.showSummaryDesktop
-						? 'hover:text-le-gris-dispositif-ultradark text-le-gris-dispositif-dark  border-white bg-white hover:bg-neutral-50'
+						? 'text-le-gris-dispositif-dark border-white  bg-white hover:bg-neutral-50 hover:text-neutral-600'
 						: ' border-neutral-200 bg-neutral-200 text-neutral-700 hover:border-white hover:bg-white hover:text-neutral-900'}"
 					onclick={() => {
 						shared.showSummaryDesktop = !shared.showSummaryDesktop
