@@ -48,7 +48,7 @@
 		<div
 			class={shared.showLawDesktop
 				? "relative flex-1 "
-				: "absolute top-1 right-34  2xl:top-2"}
+				: "absolute top-1 right-6 2xl:top-2"}
 		>
 			<button
 				class="relative z-70 cursor-pointer rounded-full border-2 px-4 py-1 text-xl tracking-wide uppercase transition-colors duration-150
@@ -73,17 +73,17 @@
 
 				Loi
 			</button>
-			{#if isCitantInUrl || isSummaryInUrl}
+			{#if (isCitantInUrl || isSummaryInUrl) && shared.showLawDesktop}
 				<div
 					class="absolute top-0 right-0 z-30 h-full w-1/2 border-y-2 py-0.5
 						{shared.showCitingDesktop || shared.showSummaryDesktop
-						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark'
-						: 'group-hover:border-le-gris-dispositif border-neutral-400 bg-neutral-400'}"
+						? ' border-white bg-white'
+						: 'border-neutral mr-10 bg-neutral-200'}"
 				></div>
 			{/if}
 		</div>
 
-		{#if isCitantInUrl}
+		{#if isCitantInUrl && shared.showLawDesktop}
 			<div
 				class={shared.showCitingDesktop
 					? "relative flex-1"
@@ -93,8 +93,8 @@
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
     {shared.showCitingDesktop
-						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
-						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
+						? 'hover:text-le-gris-dispositif-ultradark text-le-gris-dispositif-dark  border-white bg-white hover:bg-neutral-50'
+						: ' border-neutral-200 bg-neutral-200 text-neutral-700 hover:border-white hover:bg-white hover:text-neutral-900'}"
 					onclick={() => {
 						shared.showCitingDesktop = !shared.showCitingDesktop
 						if (shared.showCitingDesktop) {
@@ -119,13 +119,13 @@
 				<div
 					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
 						{shared.showCitingDesktop
-						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
-						: 'border-neutral-400 bg-neutral-400'}"
+						? ' border-white  bg-white '
+						: 'border-neutral bg-neutral-200'}"
 				></div>
 			</div>
 		{/if}
 
-		{#if isSummaryInUrl}
+		{#if isSummaryInUrl && shared.showLawDesktop}
 			<div
 				class={shared.showSummaryDesktop
 					? "relative flex-1"
@@ -135,8 +135,8 @@
 					class="relative z-40
     cursor-pointer rounded-full border-2 px-4 py-1 text-xl font-normal tracking-wide uppercase transition-colors duration-150
 		{shared.showSummaryDesktop
-						? 'border-le-gris-dispositif-dark bg-le-gris-dispositif-dark  hover:bg-le-gris-dispositif-ultradark hover:border-le-gris-dispositif-ultradark text-white'
-						: 'border-neutral-500 bg-neutral-200 text-neutral-700 hover:bg-neutral-50'}"
+						? 'hover:text-le-gris-dispositif-ultradark text-le-gris-dispositif-dark  border-white bg-white hover:bg-neutral-50'
+						: ' border-neutral-200 bg-neutral-200 text-neutral-700 hover:border-white hover:bg-white hover:text-neutral-900'}"
 					onclick={() => {
 						shared.showSummaryDesktop = !shared.showSummaryDesktop
 						if (shared.showSummaryDesktop) {
@@ -162,8 +162,8 @@
 				<div
 					class="absolute top-0 left-0 z-30 h-full w-1/2 border-y-2 py-0.5
 						{shared.showSummaryDesktop
-						? 'bg-le-gris-dispositif-dark border-le-gris-dispositif-dark '
-						: 'border-neutral-400 bg-neutral-400'}"
+						? ' border-white  bg-white '
+						: 'border-neutral bg-neutral-200'}"
 				></div>
 			</div>
 		{/if}
