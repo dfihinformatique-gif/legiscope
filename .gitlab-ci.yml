@@ -1,0 +1,29 @@
+default:
+  image: node:24-trixie
+
+  cache:
+    paths:
+      - node_modules
+
+variables:
+  FF_PRINT_POD_EVENTS: true
+
+stages:
+  - test
+  - deploy
+
+test build:
+  stage: test
+  script:
+    - npm install
+    - rm -f .env
+    - ln -s example.env .env
+    - npm run build
+
+deploy dev:
+  stage: deploy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    # Trigger legiscope-deploy pipeline.
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=main --form "inputs[deploy-dev]=true" "https://git.leximpact.dev/api/v4/projects/71/trigger/pipeline"

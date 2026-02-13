@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - always_run: true
+        entry: npm run format
+        id: format
+        language: node
+        name: format
+        pass_filenames: false
+      - always_run: true
+        entry: npm run lint
+        id: lint
+        language: node
+        name: lint
+        pass_filenames: false

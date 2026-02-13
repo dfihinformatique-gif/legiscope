@@ -1,0 +1,60 @@
+{
+	"editor.formatOnSave": true,
+	"editor.rulers": [100],
+	"editor.codeActionsOnSave": {
+		"source.fixAll": "always",
+		"source.fixAll.eslint": "explicit",
+		"source.organizeImports": "always",
+		"source.sortImports": "never",
+		"source.sortMembers": "never"
+	},
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"eslint.lintTask.enable": true,
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"svelte"
+	],
+	"eslint.workingDirectories": [{ "mode": "auto" }],
+	"files.readonlyInclude": {
+		"node_modules/**": true
+	},
+	"prettier.documentSelectors": ["**/*.svelte"],
+	// Auto-complete Tailwind classes in tv(), cf https://www.tailwind-variants.org/docs/getting-started#intellisense-setup-optional
+	"[css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[svelte]": {
+		"editor.defaultFormatter": "svelte.svelte-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"tailwindCSS.experimental.configFile": "src/app.css",
+	"tailwindCSS.files.exclude": [
+		"**/.git/**",
+		"**/node_modules/**",
+		"**/.hg/**",
+		"**/.svn/**",
+		"**/static/**"
+	]
+}
