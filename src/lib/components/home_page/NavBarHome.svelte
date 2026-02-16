@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { resolve } from "$app/paths"
 	import { page } from "$app/state"
+	import { getPJLInfosById } from "$lib/shared.svelte"
 	import { DropdownMenu } from "bits-ui"
 
 	let isAccueilMobileMenuDropdownOpen = $state(false)
 	let isAccueilDesktopDropdownOpen = $state(false)
 	let isHome = $derived(page.url.pathname === "/")
+
+	let infosPJL = $derived.by(() => {
+		const rawId = page.params.pjl || page.url.pathname.split("/pjl/")[1]
+		if (!rawId) return undefined
+
+		const cleanId = rawId.split(/[&#/]/)[0]
+		return getPJLInfosById(cleanId)
+	})
 </script>
 
 <header class="relative z-60 w-full">
@@ -128,10 +137,13 @@
 						<div
 							class="flex h-full items-center rounded-l-sm bg-neutral-100 px-2 py-1 font-serif text-sm leading-3.5"
 						>
-							<p class="line-clamp-2">
-								<b>Texte n° 1907</b> · Projet de loi de financement de la
-								sécurité sociale pour 2026 - <i>version initiale</i>
-							</p>
+							{#if infosPJL}
+								<p class="line-clamp-2">
+									<b>{infosPJL.numero}</b> · {infosPJL.label}
+								</p>
+							{:else}
+								<p class="line-clamp-2">Chargement...</p>
+							{/if}
 						</div>
 						<a
 							href={resolve("/")}
@@ -199,7 +211,7 @@
 								class="flex h-1/2 w-full items-center rounded-t-sm bg-neutral-100 px-2 py-0.5 font-serif text-sm leading-3.5"
 							>
 								<p class="line-clamp-2 w-full text-center">
-									<b>Texte n° 1907</b>
+									<b>{infosPJL?.numero || ""}</b>
 								</p>
 							</div>
 							<div
