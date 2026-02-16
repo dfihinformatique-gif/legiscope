@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { resolve } from "$app/paths"
+	import { page } from "$app/state"
 	import { DropdownMenu } from "bits-ui"
 
 	let isAccueilMobileMenuDropdownOpen = $state(false)
 	let isAccueilDesktopDropdownOpen = $state(false)
+	let isHome = $derived(page.url.pathname === "/")
 </script>
 
 <header class="relative z-60 w-full">
@@ -43,18 +45,19 @@
 							preventScroll={false}
 							class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
 						>
-							<DropdownMenu.Item>
-								{#snippet child({ props })}
-									<a
-										{...props}
-										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-										href={resolve("/")}
-									>
-										Accueil Légiscope
-									</a>
-								{/snippet}
-							</DropdownMenu.Item>
-
+							{#if !isHome}
+								<DropdownMenu.Item>
+									{#snippet child({ props })}
+										<a
+											{...props}
+											class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
+											href={resolve("/")}
+										>
+											Accueil Légiscope
+										</a>
+									{/snippet}
+								</DropdownMenu.Item>
+							{/if}
 							<DropdownMenu.Item>
 								{#snippet child({ props })}
 									<a
@@ -94,21 +97,43 @@
 			</div>
 
 			<!-- Centre -->
-			<div class="flex h-full items-center text-white uppercase">
-				<div class="flex flex-col items-center p-1">
-					<span class="text-sm leading-4 font-light 2xl:text-base"
-						>LexImpact</span
-					>
-					<span class="text-lg leading-5 tracking-wider">
-						Légiscope
-						<iconify-icon
-							class="pl-0.5 align-[-0.18em]"
-							icon="ri:book-marked-fill"
-							aria-hidden="true"
-						></iconify-icon>
-					</span>
+			{#if isHome}
+				<div class="flex h-full items-center text-white uppercase">
+					<div class="flex flex-col items-center p-1">
+						<span class="text-sm leading-4 font-light 2xl:text-base"
+							>LexImpact</span
+						>
+						<span class="text-lg leading-5 tracking-wider">
+							Légiscope
+							<iconify-icon
+								class="pl-0.5 align-[-0.18em]"
+								icon="ri:book-marked-fill"
+								aria-hidden="true"
+							></iconify-icon>
+						</span>
+					</div>
 				</div>
-			</div>
+			{:else}
+				<div class="flex h-full items-center justify-between gap-1">
+					<div class="flex flex-col justify-end p-1 text-white uppercase">
+						<span
+							class="text-right text-sm leading-4 font-light tracking-widest 2xl:text-base"
+							>LexImpact</span
+						>
+						<span class="inline-flex text-base leading-5 tracking-wide">
+							Légiscope
+						</span>
+					</div>
+					<div
+						class="flex h-8 items-center rounded-sm bg-neutral-100 px-2 py-1 font-serif text-sm leading-3.5 2xl:h-9"
+					>
+						<p>
+							<b>N° 1907</b> · Projet de loi de financement de la sécurité
+							sociale pour 2026 - <i>version initiale</i>
+						</p>
+					</div>
+				</div>
+			{/if}
 
 			<!-- Droite -->
 			<div
