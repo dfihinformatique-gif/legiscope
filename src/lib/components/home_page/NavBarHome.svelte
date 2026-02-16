@@ -124,13 +124,31 @@
 							Légiscope
 						</span>
 					</div>
-					<div
-						class="flex h-8 items-center rounded-sm bg-neutral-100 px-2 py-1 font-serif text-sm leading-3.5 2xl:h-9"
-					>
-						<p>
-							<b>N° 1907</b> · Projet de loi de financement de la sécurité
-							sociale pour 2026 - <i>version initiale</i>
-						</p>
+					<div class="flex h-8 items-center gap-0 2xl:h-9">
+						<div
+							class="flex h-full items-center rounded-l-sm bg-neutral-100 px-2 py-1 font-serif text-sm leading-3.5"
+						>
+							<p class="line-clamp-2">
+								<b>Texte n° 1907</b> · Projet de loi de financement de la
+								sécurité sociale pour 2026 - <i>version initiale</i>
+							</p>
+						</div>
+						<a
+							href={resolve("/")}
+							aria-label="Retour à l’accueil"
+							class="flex h-full w-fit shrink items-center gap-1 rounded-r-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 whitespace-nowrap text-white uppercase shadow-sm hover:bg-[#734545]"
+							><iconify-icon
+								class="pl-0.5 align-[-0.18em] text-xl"
+								icon="ri:search-line"
+								aria-hidden="true"
+							></iconify-icon>
+							<span class="hidden justify-self-center text-left lg:flex"
+								>Analyser un <br />autre texte</span
+							>
+							<span class="flex justify-self-center text-left lg:hidden"
+								>autre<br /> texte</span
+							>
+						</a>
 					</div>
 				</div>
 			{/if}
