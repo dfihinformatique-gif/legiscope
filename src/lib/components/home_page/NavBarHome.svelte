@@ -136,7 +136,7 @@
 						<a
 							href={resolve("/")}
 							aria-label="Retour à l’accueil"
-							class="flex h-full w-fit shrink items-center gap-1 rounded-r-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 whitespace-nowrap text-white uppercase shadow-sm hover:bg-[#734545]"
+							class="flex h-full w-fit shrink cursor-pointer items-center gap-1 rounded-r-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 whitespace-nowrap text-white uppercase shadow-sm hover:bg-[#734545]"
 							><iconify-icon
 								class="pl-0.5 align-[-0.18em] text-xl"
 								icon="ri:search-line"
@@ -167,18 +167,59 @@
 					src="/logo-assemblee-nationale-blanc-blanc.png"
 					alt="Logo de l'Assemblée nationale"
 				/>
-
-				<div class="flex flex-col items-center p-1 text-white uppercase">
-					<span class="text-sm leading-4 font-light">LexImpact</span>
-					<span class="text-lg leading-5">
-						Légiscope
-						<iconify-icon
-							class="pl-0.5 align-[-0.18em]"
-							icon="ri:book-marked-fill"
-							aria-hidden="true"
-						></iconify-icon>
-					</span>
-				</div>
+				{#if isHome}
+					<div class="flex flex-col items-center p-1 text-white uppercase">
+						<span class="text-sm leading-4 font-light">LexImpact</span>
+						<span class="text-lg leading-5">
+							Légiscope
+							<iconify-icon
+								class="pl-0.5 align-[-0.18em]"
+								icon="ri:book-marked-fill"
+								aria-hidden="true"
+							></iconify-icon>
+						</span>
+					</div>
+				{:else}
+					<div class="flex h-full items-center justify-between gap-1">
+						<div class="flex flex-col justify-end p-1 text-white uppercase">
+							<span
+								class="text-right text-sm leading-4 font-light tracking-widest 2xl:text-base"
+								>LexImpact</span
+							>
+							<span class="inline-flex text-base leading-5 tracking-wide">
+								Légiscope
+							</span>
+						</div>
+						<a
+							href={resolve("/")}
+							aria-label="Retour à l’accueil"
+							class="group flex h-9 flex-col items-center gap-0"
+						>
+							<div
+								class="flex h-1/2 w-full items-center rounded-t-sm bg-neutral-100 px-2 py-0.5 font-serif text-sm leading-3.5"
+							>
+								<p class="line-clamp-2 w-full text-center">
+									<b>Texte n° 1907</b>
+								</p>
+							</div>
+							<div
+								class="flex h-1/2 w-full items-center gap-1 rounded-b-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 text-white uppercase shadow-sm group-hover:bg-[#734545]"
+							>
+								<iconify-icon
+									class="pl-0.5 align-[-0.18em] text-lg"
+									icon="ri:search-line"
+									aria-hidden="true"
+								></iconify-icon>
+								<span class="hidden justify-self-center text-left lg:flex"
+									>Analyser un <br />autre texte</span
+								>
+								<span class="flex justify-self-center text-left lg:hidden"
+									>autre texte</span
+								>
+							</div>
+						</a>
+					</div>
+				{/if}
 				<nav aria-label="Navigation principale">
 					<DropdownMenu.Root bind:open={isAccueilMobileMenuDropdownOpen}>
 						<DropdownMenu.Trigger
