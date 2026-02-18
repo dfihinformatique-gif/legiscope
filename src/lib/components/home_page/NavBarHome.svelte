@@ -142,7 +142,7 @@
 									<b>{infosPJL.numero}</b> · {infosPJL.label}
 								</p>
 							{:else}
-								<p class="line-clamp-2">Chargement...</p>
+								<p class="line-clamp-2 italic">Projet ou proposition de loi</p>
 							{/if}
 						</div>
 						<a
