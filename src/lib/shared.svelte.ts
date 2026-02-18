@@ -75,7 +75,7 @@ export const PJL_INFOS = [
 	},
 	{
 		id: "DECLANR5L17B2247-N0",
-		numero: "49.3",
+		numero: "Texte du 21.01.2026",
 		date: "2026-01-21",
 		label: "Projet de loi de finances pour 2026",
 	},
