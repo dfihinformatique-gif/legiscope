@@ -143,7 +143,7 @@
 								</p>
 							{:else}
 								<p class="line-clamp-2 italic">
-									<b>Texte non-identifié</b> · Projet ou proposition de loi
+									<b>Texte</b> · Projet ou proposition de loi
 								</p>
 							{/if}
 						</div>
