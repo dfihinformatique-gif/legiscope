@@ -1,9 +1,20 @@
 <script lang="ts">
 	import { resolve } from "$app/paths"
+	import { page } from "$app/state"
+	import { getPJLInfosById } from "$lib/shared.svelte"
 	import { DropdownMenu } from "bits-ui"
 
 	let isAccueilMobileMenuDropdownOpen = $state(false)
 	let isAccueilDesktopDropdownOpen = $state(false)
+	let isHome = $derived(page.url.pathname === "/")
+
+	let infosPJL = $derived.by(() => {
+		const rawId = page.params.pjl || page.url.pathname.split("/pjl/")[1]
+		if (!rawId) return undefined
+
+		const cleanId = rawId.split(/[&#/]/)[0]
+		return getPJLInfosById(cleanId)
+	})
 </script>
 
 <header class="relative z-60 w-full">
@@ -43,18 +54,19 @@
 							preventScroll={false}
 							class="mt-2 rounded bg-white text-black shadow-xl ring-1 ring-black focus:outline-none"
 						>
-							<DropdownMenu.Item>
-								{#snippet child({ props })}
-									<a
-										{...props}
-										class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
-										href={resolve("/")}
-									>
-										Accueil Légiscope
-									</a>
-								{/snippet}
-							</DropdownMenu.Item>
-
+							{#if !isHome}
+								<DropdownMenu.Item>
+									{#snippet child({ props })}
+										<a
+											{...props}
+											class="block border-b px-4 py-3 text-center text-base font-bold tracking-wider uppercase hover:bg-gray-100"
+											href={resolve("/")}
+										>
+											Accueil Légiscope
+										</a>
+									{/snippet}
+								</DropdownMenu.Item>
+							{/if}
 							<DropdownMenu.Item>
 								{#snippet child({ props })}
 									<a
@@ -94,21 +106,66 @@
 			</div>
 
 			<!-- Centre -->
-			<div class="flex h-full items-center text-white uppercase">
-				<div class="flex flex-col items-center p-1">
-					<span class="text-sm leading-4 font-light 2xl:text-base"
-						>LexImpact</span
-					>
-					<span class="text-lg leading-5 tracking-wider">
-						Légiscope
-						<iconify-icon
-							class="pl-0.5 align-[-0.18em]"
-							icon="ri:book-marked-fill"
-							aria-hidden="true"
-						></iconify-icon>
-					</span>
+			{#if isHome}
+				<div class="flex h-full items-center text-white uppercase">
+					<div class="flex flex-col items-center p-1">
+						<span class="text-sm leading-4 font-light 2xl:text-base"
+							>LexImpact</span
+						>
+						<span class="text-lg leading-5 tracking-wider">
+							Légiscope
+							<iconify-icon
+								class="pl-0.5 align-[-0.18em]"
+								icon="ri:book-marked-fill"
+								aria-hidden="true"
+							></iconify-icon>
+						</span>
+					</div>
 				</div>
-			</div>
+			{:else}
+				<div class="flex h-full items-center justify-between gap-1">
+					<div class="flex flex-col justify-end p-1 text-white uppercase">
+						<span
+							class="text-right text-sm leading-4 font-light tracking-widest 2xl:text-base"
+							>LexImpact</span
+						>
+						<span class="inline-flex text-base leading-5 tracking-wide">
+							Légiscope
+						</span>
+					</div>
+					<div class="flex h-8 items-center gap-0 2xl:h-9">
+						<div
+							class="flex h-full items-center rounded-l-sm bg-neutral-100 px-2 py-1 font-serif text-sm leading-3.5"
+						>
+							{#if infosPJL}
+								<p class="line-clamp-2">
+									<b>{infosPJL.numero}</b> · {infosPJL.label}
+								</p>
+							{:else}
+								<p class="line-clamp-2 italic">
+									<b>Texte</b> · Projet ou proposition de loi
+								</p>
+							{/if}
+						</div>
+						<a
+							href={resolve("/")}
+							aria-label="Retour à l’accueil"
+							class="flex h-full w-fit shrink cursor-pointer items-center gap-1 rounded-r-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 whitespace-nowrap text-white uppercase shadow-sm hover:bg-[#734545]"
+							><iconify-icon
+								class="pl-0.5 align-[-0.18em] text-xl"
+								icon="ri:search-line"
+								aria-hidden="true"
+							></iconify-icon>
+							<span class="hidden justify-self-center text-left lg:flex"
+								>Analyser un <br />autre texte</span
+							>
+							<span class="flex justify-self-center text-left lg:hidden"
+								>autre<br /> texte</span
+							>
+						</a>
+					</div>
+				</div>
+			{/if}
 
 			<!-- Droite -->
 			<div
@@ -124,18 +181,59 @@
 					src="/logo-assemblee-nationale-blanc-blanc.png"
 					alt="Logo de l'Assemblée nationale"
 				/>
-
-				<div class="flex flex-col items-center p-1 text-white uppercase">
-					<span class="text-sm leading-4 font-light">LexImpact</span>
-					<span class="text-lg leading-5">
-						Légiscope
-						<iconify-icon
-							class="pl-0.5 align-[-0.18em]"
-							icon="ri:book-marked-fill"
-							aria-hidden="true"
-						></iconify-icon>
-					</span>
-				</div>
+				{#if isHome}
+					<div class="flex flex-col items-center p-1 text-white uppercase">
+						<span class="text-sm leading-4 font-light">LexImpact</span>
+						<span class="text-lg leading-5">
+							Légiscope
+							<iconify-icon
+								class="pl-0.5 align-[-0.18em]"
+								icon="ri:book-marked-fill"
+								aria-hidden="true"
+							></iconify-icon>
+						</span>
+					</div>
+				{:else}
+					<div class="flex h-full items-center justify-between gap-1">
+						<div class="flex flex-col justify-end p-1 text-white uppercase">
+							<span
+								class="text-right text-sm leading-4 font-light tracking-widest 2xl:text-base"
+								>LexImpact</span
+							>
+							<span class="inline-flex text-base leading-5 tracking-wide">
+								Légiscope
+							</span>
+						</div>
+						<a
+							href={resolve("/")}
+							aria-label="Retour à l’accueil"
+							class="group flex h-9 flex-col items-center gap-0"
+						>
+							<div
+								class="flex h-1/2 w-full items-center rounded-t-sm bg-neutral-100 px-2 py-0.5 font-serif text-sm leading-3.5"
+							>
+								<p class="line-clamp-2 w-full text-center">
+									<b>{infosPJL?.numero || ""}</b>
+								</p>
+							</div>
+							<div
+								class="flex h-1/2 w-full items-center gap-1 rounded-b-sm bg-[#835454] pr-2 pl-1 text-xs leading-3.5 text-white uppercase shadow-sm group-hover:bg-[#734545]"
+							>
+								<iconify-icon
+									class="pl-0.5 align-[-0.18em] text-lg"
+									icon="ri:search-line"
+									aria-hidden="true"
+								></iconify-icon>
+								<span class="hidden justify-self-center text-left lg:flex"
+									>Analyser un <br />autre texte</span
+								>
+								<span class="flex justify-self-center text-left lg:hidden"
+									>autre texte</span
+								>
+							</div>
+						</a>
+					</div>
+				{/if}
 				<nav aria-label="Navigation principale">
 					<DropdownMenu.Root bind:open={isAccueilMobileMenuDropdownOpen}>
 						<DropdownMenu.Trigger
