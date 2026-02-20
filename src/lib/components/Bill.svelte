@@ -11,6 +11,7 @@
 		rootParameter,
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
+	import { shared } from "$lib/shared.svelte"
 	import { simplifyHtml } from "@tricoteuses/tisseuse"
 
 	interface Props {
@@ -67,6 +68,76 @@
 		return null
 	}
 
+	function normalizeLineText(value: string | null): string {
+		return (value ?? "").replace(/\s+/g, " ").trim()
+	}
+
+	function collectPjlBlock(
+		root: ShadowRoot,
+		startNode: Element,
+	): { html: string; text: string } {
+		const nodes = Array.from(root.querySelectorAll("p, li"))
+		const startIndex = nodes.findIndex((node) => node.contains(startNode))
+		if (startIndex === -1) {
+			return {
+				html: startNode.outerHTML,
+				text: normalizeLineText(startNode.textContent),
+			}
+		}
+
+		const collected: Element[] = []
+		const start = nodes[startIndex]
+		const startText = normalizeLineText(start.textContent)
+		collected.push(start)
+
+		let inQuoteBlock = startText.includes("«")
+		if (!inQuoteBlock && !startText.endsWith(":")) {
+			return {
+				html: collected.map((node) => node.outerHTML).join("\n"),
+				text: collected
+					.map((node) => normalizeLineText(node.textContent))
+					.join("\n"),
+			}
+		}
+
+		for (let i = startIndex + 1; i < nodes.length; i += 1) {
+			const node = nodes[i]
+			const text = normalizeLineText(node.textContent)
+			const hasOpenQuote = text.includes("«")
+			const hasCloseQuote = text.includes("»")
+			const isMarkerCell = node.closest("td.texte-col-0") !== null
+			const isPastille =
+				node.classList.contains("pastille") ||
+				node.getAttribute("data-pastille") !== null
+			const isShortMarker =
+				text.length <= 2 && !/[\p{L}\p{N}]/u.test(text)
+			const isSkippableBeforeQuote =
+				text.length === 0 || isMarkerCell || isPastille || isShortMarker
+
+			if (!inQuoteBlock) {
+				if (hasOpenQuote) {
+					inQuoteBlock = true
+				} else if (isSkippableBeforeQuote) {
+					continue
+				} else {
+					break
+				}
+			}
+
+			if (inQuoteBlock) {
+				collected.push(node)
+				if (hasCloseQuote) break
+			}
+		}
+
+		return {
+			html: collected.map((node) => node.outerHTML).join("\n"),
+			text: collected
+				.map((node) => normalizeLineText(node.textContent))
+				.join("\n"),
+		}
+	}
+
 	$effect(() => {
 		if (!container || !pjlHTML) return
 
@@ -105,6 +176,29 @@
 				if (lawLink) {
 					e.preventDefault()
 					const href = lawLink.getAttribute("href")
+					const lawUrl = href ? new URL(href, window.location.origin) : null
+					const lawArticle = lawUrl?.searchParams.get("article") ?? undefined
+					if (lawArticle) {
+						const paragraph = target.closest("p, li, div")
+						const html = paragraph?.innerHTML ?? lawLink.outerHTML
+						const text =
+							paragraph?.textContent?.replace(/\s+/g, " ").trim() ??
+							lawLink.textContent?.replace(/\s+/g, " ").trim() ??
+							""
+						const block = paragraph
+							? collectPjlBlock(shadow, paragraph)
+							: {
+									html: lawLink.outerHTML,
+									text: lawLink.textContent?.replace(/\s+/g, " ").trim() ?? "",
+								}
+						shared.pjlSelectedLine = {
+							articleId: lawArticle,
+							html,
+							text,
+							blockHtml: block.html,
+							blockText: block.text,
+						}
+					}
 					const currentHash = window.location.hash
 					const newUrl = href + currentHash
 					goto(resolve(newUrl as Pathname & {}))

@@ -9,6 +9,15 @@ export interface Shared {
 	showCitingDesktop: boolean
 	showSummaryDesktop: boolean
 	pjlDate: string
+	pjlSelectedLine:
+		| {
+				articleId: string
+				html: string
+				text: string
+				blockHtml?: string
+				blockText?: string
+		  }
+		| undefined
 }
 
 export const shared: Shared = $state({
@@ -20,6 +29,7 @@ export const shared: Shared = $state({
 	showCitingDesktop: false,
 	showSummaryDesktop: false,
 	pjlDate: "2025-10-01",
+	pjlSelectedLine: undefined,
 })
 
 export function formatDateFr(dateStr: string): string {

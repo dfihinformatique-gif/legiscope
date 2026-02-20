@@ -5,7 +5,7 @@ import type {
 	TocDataRow,
 } from "$lib/db_data_types"
 import { error, json } from "@sveltejs/kit"
-import type { RequestHandler } from "../$types"
+import type { RequestHandler } from "./$types"
 
 function parseDateRange(dateRangeStr: string | null): DateRange | null {
 	if (!dateRangeStr) return null

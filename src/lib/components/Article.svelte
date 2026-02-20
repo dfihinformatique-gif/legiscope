@@ -28,9 +28,16 @@
 	import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
 	import {
 		assertNever,
+		buildArticlePortionTreeFromHtml,
+		extractActionDirectivesFromText,
 		newReverseTransformationsMergedFromPositionsIterator,
 		reversePositionsSplitFromPositions,
+		resolvePortionSelector,
 		simplifyHtml,
+		type ActionDirective,
+		type ArticlePortionAlinea,
+		type ArticlePortionMatch,
+		type ArticlePortionNode,
 		type FragmentPosition,
 		type FragmentReverseTransformation,
 	} from "@tricoteuses/tisseuse"
@@ -499,6 +506,19 @@
 	)
 
 	let showDiff = $state(false)
+	let showPjlDiff = $state(false)
+	const selectedPjlLine = $derived(shared.pjlSelectedLine)
+
+	$effect(() => {
+		const currentId = page.url.searchParams.get("article") ?? undefined
+		if (
+			!selectedPjlLine ||
+			!currentId ||
+			selectedPjlLine.articleId !== currentId
+		) {
+			showPjlDiff = false
+		}
+	})
 	const generateHtmlSplitDiff = (
 		previousHtml: string,
 		currentHtml: string,
@@ -820,11 +840,384 @@
 		return htmlFragments.join("")
 	}
 
+	type ProjectedHtmlResult =
+		| { html: string; reason?: undefined }
+		| { html: null; reason: string }
+
+	function escapeRegExp(text: string): string {
+		return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+	}
+
+	function findMatchInSimplifiedText(
+		text: string,
+		needle: string,
+	): FragmentPosition | null {
+		if (!needle) return null
+		const directIndex = text.indexOf(needle)
+		if (directIndex !== -1) {
+			return { start: directIndex, stop: directIndex + needle.length }
+		}
+
+		const pattern = escapeRegExp(needle).replace(/\s+/g, "\\s+")
+		const regex = new RegExp(pattern, "u")
+		const match = regex.exec(text)
+		if (!match || match.index === undefined) return null
+
+		return { start: match.index, stop: match.index + match[0].length }
+	}
+
+	function findTextPositionInHtml(
+		html: string,
+		needle: string,
+	): FragmentPosition | null {
+		const simplified = simplifyHtml()(html)
+		const match = findMatchInSimplifiedText(simplified.output, needle)
+		if (!match) return null
+		const iterator =
+			newReverseTransformationsMergedFromPositionsIterator(simplified)
+		const reversed = iterator.next(match).value
+		if (!reversed) return null
+		return reversed.position
+	}
+
+	const NBSP_ENTITY = "&nbsp;"
+
+	function skipHtmlWhitespace(html: string, index: number): number {
+		let i = index
+		while (i < html.length) {
+			if (html.startsWith(NBSP_ENTITY, i)) {
+				i += NBSP_ENTITY.length
+				continue
+			}
+			if (/\s/.test(html[i] ?? "")) {
+				i += 1
+				continue
+			}
+			break
+		}
+		return i
+	}
+
+	function hasHtmlWhitespaceBefore(html: string, index: number): boolean {
+		if (index <= 0) return false
+		const previousChar = html[index - 1] ?? ""
+		if (/\s/.test(previousChar)) return true
+		const start = Math.max(0, index - NBSP_ENTITY.length)
+		return html.slice(start, index) === NBSP_ENTITY
+	}
+
+	function peekFirstNonSpaceChar(html: string, index: number): string | null {
+		let i = skipHtmlWhitespace(html, index)
+		if (i >= html.length) return null
+		return html[i] ?? null
+	}
+
+	function isInsideAnchor(html: string, index: number): number | null {
+		const lastOpen = html.lastIndexOf("<a", index)
+		const lastClose = html.lastIndexOf("</a>", index)
+		if (lastOpen !== -1 && (lastClose === -1 || lastClose < lastOpen)) {
+			return lastOpen
+		}
+		return null
+	}
+
+	function getAfterAnchorIndex(html: string, stop: number): number {
+		const closeIndex = html.indexOf("</a>", stop)
+		if (closeIndex === -1) return stop
+		return closeIndex + "</a>".length
+	}
+
+	function buildInsertionText(
+		insert: string,
+		html: string,
+		index: number,
+		options: { allowLeadingSpace: boolean },
+	): string {
+		const trimmed = insert.trim()
+		const leadingSpaceNeeded =
+			options.allowLeadingSpace &&
+			!hasHtmlWhitespaceBefore(html, index) &&
+			!/^[,.;:!?]/.test(trimmed)
+		const firstAfter = peekFirstNonSpaceChar(html, index)
+		const needsTrailingSpace =
+			trimmed.length > 0 &&
+			!/\s$/.test(trimmed) &&
+			firstAfter !== null &&
+			!/[.,;:!?]/.test(firstAfter)
+		return `${leadingSpaceNeeded ? " " : ""}${trimmed}${
+			needsTrailingSpace ? " " : ""
+		}`
+	}
+
+	function escapeHtml(value: string): string {
+		return value
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+	}
+
+	function formatReplacementText(value: string): string {
+		const escaped = escapeHtml(value)
+		return escaped.replace(/\n+/g, "<br>")
+	}
+
+	function findParagraphBounds(
+		html: string,
+		paragraphIndex: number,
+	): { start: number; stop: number } | null {
+		let searchFrom = 0
+		let count = -1
+		const lower = html.toLowerCase()
+
+		while (true) {
+			const openIndex = lower.indexOf("<p", searchFrom)
+			if (openIndex === -1) return null
+			const openEnd = lower.indexOf(">", openIndex)
+			if (openEnd === -1) return null
+			const closeIndex = lower.indexOf("</p>", openEnd)
+			if (closeIndex === -1) return null
+
+			count += 1
+			if (count === paragraphIndex) {
+				return { start: openEnd + 1, stop: closeIndex }
+			}
+			searchFrom = closeIndex + 4
+		}
+	}
+
+	function getMatchAlinea(
+		match: ArticlePortionMatch,
+	): ArticlePortionAlinea | null {
+		const isAlinea = (node: ArticlePortionNode): node is ArticlePortionAlinea =>
+			node.type === "alinéa"
+
+		if ("node" in match && isAlinea(match.node)) {
+			return match.node
+		}
+		const path =
+			"path" in match ? match.path : "pathStart" in match ? match.pathStart : []
+		for (let i = path.length - 1; i >= 0; i -= 1) {
+			const node = path[i]
+			if (node.type === "alinéa") return node
+		}
+		return null
+	}
+
+	function applyReplacePortionActionToHtml(
+		html: string,
+		action: Extract<ActionDirective, { kind: "replace_portion" }>,
+	): ProjectedHtmlResult {
+		if (action.portionSelectors.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible de portion exploitable pour appliquer la modification.",
+			}
+		}
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		let match: ArticlePortionMatch | null = null
+		for (const selector of action.portionSelectors) {
+			match = resolvePortionSelector(article, selector)
+			if (match) break
+		}
+		if (!match) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const alinea = getMatchAlinea(match)
+		if (!alinea) {
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			}
+		}
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const targetText = alinea.text
+		const targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
+		if (!targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const replacementHtml = formatReplacementText(action.replacementText)
+		const updatedParagraph =
+			paragraphHtml.slice(0, targetPosition.start) +
+			replacementHtml +
+			paragraphHtml.slice(targetPosition.stop)
+
+		return {
+			html:
+				html.slice(0, bounds.start) +
+				updatedParagraph +
+				html.slice(bounds.stop),
+		}
+	}
+
+	function applyProjectActionToHtml(
+		html: string,
+		action: ActionDirective,
+	): ProjectedHtmlResult {
+		if (action.kind === "replace_portion") {
+			return applyReplacePortionActionToHtml(html, action)
+		}
+		if (action.kind === "delete_article") {
+			return {
+				html: null,
+				reason:
+					"Suppression d'article détectée, non prise en charge pour l'instant.",
+			}
+		}
+
+		const target =
+			action.kind === "insert_after" || action.kind === "insert_before"
+				? action.targetText
+				: action.kind === "replace" || action.kind === "delete"
+					? action.targetText
+					: undefined
+		if (!target) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible textuelle exploitable pour appliquer la modification.",
+			}
+		}
+		const targetPosition = findTextPositionInHtml(html, target)
+		if (!targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		if (action.kind === "replace") {
+			if (!action.replacementText) {
+				return {
+					html: null,
+					reason:
+						"Aucune valeur de remplacement trouvée pour appliquer la modification.",
+				}
+			}
+			return {
+				html:
+					html.slice(0, targetPosition.start) +
+					action.replacementText +
+					html.slice(targetPosition.stop),
+			}
+		}
+
+		if (action.kind === "delete") {
+			return {
+				html:
+					html.slice(0, targetPosition.start) + html.slice(targetPosition.stop),
+			}
+		}
+
+		const anchorStart = isInsideAnchor(html, targetPosition.start)
+		let insertionIndex =
+			action.kind === "insert_before"
+				? (anchorStart ?? targetPosition.start)
+				: anchorStart !== null
+					? getAfterAnchorIndex(html, targetPosition.stop)
+					: targetPosition.stop
+
+		let skippedComma = false
+		if (action.kind === "insert_after") {
+			let nextIndex = skipHtmlWhitespace(html, insertionIndex)
+			if ((html[nextIndex] ?? "") === ",") {
+				nextIndex += 1
+				nextIndex = skipHtmlWhitespace(html, nextIndex)
+				insertionIndex = nextIndex
+				skippedComma = true
+			}
+		}
+
+		const insertionText = buildInsertionText(
+			action.insertText,
+			html,
+			insertionIndex,
+			{ allowLeadingSpace: action.kind === "insert_before" || !skippedComma },
+		)
+
+		return {
+			html:
+				html.slice(0, insertionIndex) +
+				insertionText +
+				html.slice(insertionIndex),
+		}
+	}
+
+	function applyProjectActionsToHtml(
+		html: string,
+		directives: ActionDirective[],
+	): ProjectedHtmlResult {
+		let currentHtml = html
+		const ordered = [...directives].sort(
+			(a, b) => a.sourcePosition.start - b.sourcePosition.start,
+		)
+
+		for (const directive of ordered) {
+			const result = applyProjectActionToHtml(currentHtml, directive)
+			if (result.html === null) return result
+			currentHtml = result.html
+		}
+		return { html: currentHtml }
+	}
+
+	const projectedHtmlResult = $derived.by(() => {
+		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
+		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
+		const directives = extractActionDirectivesFromText(sourceText)
+		if (directives.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			} satisfies ProjectedHtmlResult
+		}
+		return applyProjectActionsToHtml(currentBlocTextuel, directives)
+	})
+
 	const diffContent = $derived.by(() => {
 		if (showDiff === true && currentBlocTextuel && previousBlocTextuel) {
 			return generateHtmlSplitDiff(previousBlocTextuel, currentBlocTextuel)
 		}
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Il n'y a pas de version précédente à comparer</div>`
+	})
+
+	const pjlDiffContent = $derived.by(() => {
+		if (showPjlDiff === true && currentBlocTextuel && selectedPjlLine?.text) {
+			if (projectedHtmlResult?.html) {
+				return generateHtmlSplitDiff(
+					currentBlocTextuel,
+					projectedHtmlResult.html,
+				)
+			}
+			if (projectedHtmlResult && projectedHtmlResult.html === null) {
+				return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">${projectedHtmlResult.reason}</div>`
+			}
+			return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'a pu être construite</div>`
+		}
+		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'est sélectionnée</div>`
 	})
 
 	onMount(() => {
@@ -1311,6 +1704,33 @@
 					</div>
 				{/if}
 
+				{#if selectedPjlLine && page.url.searchParams.get("article") === selectedPjlLine.articleId}
+					<div
+						class="my-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+					>
+						<div class="text-xs font-semibold text-amber-800 uppercase">
+							Disposition du projet
+						</div>
+						<div class="mt-2 text-sm text-amber-900">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html selectedPjlLine.html}
+						</div>
+						<div class="mt-3 flex items-center justify-end">
+							<button
+								class="rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+								onclick={() => {
+									showPjlDiff = !showPjlDiff
+									if (showPjlDiff) showDiff = false
+								}}
+							>
+								{showPjlDiff
+									? "Masquer le diff projeté"
+									: "Comparer au texte en vigueur"}
+							</button>
+						</div>
+					</div>
+				{/if}
+
 				{#if showDiff === true}
 					{#if showDiff === true && currentBlocTextuel && previousBlocTextuel}
 						<div
@@ -1346,6 +1766,13 @@
 							-->
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html diffContent}
+					</div>
+				{:else if showPjlDiff === true}
+					<div
+						class="rounded-b-md bg-amber-50 px-5 py-4 font-serif text-lg leading-8 md:text-left"
+					>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html pjlDiffContent}
 					</div>
 				{:else if showDiff === false && currentBlocTextuel !== undefined && currentBlocTextuel !== null}
 					<div class="font-serif text-lg leading-8 md:text-left">
