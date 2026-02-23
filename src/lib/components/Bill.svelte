@@ -91,6 +91,8 @@
 		collected.push(start)
 
 		let inQuoteBlock = startText.includes("«")
+		const colonMode = !inQuoteBlock && startText.endsWith(":")
+		let listMode = false
 		if (!inQuoteBlock && !startText.endsWith(":")) {
 			return {
 				html: collected.map((node) => node.outerHTML).join("\n"),
@@ -99,6 +101,11 @@
 					.join("\n"),
 			}
 		}
+
+		const listItemRe =
+			/^\s*(?:\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
+		const topLevelRomanRe =
+			/^\s*[IVXLCDM]+\s*(?:\.|–|-)\s+/u
 
 		for (let i = startIndex + 1; i < nodes.length; i += 1) {
 			const node = nodes[i]
@@ -115,6 +122,35 @@
 				text.length === 0 || isMarkerCell || isPastille || isShortMarker
 
 			if (!inQuoteBlock) {
+				if (colonMode && !listMode) {
+					if (hasOpenQuote) {
+						inQuoteBlock = true
+						collected.push(node)
+						if (hasCloseQuote) inQuoteBlock = false
+						continue
+					}
+					if (isSkippableBeforeQuote) {
+						continue
+					}
+					if (listItemRe.test(text)) {
+						listMode = true
+						collected.push(node)
+						continue
+					}
+					break
+				}
+
+				if (listMode) {
+					if (isSkippableBeforeQuote) {
+						continue
+					}
+					if (topLevelRomanRe.test(text)) {
+						break
+					}
+					collected.push(node)
+					continue
+				}
+
 				if (hasOpenQuote) {
 					inQuoteBlock = true
 				} else if (isSkippableBeforeQuote) {

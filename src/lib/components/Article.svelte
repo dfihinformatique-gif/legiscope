@@ -898,6 +898,21 @@
 		return i
 	}
 
+	function skipHtmlBreaksForward(html: string, index: number): number {
+		let i = index
+		while (i < html.length) {
+			i = skipHtmlWhitespace(html, i)
+			if (html.slice(i, i + 3).toLowerCase() === "<br") {
+				const end = html.indexOf(">", i)
+				if (end === -1) break
+				i = end + 1
+				continue
+			}
+			break
+		}
+		return i
+	}
+
 	function hasHtmlWhitespaceBefore(html: string, index: number): boolean {
 		if (index <= 0) return false
 		const previousChar = html[index - 1] ?? ""
@@ -961,6 +976,10 @@
 		return escaped.replace(/\n+/g, "<br>")
 	}
 
+	function formatInsertionInline(value: string): string {
+		return formatReplacementText(value).trim()
+	}
+
 	function findParagraphBounds(
 		html: string,
 		paragraphIndex: number,
@@ -1003,6 +1022,35 @@
 		return null
 	}
 
+	function getMatchItem(
+		match: ArticlePortionMatch,
+	): ArticlePortionNode | null {
+		if ("node" in match && match.node.type === "item") {
+			return match.node
+		}
+		const path =
+			"path" in match ? match.path : "pathStart" in match ? match.pathStart : []
+		for (let i = path.length - 1; i >= 0; i -= 1) {
+			const node = path[i]
+			if (node.type === "item") return node
+		}
+		return null
+	}
+
+	function resolveReplacementAlinea(
+		match: ArticlePortionMatch,
+	): ArticlePortionAlinea | null {
+		const nodes: ArticlePortionNode[] =
+			"node" in match ? [match.node] : [match.start]
+		for (const node of nodes) {
+			const alineaCandidates = collectAlineasDeep(node)
+			if (alineaCandidates.length > 0) {
+				return alineaCandidates[0]
+			}
+		}
+		return getMatchAlinea(match)
+	}
+
 	function applyReplacePortionActionToHtml(
 		html: string,
 		action: Extract<ActionDirective, { kind: "replace_portion" }>,
@@ -1029,7 +1077,7 @@
 			}
 		}
 
-		const alinea = getMatchAlinea(match)
+		const alinea = resolveReplacementAlinea(match)
 		if (!alinea) {
 			return {
 				html: null,
@@ -1049,7 +1097,26 @@
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
 		const targetText = alinea.text
-		const targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
+		let targetPosition: FragmentPosition | null = null
+
+		const matchItem = getMatchItem(match)
+		if (matchItem && matchItem.type === "item" && matchItem.num) {
+			const itemLabel = matchItem.num
+			const labelNeedles = [
+				`${itemLabel}. - ${targetText}`,
+				`${itemLabel}. – ${targetText}`,
+				`${itemLabel}. — ${targetText}`,
+				`${itemLabel}.- ${targetText}`,
+			]
+			for (const needle of labelNeedles) {
+				targetPosition = findTextPositionInHtml(paragraphHtml, needle)
+				if (targetPosition) break
+			}
+		}
+
+		if (!targetPosition) {
+			targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
+		}
 		if (!targetPosition) {
 			return {
 				html: null,
@@ -1072,6 +1139,139 @@
 		}
 	}
 
+	function collectAlineasDeep(
+		node: ArticlePortionNode,
+	): ArticlePortionAlinea[] {
+		if (node.type === "alinéa") return [node]
+		if ("children" in node) {
+			return node.children.flatMap((child) => collectAlineasDeep(child))
+		}
+		return []
+	}
+
+	function resolveInsertionAlinea(
+		match: ArticlePortionMatch,
+		kind: "insert_after" | "insert_before",
+	): ArticlePortionAlinea | null {
+		const nodes: ArticlePortionNode[] =
+			"node" in match
+				? [match.node]
+				: [kind === "insert_after" ? match.end : match.start]
+		for (const node of nodes) {
+			const alineaCandidates = collectAlineasDeep(node)
+			if (alineaCandidates.length > 0) {
+				return kind === "insert_after"
+					? alineaCandidates[alineaCandidates.length - 1]
+					: alineaCandidates[0]
+			}
+		}
+		return getMatchAlinea(match)
+	}
+
+	function formatInsertionParagraphs(value: string): string {
+		const blocks = value
+			.split(/\n{2,}/)
+			.map((block) => block.trim())
+			.filter((block) => block.length > 0)
+		if (blocks.length === 0) return ""
+		return blocks
+			.map((block) => `<p>${formatReplacementText(block)}</p>`)
+			.join("")
+	}
+
+	function applyInsertPortionActionToHtml(
+		html: string,
+		action: Extract<ActionDirective, { kind: "insert_after" | "insert_before" }>,
+	): ProjectedHtmlResult {
+		if (action.portionSelectors.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible de portion exploitable pour appliquer la modification.",
+			}
+		}
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		let match: ArticlePortionMatch | null = null
+		for (const selector of action.portionSelectors) {
+			match = resolvePortionSelector(article, selector)
+			if (match) break
+		}
+		if (!match) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const alinea = resolveInsertionAlinea(match, action.kind)
+		if (!alinea) {
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			}
+		}
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const targetPosition = findTextPositionInHtml(paragraphHtml, alinea.text)
+		if (targetPosition) {
+			const formatted = formatInsertionInline(action.insertText)
+			if (!formatted) {
+				return {
+					html: null,
+					reason:
+						"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+				}
+			}
+			const absoluteTargetStart = bounds.start + targetPosition.start
+			const absoluteTargetStop = bounds.start + targetPosition.stop
+			const baseIndex =
+				action.kind === "insert_before" ? absoluteTargetStart : absoluteTargetStop
+			const insertionIndex =
+				action.kind === "insert_after"
+					? skipHtmlBreaksForward(html, baseIndex)
+					: baseIndex
+			const needsLeadingBreaks = insertionIndex === baseIndex
+			const insertionHtml = `${needsLeadingBreaks ? "<br><br>" : ""}${formatted}<br><br>`
+			return {
+				html:
+					html.slice(0, insertionIndex) +
+					insertionHtml +
+					html.slice(insertionIndex),
+			}
+		}
+
+		const insertionHtml = formatInsertionParagraphs(action.insertText)
+		if (!insertionHtml) {
+			return {
+				html: null,
+				reason:
+					"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+			}
+		}
+
+		const insertionIndex =
+			action.kind === "insert_before" ? bounds.start : bounds.stop + 4
+
+		return {
+			html:
+				html.slice(0, insertionIndex) +
+				insertionHtml +
+				html.slice(insertionIndex),
+		}
+	}
+
 	function applyProjectActionToHtml(
 		html: string,
 		action: ActionDirective,
@@ -1085,6 +1285,13 @@
 				reason:
 					"Suppression d'article détectée, non prise en charge pour l'instant.",
 			}
+		}
+
+		if (
+			(action.kind === "insert_after" || action.kind === "insert_before") &&
+			!action.targetText
+		) {
+			return applyInsertPortionActionToHtml(html, action)
 		}
 
 		const target =
