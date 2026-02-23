@@ -90,7 +90,9 @@
 		const startText = normalizeLineText(start.textContent)
 		collected.push(start)
 
-		let inQuoteBlock = startText.includes("«")
+		const startHasOpenQuote = startText.includes("«")
+		const startHasCloseQuote = startText.includes("»")
+		let inQuoteBlock = startHasOpenQuote && !startHasCloseQuote
 		const colonMode = !inQuoteBlock && startText.endsWith(":")
 		let listMode = false
 		if (!inQuoteBlock && !startText.endsWith(":")) {
