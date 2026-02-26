@@ -34,6 +34,7 @@
 		reversePositionsSplitFromPositions,
 		resolvePortionSelector,
 		simplifyHtml,
+		simplifyPlainText,
 		type ActionDirective,
 		type ArticlePortionAlinea,
 		type ArticlePortionMatch,
@@ -898,21 +899,6 @@
 		return i
 	}
 
-	function skipHtmlBreaksForward(html: string, index: number): number {
-		let i = index
-		while (i < html.length) {
-			i = skipHtmlWhitespace(html, i)
-			if (html.slice(i, i + 3).toLowerCase() === "<br") {
-				const end = html.indexOf(">", i)
-				if (end === -1) break
-				i = end + 1
-				continue
-			}
-			break
-		}
-		return i
-	}
-
 	function hasHtmlWhitespaceBefore(html: string, index: number): boolean {
 		if (index <= 0) return false
 		const previousChar = html[index - 1] ?? ""
@@ -1022,9 +1008,7 @@
 		return null
 	}
 
-	function getMatchItem(
-		match: ArticlePortionMatch,
-	): ArticlePortionNode | null {
+	function getMatchItem(match: ArticlePortionMatch): ArticlePortionNode | null {
 		if ("node" in match && match.node.type === "item") {
 			return match.node
 		}
@@ -1103,6 +1087,101 @@
 		if (matchItem && matchItem.type === "item" && matchItem.num) {
 			const itemLabel = matchItem.num
 			const labelNeedles = [
+				`${itemLabel} ${targetText}`,
+				/^\d+$/.test(itemLabel) ? `${itemLabel}° ${targetText}` : null,
+				`${itemLabel}) ${targetText}`,
+				`${itemLabel}. ${targetText}`,
+				`${itemLabel} - ${targetText}`,
+				`${itemLabel} – ${targetText}`,
+				`${itemLabel} — ${targetText}`,
+				`${itemLabel}. - ${targetText}`,
+				`${itemLabel}. – ${targetText}`,
+				`${itemLabel}. — ${targetText}`,
+				`${itemLabel}.- ${targetText}`,
+			].filter((needle): needle is string => Boolean(needle))
+			for (const needle of labelNeedles) {
+				targetPosition = findTextPositionInHtml(paragraphHtml, needle)
+				if (targetPosition) break
+			}
+		}
+
+		if (!targetPosition) {
+			targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
+		}
+		if (!targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const replacementHtml = formatReplacementText(action.replacementText)
+		const updatedParagraph =
+			paragraphHtml.slice(0, targetPosition.start) +
+			replacementHtml +
+			paragraphHtml.slice(targetPosition.stop)
+
+		return {
+			html:
+				html.slice(0, bounds.start) +
+				updatedParagraph +
+				html.slice(bounds.stop),
+		}
+	}
+
+	function applyDeletePortionActionToHtml(
+		html: string,
+		action: Extract<ActionDirective, { kind: "delete_portion" }>,
+	): ProjectedHtmlResult {
+		if (action.portionSelectors.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible de portion exploitable pour appliquer la modification.",
+			}
+		}
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		let match: ArticlePortionMatch | null = null
+		for (const selector of action.portionSelectors) {
+			match = resolvePortionSelector(article, selector)
+			if (match) break
+		}
+		if (!match) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const alinea = resolveReplacementAlinea(match)
+		if (!alinea) {
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			}
+		}
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const targetText = alinea.text
+		let targetPosition: FragmentPosition | null = null
+
+		const matchItem = getMatchItem(match)
+		if (matchItem && matchItem.type === "item" && matchItem.num) {
+			const itemLabel = matchItem.num
+			const labelNeedles = [
 				`${itemLabel}. - ${targetText}`,
 				`${itemLabel}. – ${targetText}`,
 				`${itemLabel}. — ${targetText}`,
@@ -1125,10 +1204,8 @@
 			}
 		}
 
-		const replacementHtml = formatReplacementText(action.replacementText)
 		const updatedParagraph =
 			paragraphHtml.slice(0, targetPosition.start) +
-			replacementHtml +
 			paragraphHtml.slice(targetPosition.stop)
 
 		return {
@@ -1181,7 +1258,10 @@
 
 	function applyInsertPortionActionToHtml(
 		html: string,
-		action: Extract<ActionDirective, { kind: "insert_after" | "insert_before" }>,
+		action: Extract<
+			ActionDirective,
+			{ kind: "insert_after" | "insert_before" }
+		>,
 	): ProjectedHtmlResult {
 		if (action.portionSelectors.length === 0) {
 			return {
@@ -1224,7 +1304,58 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
-		const targetPosition = findTextPositionInHtml(paragraphHtml, alinea.text)
+		const targetPosition = action.targetText
+			? findTextPositionInHtml(paragraphHtml, action.targetText)
+			: findTextPositionInHtml(paragraphHtml, alinea.text)
+
+		const shouldInlineCompletion = (sourceText: string): boolean => {
+			const normalized = sourceText
+				.toLowerCase()
+				.normalize("NFD")
+				.replace(/\p{Diacritic}/gu, "")
+			return /\bcomplet/.test(normalized)
+		}
+
+		const findCompletionInsertionIndex = (): number | null => {
+			const simplifiedParagraph = simplifyHtml()(paragraphHtml)
+			const simplifiedAlinea = simplifyPlainText(alinea.text)
+			const match = findMatchInSimplifiedText(
+				simplifiedParagraph.output,
+				simplifiedAlinea.output,
+			)
+			if (!match) return null
+
+			const trailingPunctuation = /[.;:!?]\s*$/.exec(simplifiedAlinea.output)
+			const insertionOffset =
+				trailingPunctuation && trailingPunctuation.index >= 0
+					? trailingPunctuation.index
+					: simplifiedAlinea.output.length
+			const insertionPosition = match.start + insertionOffset
+			const reversedPositions = reversePositionsSplitFromPositions(
+				simplifiedParagraph,
+				[{ start: insertionPosition, stop: insertionPosition }],
+			)
+			const firstPosition = reversedPositions[0]?.[0]
+			return firstPosition ? bounds.start + firstPosition.start : null
+		}
+
+		const insertInlineAtIndex = (index: number): ProjectedHtmlResult => {
+			const insertionText = buildInsertionText(action.insertText, html, index, {
+				allowLeadingSpace: true,
+			})
+			return {
+				html: html.slice(0, index) + insertionText + html.slice(index),
+			}
+		}
+
+		if (action.targetText && !targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
 		if (targetPosition) {
 			const formatted = formatInsertionInline(action.insertText)
 			if (!formatted) {
@@ -1234,20 +1365,46 @@
 						"Aucune valeur d'insertion trouvée pour appliquer la modification.",
 				}
 			}
+
+			if (!action.targetText && shouldInlineCompletion(action.sourceText)) {
+				const completionIndex = findCompletionInsertionIndex()
+				if (completionIndex !== null) {
+					return insertInlineAtIndex(completionIndex)
+				}
+			}
+
 			const absoluteTargetStart = bounds.start + targetPosition.start
 			const absoluteTargetStop = bounds.start + targetPosition.stop
-			const baseIndex =
-				action.kind === "insert_before" ? absoluteTargetStart : absoluteTargetStop
-			const insertionIndex =
-				action.kind === "insert_after"
-					? skipHtmlBreaksForward(html, baseIndex)
-					: baseIndex
-			const needsLeadingBreaks = insertionIndex === baseIndex
-			const insertionHtml = `${needsLeadingBreaks ? "<br><br>" : ""}${formatted}<br><br>`
+			const anchorStart = isInsideAnchor(html, absoluteTargetStart)
+			let insertionIndex =
+				action.kind === "insert_before"
+					? (anchorStart ?? absoluteTargetStart)
+					: anchorStart !== null
+						? getAfterAnchorIndex(html, absoluteTargetStop)
+						: absoluteTargetStop
+
+			let skippedComma = false
+			if (action.kind === "insert_after") {
+				let nextIndex = skipHtmlWhitespace(html, insertionIndex)
+				if ((html[nextIndex] ?? "") === ",") {
+					nextIndex += 1
+					nextIndex = skipHtmlWhitespace(html, nextIndex)
+					insertionIndex = nextIndex
+					skippedComma = true
+				}
+			}
+
+			const insertionText = buildInsertionText(
+				action.insertText,
+				html,
+				insertionIndex,
+				{ allowLeadingSpace: action.kind === "insert_before" || !skippedComma },
+			)
+
 			return {
 				html:
 					html.slice(0, insertionIndex) +
-					insertionHtml +
+					insertionText +
 					html.slice(insertionIndex),
 			}
 		}
@@ -1279,19 +1436,17 @@
 		if (action.kind === "replace_portion") {
 			return applyReplacePortionActionToHtml(html, action)
 		}
+		if (action.kind === "delete_portion") {
+			return applyDeletePortionActionToHtml(html, action)
+		}
 		if (action.kind === "delete_article") {
-			return {
-				html: null,
-				reason:
-					"Suppression d'article détectée, non prise en charge pour l'instant.",
-			}
+			return { html: "" }
 		}
 
-		if (
-			(action.kind === "insert_after" || action.kind === "insert_before") &&
-			!action.targetText
-		) {
-			return applyInsertPortionActionToHtml(html, action)
+		if (action.kind === "insert_after" || action.kind === "insert_before") {
+			if (action.portionSelectors.length > 0) {
+				return applyInsertPortionActionToHtml(html, action)
+			}
 		}
 
 		const target =

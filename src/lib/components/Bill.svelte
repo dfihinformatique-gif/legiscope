@@ -95,6 +95,8 @@
 		let inQuoteBlock = startHasOpenQuote && !startHasCloseQuote
 		const colonMode = !inQuoteBlock && startText.endsWith(":")
 		let listMode = false
+		let listRoot: Element | null = null
+		const listStartLevel = getListMarkerLevel(startText)
 		if (!inQuoteBlock && !startText.endsWith(":")) {
 			return {
 				html: collected.map((node) => node.outerHTML).join("\n"),
@@ -104,11 +106,17 @@
 			}
 		}
 
-		const listItemRe =
-			/^\s*(?:\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
-		const topLevelRomanRe =
-			/^\s*[IVXLCDM]+\s*(?:\.|–|-)\s+/u
-
+		const listItemRe = /^\s*(?:\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
+		function getListMarkerLevel(text: string): number | null {
+			const match = /^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\))\s+/u.exec(text)
+			if (!match) return null
+			const marker = match[1] ?? ""
+			if (!marker) return null
+			if (/^[IVXLCDM]+$/i.test(marker)) return 1
+			if (/^\d+$/u.test(marker)) return 2
+			if (/^[a-zA-Z]$/u.test(marker)) return 3
+			return null
+		}
 		for (let i = startIndex + 1; i < nodes.length; i += 1) {
 			const node = nodes[i]
 			const text = normalizeLineText(node.textContent)
@@ -118,14 +126,13 @@
 			const isPastille =
 				node.classList.contains("pastille") ||
 				node.getAttribute("data-pastille") !== null
-			const isShortMarker =
-				text.length <= 2 && !/[\p{L}\p{N}]/u.test(text)
+			const isShortMarker = text.length <= 2 && !/[\p{L}\p{N}]/u.test(text)
 			const isSkippableBeforeQuote =
 				text.length === 0 || isMarkerCell || isPastille || isShortMarker
 
 			if (!inQuoteBlock) {
 				if (colonMode && !listMode) {
-					if (hasOpenQuote) {
+					if (hasOpenQuote && !hasCloseQuote) {
 						inQuoteBlock = true
 						collected.push(node)
 						if (hasCloseQuote) inQuoteBlock = false
@@ -136,6 +143,9 @@
 					}
 					if (listItemRe.test(text)) {
 						listMode = true
+						if (!listRoot) {
+							listRoot = node.closest("ol, ul")
+						}
 						collected.push(node)
 						continue
 					}
@@ -143,12 +153,14 @@
 				}
 
 				if (listMode) {
-					if (isSkippableBeforeQuote) {
-						continue
+					if (listRoot && !listRoot.contains(node)) break
+					if (listStartLevel !== null && listItemRe.test(text)) {
+						const currentLevel = getListMarkerLevel(text)
+						if (currentLevel !== null && currentLevel <= listStartLevel) {
+							break
+						}
 					}
-					if (topLevelRomanRe.test(text)) {
-						break
-					}
+					if (isSkippableBeforeQuote) continue
 					collected.push(node)
 					continue
 				}
