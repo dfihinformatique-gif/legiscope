@@ -526,6 +526,26 @@
 	): string => {
 		const ATOMIC_SPACE_MARKER = "_"
 
+		const normalizeForContainment = (value: string): string =>
+			value
+				.toLowerCase()
+				.normalize("NFD")
+				.replace(/\p{Diacritic}/gu, "")
+				.replace(/[’']/g, "'")
+				.replace(/[^\p{L}\p{N}]+/gu, " ")
+				.replace(/\s+/g, " ")
+				.trim()
+
+		const isLikelyInsertion = (removed: string, added: string): boolean => {
+			const normalizedRemoved = normalizeForContainment(removed)
+			const normalizedAdded = normalizeForContainment(added)
+			if (!normalizedRemoved || !normalizedAdded) return false
+			return (
+				normalizedAdded.includes(normalizedRemoved) ||
+				normalizedRemoved.includes(normalizedAdded)
+			)
+		}
+
 		const protectLinks = (html: string): string => {
 			return html.replace(
 				/(<a\b[^>]*>)(.*?)(<\/a>)/gis,
@@ -611,7 +631,10 @@
 						}
 						const changeRatio = totalChars > 0 ? changedChars / totalChars : 0
 
-						if (changeRatio < 0.4) {
+						const shouldInline =
+							changeRatio < 0.4 ||
+							isLikelyInsertion(removedSentence, addedSentence)
+						if (shouldInline) {
 							reworkedChanges.pop()
 							reworkedChanges.push(...wordChanges)
 						} else {
@@ -1323,14 +1346,27 @@
 				simplifiedParagraph.output,
 				simplifiedAlinea.output,
 			)
-			if (!match) return null
+			if (match) {
+				const trailingPunctuation = /[.;:!?]\s*$/.exec(simplifiedAlinea.output)
+				const insertionOffset =
+					trailingPunctuation && trailingPunctuation.index >= 0
+						? trailingPunctuation.index
+						: simplifiedAlinea.output.length
+				const insertionPosition = match.start + insertionOffset
+				const reversedPositions = reversePositionsSplitFromPositions(
+					simplifiedParagraph,
+					[{ start: insertionPosition, stop: insertionPosition }],
+				)
+				const firstPosition = reversedPositions[0]?.[0]
+				return firstPosition ? bounds.start + firstPosition.start : null
+			}
 
-			const trailingPunctuation = /[.;:!?]\s*$/.exec(simplifiedAlinea.output)
-			const insertionOffset =
-				trailingPunctuation && trailingPunctuation.index >= 0
-					? trailingPunctuation.index
-					: simplifiedAlinea.output.length
-			const insertionPosition = match.start + insertionOffset
+			const trimmedParagraph = simplifiedParagraph.output.replace(/\s+$/g, "")
+			if (!trimmedParagraph) return null
+			const lastChar = trimmedParagraph[trimmedParagraph.length - 1] ?? ""
+			if (!/[.;:!?]/.test(lastChar)) return null
+
+			const insertionPosition = trimmedParagraph.length - 1
 			const reversedPositions = reversePositionsSplitFromPositions(
 				simplifiedParagraph,
 				[{ start: insertionPosition, stop: insertionPosition }],
