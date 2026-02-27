@@ -882,7 +882,10 @@
 			return { start: directIndex, stop: directIndex + needle.length }
 		}
 
-		const pattern = escapeRegExp(needle).replace(/\s+/g, "\\s+")
+		const pattern = escapeRegExp(needle)
+			.replace(/articles?/gi, "article[s]?")
+			.replace(/[’']/g, "['’]")
+			.replace(/\s+/g, "\\s+")
 		const regex = new RegExp(pattern, "u")
 		const match = regex.exec(text)
 		if (!match || match.index === undefined) return null
@@ -1013,6 +1016,65 @@
 		}
 	}
 
+	function findBlockBoundsFromIndex(
+		html: string,
+		index: number,
+	): { start: number; stop: number } | null {
+		const tags = ["p", "li"]
+		let best: { start: number; stop: number } | null = null
+		const lower = html.toLowerCase()
+		for (const tag of tags) {
+			const open = lower.lastIndexOf(`<${tag}`, index)
+			if (open === -1) continue
+			const close = lower.indexOf(`</${tag}>`, index)
+			if (close === -1) continue
+			const candidate = { start: open, stop: close + tag.length + 3 }
+			if (!best || candidate.start > best.start) {
+				best = candidate
+			}
+		}
+		return best
+	}
+
+	function findBlockBoundsForNeedles(
+		html: string,
+		needles: string[],
+	): { start: number; stop: number } | null {
+		for (const needle of needles) {
+			const position = findTextPositionInHtml(html, needle)
+			if (!position) continue
+			const bounds = findBlockBoundsFromIndex(html, position.start)
+			if (bounds) return bounds
+		}
+		return null
+	}
+
+	function findItemLabelBounds(
+		html: string,
+		steps: Array<{ type: string; num?: string }> | undefined,
+	): { start: number; stop: number } | null {
+		const lastStep = steps && steps.length > 0 ? steps[steps.length - 1] : null
+		if (!lastStep || lastStep.type !== "item" || !lastStep.num) return null
+		const variants = Array.from(
+			new Set([
+				lastStep.num,
+				lastStep.num.toLowerCase(),
+				lastStep.num.toUpperCase(),
+			]),
+		)
+		const needles = variants.flatMap((label) => [
+			`${label}. `,
+			`${label}) `,
+			`${label}.- `,
+			`${label}. – `,
+			`${label}. — `,
+			`${label} - `,
+			`${label} – `,
+			`${label} — `,
+		])
+		return findBlockBoundsForNeedles(html, needles)
+	}
+
 	function getMatchAlinea(
 		match: ArticlePortionMatch,
 	): ArticlePortionAlinea | null {
@@ -1077,6 +1139,15 @@
 			if (match) break
 		}
 		if (!match) {
+			const bounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (bounds) {
+				return {
+					html: html.slice(0, bounds.start) + html.slice(bounds.stop),
+				}
+			}
 			return {
 				html: null,
 				reason:
@@ -1086,6 +1157,15 @@
 
 		const alinea = resolveReplacementAlinea(match)
 		if (!alinea) {
+			const bounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (bounds) {
+				return {
+					html: html.slice(0, bounds.start) + html.slice(bounds.stop),
+				}
+			}
 			return {
 				html: null,
 				reason:
@@ -1095,6 +1175,17 @@
 
 		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
 		if (!bounds) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
 			return {
 				html: null,
 				reason:
@@ -1103,6 +1194,28 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const lastStep = action.portionSelectors[0]?.steps.at(-1)
+		if (lastStep && lastStep.type === "item" && lastStep.num) {
+			const label = lastStep.num.toLowerCase()
+			if (/^[a-z]$/.test(label)) {
+				const normalized = paragraphHtml
+					.toLowerCase()
+					.replace(/[\s\u00a0]+/g, " ")
+				if (!normalized.includes(`${label}.`)) {
+					const fallbackBounds = findItemLabelBounds(
+						html,
+						action.portionSelectors[0]?.steps,
+					)
+					if (fallbackBounds) {
+						return {
+							html:
+								html.slice(0, fallbackBounds.start) +
+								html.slice(fallbackBounds.stop),
+						}
+					}
+				}
+			}
+		}
 		const targetText = alinea.text
 		let targetPosition: FragmentPosition | null = null
 
@@ -1132,6 +1245,17 @@
 			targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
 		}
 		if (!targetPosition) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
 			return {
 				html: null,
 				reason:
@@ -1172,11 +1296,183 @@
 			if (match) break
 		}
 		if (!match) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
 			return {
 				html: null,
 				reason:
 					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
 			}
+		}
+
+		const alinea = resolveReplacementAlinea(match)
+		if (!alinea) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			}
+		}
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const targetText = alinea.text
+		let targetPosition: FragmentPosition | null = null
+
+		const matchItem = getMatchItem(match)
+		if (matchItem && matchItem.type === "item" && matchItem.num) {
+			const itemLabel = matchItem.num
+			const labelNeedles = [
+				`${itemLabel}. ${targetText}`,
+				`${itemLabel}. - ${targetText}`,
+				`${itemLabel}. – ${targetText}`,
+				`${itemLabel}. — ${targetText}`,
+				`${itemLabel}.- ${targetText}`,
+			]
+			for (const needle of labelNeedles) {
+				targetPosition = findTextPositionInHtml(paragraphHtml, needle)
+				if (targetPosition) break
+			}
+			const normalizedParagraph = paragraphHtml
+				.toLowerCase()
+				.replace(/[\s\u00a0]+/g, " ")
+			if (
+				!targetPosition &&
+				/^[a-z]$/i.test(itemLabel) &&
+				!normalizedParagraph.includes(`${itemLabel.toLowerCase()}.`)
+			) {
+				const fallbackBounds = findItemLabelBounds(
+					html,
+					action.portionSelectors[0]?.steps,
+				)
+				if (fallbackBounds) {
+					return {
+						html:
+							html.slice(0, fallbackBounds.start) +
+							html.slice(fallbackBounds.stop),
+					}
+				}
+			}
+		}
+
+		if (!targetPosition) {
+			targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
+		}
+		if (!targetPosition) {
+			const fallbackBounds = findItemLabelBounds(
+				html,
+				action.portionSelectors[0]?.steps,
+			)
+			if (fallbackBounds) {
+				return {
+					html:
+						html.slice(0, fallbackBounds.start) +
+						html.slice(fallbackBounds.stop),
+				}
+			}
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const updatedParagraph =
+			paragraphHtml.slice(0, targetPosition.start) +
+			paragraphHtml.slice(targetPosition.stop)
+
+		return {
+			html:
+				html.slice(0, bounds.start) +
+				updatedParagraph +
+				html.slice(bounds.stop),
+		}
+	}
+
+	function deleteTextInHtml(
+		html: string,
+		targetText: string,
+	): ProjectedHtmlResult {
+		const targetPosition = findTextPositionInHtml(html, targetText)
+		if (!targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+		return {
+			html:
+				html.slice(0, targetPosition.start) + html.slice(targetPosition.stop),
+		}
+	}
+
+	function applyDeletePortionTextActionToHtml(
+		html: string,
+		action: Extract<ActionDirective, { kind: "delete" }>,
+	): ProjectedHtmlResult {
+		if (action.portionSelectors.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible de portion exploitable pour appliquer la modification.",
+			}
+		}
+		if (!action.targetText) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible textuelle exploitable pour appliquer la modification.",
+			}
+		}
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		let match: ArticlePortionMatch | null = null
+		for (const selector of action.portionSelectors) {
+			match = resolvePortionSelector(article, selector)
+			if (match) break
+		}
+		if (!match) {
+			return deleteTextInHtml(html, action.targetText)
 		}
 
 		const alinea = resolveReplacementAlinea(match)
@@ -1198,33 +1494,12 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
-		const targetText = alinea.text
-		let targetPosition: FragmentPosition | null = null
-
-		const matchItem = getMatchItem(match)
-		if (matchItem && matchItem.type === "item" && matchItem.num) {
-			const itemLabel = matchItem.num
-			const labelNeedles = [
-				`${itemLabel}. - ${targetText}`,
-				`${itemLabel}. – ${targetText}`,
-				`${itemLabel}. — ${targetText}`,
-				`${itemLabel}.- ${targetText}`,
-			]
-			for (const needle of labelNeedles) {
-				targetPosition = findTextPositionInHtml(paragraphHtml, needle)
-				if (targetPosition) break
-			}
-		}
-
+		const targetPosition = findTextPositionInHtml(
+			paragraphHtml,
+			action.targetText,
+		)
 		if (!targetPosition) {
-			targetPosition = findTextPositionInHtml(paragraphHtml, targetText)
-		}
-		if (!targetPosition) {
-			return {
-				html: null,
-				reason:
-					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
-			}
+			return deleteTextInHtml(html, action.targetText)
 		}
 
 		const updatedParagraph =
@@ -1478,6 +1753,9 @@
 		if (action.kind === "delete_article") {
 			return { html: "" }
 		}
+		if (action.kind === "delete" && action.portionSelectors.length > 0) {
+			return applyDeletePortionTextActionToHtml(html, action)
+		}
 
 		if (action.kind === "insert_after" || action.kind === "insert_before") {
 			if (action.portionSelectors.length > 0) {
@@ -1584,7 +1862,25 @@
 	const projectedHtmlResult = $derived.by(() => {
 		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
 		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
-		const directives = extractActionDirectivesFromText(sourceText)
+		const rawDirectives = extractActionDirectivesFromText(sourceText)
+		const hasNonDeleteArticle = rawDirectives.some(
+			(directive) => directive.kind !== "delete_article",
+		)
+		const directives = hasNonDeleteArticle
+			? rawDirectives.filter((directive) => {
+					if (directive.kind !== "delete_article") return true
+					const text = directive.sourceText.toLowerCase()
+					if (text.includes(":")) return false
+					if (
+						text.includes("a l'article") ||
+						text.includes("à l'article") ||
+						text.includes("au article")
+					) {
+						return false
+					}
+					return true
+				})
+			: rawDirectives
 		if (directives.length === 0) {
 			return {
 				html: null,
@@ -1604,7 +1900,11 @@
 
 	const pjlDiffContent = $derived.by(() => {
 		if (showPjlDiff === true && currentBlocTextuel && selectedPjlLine?.text) {
-			if (projectedHtmlResult?.html) {
+			if (
+				projectedHtmlResult &&
+				projectedHtmlResult.html !== null &&
+				projectedHtmlResult.html !== undefined
+			) {
 				return generateHtmlSplitDiff(
 					currentBlocTextuel,
 					projectedHtmlResult.html,
