@@ -1282,9 +1282,14 @@
 		}
 
 		const replacementHtml = formatReplacementText(action.replacementText)
+		const removedHtml = paragraphHtml.slice(
+			targetPosition.start,
+			targetPosition.stop,
+		)
 		const updatedParagraph =
 			paragraphHtml.slice(0, targetPosition.start) +
-			replacementHtml +
+			`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+			`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
 			paragraphHtml.slice(targetPosition.stop)
 
 		return {
@@ -1292,6 +1297,7 @@
 				html.slice(0, bounds.start) +
 				updatedParagraph +
 				html.slice(bounds.stop),
+			skipDiff: true,
 		}
 	}
 
@@ -1620,6 +1626,39 @@
 			.join("")
 	}
 
+	function splitParagraphLines(
+		paragraphHtml: string,
+	): Array<{ text: string; html: string }> {
+		const parts = paragraphHtml.split(/<br\s*\/?>/i)
+		const lines: Array<{ text: string; html: string }> = []
+		for (const part of parts) {
+			const simplified = simplifyHtml()(part)
+			const text = simplified.output.replace(/\s+/g, " ").trim()
+			if (!text) continue
+			lines.push({ text, html: part.trim() })
+		}
+		return lines
+	}
+
+	function wrapParagraphLine(lineHtml: string): string {
+		const trimmed = lineHtml.trim()
+		if (!trimmed) return ""
+		return `<p>${trimmed}</p>`
+	}
+
+	function findLineIndexByItemLabel(
+		lines: Array<{ text: string; html: string }>,
+		itemLabel: string,
+	): number {
+		const normalized = itemLabel.trim()
+		if (!normalized) return -1
+		const prefix = new RegExp(
+			`^\\s*${escapeRegExp(normalized)}\\s*(?:°|\\.|\\)|-|–|—)`,
+			"i",
+		)
+		return lines.findIndex((line) => prefix.test(line.text))
+	}
+
 	function applyInsertPortionActionToHtml(
 		html: string,
 		action: Extract<
@@ -1637,9 +1676,13 @@
 
 		const article = buildArticlePortionTreeFromHtml(html)
 		let match: ArticlePortionMatch | null = null
+		let matchedSelector: PortionSelector | null = null
 		for (const selector of action.portionSelectors) {
 			match = resolvePortionSelector(article, selector)
-			if (match) break
+			if (match) {
+				matchedSelector = selector
+				break
+			}
 		}
 		if (!match) {
 			return {
@@ -1757,6 +1800,75 @@
 						"Aucune valeur d'insertion trouvée pour appliquer la modification.",
 				}
 			}
+
+			const selectorSteps = getSelectorSteps(
+				matchedSelector ?? action.portionSelectors[0],
+			)
+			const lastStep = selectorSteps?.at(-1)
+			const itemLabel =
+				lastStep && lastStep.type === "item" ? lastStep.num : undefined
+			const lines = splitParagraphLines(paragraphHtml)
+			if (lines.length > 1) {
+				const lineNeedle = action.targetText || alinea.text
+				const lineIndexByLabel =
+					itemLabel && itemLabel.trim()
+						? findLineIndexByItemLabel(lines, itemLabel)
+						: -1
+				const romanMatch =
+					itemLabel && itemLabel.trim()
+						? new RegExp(`^\\s*${escapeRegExp(itemLabel)}\\b`, "i").exec(
+								action.insertText,
+							)
+						: null
+				const insertLabel = romanMatch ? romanMatch[0].trim() : undefined
+				const lineIndexByInsertLabel =
+					insertLabel && insertLabel !== itemLabel
+						? findLineIndexByItemLabel(lines, insertLabel)
+						: -1
+				const simplifiedNeedle = lineNeedle
+					? simplifyPlainText(lineNeedle).output
+					: ""
+				const lineIndexByNeedle = simplifiedNeedle
+					? lines.findIndex((line) => {
+							const simplifiedLine = simplifyPlainText(line.text).output
+							return Boolean(
+								findMatchInSimplifiedText(simplifiedLine, simplifiedNeedle),
+							)
+						})
+					: -1
+				const lineIndex =
+					lineIndexByLabel >= 0
+						? lineIndexByLabel
+						: lineIndexByInsertLabel >= 0
+							? lineIndexByInsertLabel
+							: lineIndexByNeedle
+				if (lineIndex >= 0) {
+					const insertAt =
+						action.kind === "insert_before" ? lineIndex : lineIndex + 1
+					const beforeHtml = lines
+						.slice(0, insertAt)
+						.map((line) => wrapParagraphLine(line.html))
+						.filter(Boolean)
+						.join("")
+					const afterHtml = lines
+						.slice(insertAt)
+						.map((line) => wrapParagraphLine(line.html))
+						.filter(Boolean)
+						.join("")
+					const replacementHtml = `${beforeHtml}${insertionHtml}${afterHtml}`
+					const blockBounds = findBlockBoundsFromIndex(html, bounds.start)
+					if (blockBounds) {
+						return {
+							html:
+								html.slice(0, blockBounds.start) +
+								replacementHtml +
+								html.slice(blockBounds.stop),
+							skipDiff: true,
+						}
+					}
+				}
+			}
+
 			const insertionIndex =
 				action.kind === "insert_before" ? bounds.start : bounds.stop + 4
 			return {
@@ -1950,7 +2062,7 @@
 		directives: ActionDirective[],
 	): ProjectedHtmlResult {
 		let currentHtml = html
-		let skipDiff = false
+		let skipDiff = true
 		const ordered = [...directives].sort(
 			(a, b) => a.sourcePosition.start - b.sourcePosition.start,
 		)
@@ -1958,9 +2070,7 @@
 		for (const directive of ordered) {
 			const result = applyProjectActionToHtml(currentHtml, directive)
 			if (result.html === null) return result
-			if (result.skipDiff) {
-				skipDiff = true
-			}
+			skipDiff = skipDiff && result.skipDiff === true
 			currentHtml = result.html
 		}
 		return skipDiff
@@ -2028,6 +2138,24 @@
 			return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'a pu être construite</div>`
 		}
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'est sélectionnée</div>`
+	})
+
+	type DebugWindow = Window & {
+		__pjlProjectedHtml?: string | null
+		__pjlProjectedReason?: string | null
+	}
+
+	$effect(() => {
+		if (typeof window === "undefined") return
+		const debugWindow = window as DebugWindow
+		if (!projectedHtmlResult) {
+			debugWindow.__pjlProjectedHtml = null
+			debugWindow.__pjlProjectedReason = null
+			return
+		}
+		debugWindow.__pjlProjectedHtml = projectedHtmlResult.html ?? null
+		debugWindow.__pjlProjectedReason =
+			projectedHtmlResult.html === null ? projectedHtmlResult.reason : null
 	})
 
 	onMount(() => {

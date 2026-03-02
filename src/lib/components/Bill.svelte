@@ -96,6 +96,7 @@
 		const colonMode = !inQuoteBlock && startText.endsWith(":")
 		let listMode = false
 		let listRoot: Element | null = null
+		let listQuotePending = false
 		const listStartLevel = getListMarkerLevel(startText)
 		if (!inQuoteBlock && !startText.endsWith(":")) {
 			return {
@@ -108,7 +109,8 @@
 
 		const listItemRe = /^\s*(?:\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
 		function getListMarkerLevel(text: string): number | null {
-			const match = /^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\))\s+/u.exec(text)
+			const match =
+				/^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(text)
 			if (!match) return null
 			const marker = match[1] ?? ""
 			if (!marker) return null
@@ -147,14 +149,36 @@
 							listRoot = node.closest("ol, ul")
 						}
 						collected.push(node)
+						listQuotePending = text.trim().endsWith(":")
+						if (hasOpenQuote && !hasCloseQuote) {
+							inQuoteBlock = true
+							listQuotePending = false
+						}
 						continue
 					}
 					break
 				}
 
 				if (listMode) {
-					if (listRoot && !listRoot.contains(node)) break
+					if (listRoot && !listRoot.contains(node)) {
+						if (listQuotePending || hasOpenQuote) {
+							if (isSkippableBeforeQuote) continue
+							collected.push(node)
+							if (hasOpenQuote && !hasCloseQuote) {
+								inQuoteBlock = true
+								listQuotePending = false
+							}
+							if (hasCloseQuote) listQuotePending = false
+							continue
+						}
+						break
+					}
 					if (listStartLevel !== null && listItemRe.test(text)) {
+						const currentLevel = getListMarkerLevel(text)
+						if (currentLevel !== null && currentLevel <= listStartLevel) {
+							break
+						}
+					} else if (listStartLevel !== null && !listItemRe.test(text)) {
 						const currentLevel = getListMarkerLevel(text)
 						if (currentLevel !== null && currentLevel <= listStartLevel) {
 							break
@@ -162,6 +186,17 @@
 					}
 					if (isSkippableBeforeQuote) continue
 					collected.push(node)
+					if (listItemRe.test(text)) {
+						if (hasOpenQuote && !hasCloseQuote) {
+							inQuoteBlock = true
+							listQuotePending = false
+						} else {
+							listQuotePending = text.trim().endsWith(":")
+						}
+					} else if (hasOpenQuote && !hasCloseQuote) {
+						inQuoteBlock = true
+						listQuotePending = false
+					}
 					continue
 				}
 
@@ -176,7 +211,11 @@
 
 			if (inQuoteBlock) {
 				collected.push(node)
-				if (hasCloseQuote) break
+				if (hasCloseQuote) {
+					inQuoteBlock = false
+					listQuotePending = false
+					if (!listMode) break
+				}
 			}
 		}
 
