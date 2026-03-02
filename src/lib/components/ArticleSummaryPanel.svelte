@@ -16,7 +16,7 @@
 </script>
 
 <button
-	class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-8 right-6 z-40 z-50 flex cursor-pointer items-center justify-center rounded-b-full px-3 pt-8 pb-2 text-white hover:translate-y-4"
+	class="bg-le-gris-dispositif peer hover:bg-le-gris-dispositif-dark fixed top-8 right-6 z-50 flex cursor-pointer items-center justify-center rounded-b-full px-3 pt-8 pb-2 text-white hover:translate-y-4"
 	title="Fermer le sommaire"
 	onclick={() => {
 		const searchParams = new SvelteURLSearchParams(page.url.searchParams)
