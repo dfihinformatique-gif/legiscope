@@ -527,6 +527,10 @@
 		currentHtml: string,
 	): string => {
 		const ATOMIC_SPACE_MARKER = "_"
+		const PARAGRAPH_BREAK_MARKER = "\u0007"
+
+		const injectParagraphMarkers = (html: string): string =>
+			html.replace(/<\/p>\s*<p/gi, `</p>${PARAGRAPH_BREAK_MARKER}<p`)
 
 		const normalizeForContainment = (value: string): string =>
 			value
@@ -574,14 +578,17 @@
 			)
 		}
 
-		const currentTransformation = simplifyHtml()(currentHtml)
+		const preparedCurrentHtml = injectParagraphMarkers(currentHtml)
+		const preparedPreviousHtml = injectParagraphMarkers(previousHtml)
+
+		const currentTransformation = simplifyHtml()(preparedCurrentHtml)
 		const currentText = currentTransformation.output
 
-		const previousTransformation = simplifyHtml()(previousHtml)
+		const previousTransformation = simplifyHtml()(preparedPreviousHtml)
 		const previousText = previousTransformation.output
 
-		const protectedCurrentHtml = protectLinks(currentHtml)
-		const protectedPreviousHtml = protectLinks(previousHtml)
+		const protectedCurrentHtml = protectLinks(preparedCurrentHtml)
+		const protectedPreviousHtml = protectLinks(preparedPreviousHtml)
 
 		const protectedCurrentText = simplifyHtml()(protectedCurrentHtml).output
 		const protectedPreviousText = simplifyHtml()(protectedPreviousHtml).output
@@ -863,11 +870,11 @@
 			htmlFragments.push(previousHtml.slice(previousHtmlIndex))
 		}
 
-		return htmlFragments.join("")
+		return htmlFragments.join("").replaceAll(PARAGRAPH_BREAK_MARKER, "")
 	}
 
 	type ProjectedHtmlResult =
-		| { html: string; reason?: undefined }
+		| { html: string; reason?: undefined; skipDiff?: boolean }
 		| { html: null; reason: string }
 
 	function escapeRegExp(text: string): string {
@@ -1554,14 +1561,62 @@
 		return getMatchAlinea(match)
 	}
 
-	function formatInsertionParagraphs(value: string): string {
-		const blocks = value
-			.split(/\n{2,}/)
-			.map((block) => block.trim())
-			.filter((block) => block.length > 0)
+	function formatInsertionParagraphs(
+		value: string,
+		options: { preserveLineBreaks?: boolean; highlight?: boolean } = {},
+	): string {
+		const trimmed = value.trim()
+		if (!trimmed) return ""
+		const lines = trimmed.split("\n")
+		const blocks: string[] = []
+		const wrap = (content: string): string =>
+			options.highlight
+				? `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${content}</span>`
+				: content
+
+		if (options.preserveLineBreaks) {
+			for (const line of lines) {
+				const normalized = line.trim()
+				if (normalized) blocks.push(normalized)
+			}
+		} else {
+			let current = ""
+			const pushCurrent = (): void => {
+				const normalized = current.trim()
+				if (normalized) blocks.push(normalized)
+				current = ""
+			}
+			const isMarkerLine = (line: string): boolean => {
+				const normalized = line.trim()
+				if (!normalized) return false
+				return (
+					/^(?:\d+°)\s+/.test(normalized) ||
+					/^(?:[A-Z]|[IVXLCDM]+|\d+)(?:[.)°])\s+/.test(normalized) ||
+					/^(?:[-–—•])\s+/.test(normalized)
+				)
+			}
+			for (const line of lines) {
+				if (!line.trim()) {
+					pushCurrent()
+					continue
+				}
+				if (!current) {
+					current = line.trim()
+					continue
+				}
+				if (isMarkerLine(line)) {
+					pushCurrent()
+					current = line.trim()
+					continue
+				}
+				current = `${current} ${line.trim()}`
+			}
+			pushCurrent()
+		}
+
 		if (blocks.length === 0) return ""
 		return blocks
-			.map((block) => `<p>${formatReplacementText(block)}</p>`)
+			.map((block) => `<p>${wrap(formatReplacementText(block))}</p>`)
 			.join("")
 	}
 
@@ -1616,6 +1671,18 @@
 		const targetPosition = action.targetText
 			? findTextPositionInHtml(paragraphHtml, action.targetText)
 			: findTextPositionInHtml(paragraphHtml, alinea.text)
+
+		const shouldInsertAsParagraphs = (): boolean => {
+			if (!action.insertText.includes("\n")) return false
+			if (!action.targetText || action.targetText.trim() === "") return true
+			const normalized = action.sourceText
+				.toLowerCase()
+				.normalize("NFD")
+				.replace(/\p{Diacritic}/gu, "")
+			return /\bainsi\s+redig/.test(normalized)
+		}
+
+		const preserveLineBreaks = shouldInsertAsParagraphs()
 
 		const shouldInlineCompletion = (sourceText: string): boolean => {
 			const normalized = sourceText
@@ -1678,6 +1745,29 @@
 			}
 		}
 
+		if (preserveLineBreaks) {
+			const insertionHtml = formatInsertionParagraphs(action.insertText, {
+				preserveLineBreaks: true,
+				highlight: true,
+			})
+			if (!insertionHtml) {
+				return {
+					html: null,
+					reason:
+						"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+				}
+			}
+			const insertionIndex =
+				action.kind === "insert_before" ? bounds.start : bounds.stop + 4
+			return {
+				html:
+					html.slice(0, insertionIndex) +
+					insertionHtml +
+					html.slice(insertionIndex),
+				skipDiff: true,
+			}
+		}
+
 		if (targetPosition) {
 			const formatted = formatInsertionInline(action.insertText)
 			if (!formatted) {
@@ -1731,7 +1821,9 @@
 			}
 		}
 
-		const insertionHtml = formatInsertionParagraphs(action.insertText)
+		const insertionHtml = formatInsertionParagraphs(action.insertText, {
+			preserveLineBreaks,
+		})
 		if (!insertionHtml) {
 			return {
 				html: null,
@@ -1858,6 +1950,7 @@
 		directives: ActionDirective[],
 	): ProjectedHtmlResult {
 		let currentHtml = html
+		let skipDiff = false
 		const ordered = [...directives].sort(
 			(a, b) => a.sourcePosition.start - b.sourcePosition.start,
 		)
@@ -1865,9 +1958,14 @@
 		for (const directive of ordered) {
 			const result = applyProjectActionToHtml(currentHtml, directive)
 			if (result.html === null) return result
+			if (result.skipDiff) {
+				skipDiff = true
+			}
 			currentHtml = result.html
 		}
-		return { html: currentHtml }
+		return skipDiff
+			? { html: currentHtml, skipDiff: true }
+			: { html: currentHtml }
 	}
 
 	const projectedHtmlResult = $derived.by(() => {
@@ -1916,6 +2014,9 @@
 				projectedHtmlResult.html !== null &&
 				projectedHtmlResult.html !== undefined
 			) {
+				if (projectedHtmlResult.skipDiff) {
+					return projectedHtmlResult.html
+				}
 				return generateHtmlSplitDiff(
 					currentBlocTextuel,
 					projectedHtmlResult.html,
