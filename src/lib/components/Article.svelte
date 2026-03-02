@@ -968,6 +968,7 @@
 		html: string,
 		index: number,
 		options: { allowLeadingSpace: boolean },
+		highlight = false,
 	): string {
 		const trimmed = insert.trim()
 		const leadingSpaceNeeded =
@@ -980,7 +981,13 @@
 			!/\s$/.test(trimmed) &&
 			firstAfter !== null &&
 			!/[.,;:!?]/.test(firstAfter)
-		return `${leadingSpaceNeeded ? " " : ""}${trimmed}${
+		const core =
+			trimmed === ""
+				? ""
+				: highlight
+					? `<span class="rounded-md px-0.5 bg-green-50 text-green-900">${trimmed}</span>`
+					: trimmed
+		return `${leadingSpaceNeeded ? " " : ""}${core}${
 			needsTrailingSpace ? " " : ""
 		}`
 	}
@@ -1771,12 +1778,20 @@
 			return firstPosition ? bounds.start + firstPosition.start : null
 		}
 
-		const insertInlineAtIndex = (index: number): ProjectedHtmlResult => {
-			const insertionText = buildInsertionText(action.insertText, html, index, {
-				allowLeadingSpace: true,
-			})
+		const insertInlineAtIndex = (
+			index: number,
+			highlight: boolean,
+		): ProjectedHtmlResult => {
+			const insertionText = buildInsertionText(
+				action.insertText,
+				html,
+				index,
+				{ allowLeadingSpace: true },
+				highlight,
+			)
 			return {
 				html: html.slice(0, index) + insertionText + html.slice(index),
+				...(highlight ? { skipDiff: true } : {}),
 			}
 		}
 
@@ -1893,7 +1908,7 @@
 			if (!action.targetText && shouldInlineCompletion(action.sourceText)) {
 				const completionIndex = findCompletionInsertionIndex()
 				if (completionIndex !== null) {
-					return insertInlineAtIndex(completionIndex)
+					return insertInlineAtIndex(completionIndex, true)
 				}
 			}
 
@@ -1918,11 +1933,13 @@
 				}
 			}
 
+			const highlightInsertion = action.insertText.trim() !== ""
 			const insertionText = buildInsertionText(
 				action.insertText,
 				html,
 				insertionIndex,
 				{ allowLeadingSpace: action.kind === "insert_before" || !skippedComma },
+				highlightInsertion,
 			)
 
 			return {
@@ -1930,6 +1947,7 @@
 					html.slice(0, insertionIndex) +
 					insertionText +
 					html.slice(insertionIndex),
+				...(highlightInsertion ? { skipDiff: true } : {}),
 			}
 		}
 
@@ -2008,11 +2026,15 @@
 						"Aucune valeur de remplacement trouvée pour appliquer la modification.",
 				}
 			}
+			const replacementHtml = formatReplacementText(action.replacementText)
+			const removedHtml = html.slice(targetPosition.start, targetPosition.stop)
 			return {
 				html:
 					html.slice(0, targetPosition.start) +
-					action.replacementText +
+					`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+					`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
 					html.slice(targetPosition.stop),
+				skipDiff: true,
 			}
 		}
 
