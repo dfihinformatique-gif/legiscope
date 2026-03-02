@@ -41,6 +41,8 @@
 		type ArticlePortionNode,
 		type FragmentPosition,
 		type FragmentReverseTransformation,
+		type PortionSelector,
+		type PortionSelectorStep,
 	} from "@tricoteuses/tisseuse"
 	import { Diff, diffArrays, type Change, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
@@ -1075,6 +1077,14 @@
 		return findBlockBoundsForNeedles(html, needles)
 	}
 
+	function getSelectorSteps(
+		selector: PortionSelector | undefined,
+	): PortionSelectorStep[] | undefined {
+		if (!selector) return undefined
+		if (selector.kind === "single") return selector.steps
+		return selector.last.length > 0 ? selector.last : selector.first
+	}
+
 	function getMatchAlinea(
 		match: ArticlePortionMatch,
 	): ArticlePortionAlinea | null {
@@ -1141,7 +1151,7 @@
 		if (!match) {
 			const bounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (bounds) {
 				return {
@@ -1159,7 +1169,7 @@
 		if (!alinea) {
 			const bounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (bounds) {
 				return {
@@ -1177,7 +1187,7 @@
 		if (!bounds) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
@@ -1194,7 +1204,8 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
-		const lastStep = action.portionSelectors[0]?.steps.at(-1)
+		const selectorSteps = getSelectorSteps(action.portionSelectors[0])
+		const lastStep = selectorSteps?.at(-1)
 		if (lastStep && lastStep.type === "item" && lastStep.num) {
 			const label = lastStep.num.toLowerCase()
 			if (/^[a-z]$/.test(label)) {
@@ -1204,7 +1215,7 @@
 				if (!normalized.includes(`${label}.`)) {
 					const fallbackBounds = findItemLabelBounds(
 						html,
-						action.portionSelectors[0]?.steps,
+						getSelectorSteps(action.portionSelectors[0]),
 					)
 					if (fallbackBounds) {
 						return {
@@ -1247,7 +1258,7 @@
 		if (!targetPosition) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
@@ -1298,7 +1309,7 @@
 		if (!match) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
@@ -1318,7 +1329,7 @@
 		if (!alinea) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
@@ -1338,7 +1349,7 @@
 		if (!bounds) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
@@ -1382,7 +1393,7 @@
 			) {
 				const fallbackBounds = findItemLabelBounds(
 					html,
-					action.portionSelectors[0]?.steps,
+					getSelectorSteps(action.portionSelectors[0]),
 				)
 				if (fallbackBounds) {
 					return {
@@ -1400,7 +1411,7 @@
 		if (!targetPosition) {
 			const fallbackBounds = findItemLabelBounds(
 				html,
-				action.portionSelectors[0]?.steps,
+				getSelectorSteps(action.portionSelectors[0]),
 			)
 			if (fallbackBounds) {
 				return {
