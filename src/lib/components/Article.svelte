@@ -1996,6 +1996,34 @@
 			}
 		}
 
+		if (
+			(action.kind === "insert_after" || action.kind === "insert_before") &&
+			action.targetType === "article" &&
+			(!action.targetText || action.targetText.trim() === "")
+		) {
+			const normalized = action.sourceText
+				.toLowerCase()
+				.normalize("NFD")
+				.replace(/\p{Diacritic}/gu, "")
+			if (/\bcomplet/.test(normalized) || /\bajout/.test(normalized)) {
+				const insertionHtml = formatInsertionParagraphs(action.insertText, {
+					preserveLineBreaks: action.insertText.includes("\n"),
+					highlight: true,
+				})
+				if (!insertionHtml) {
+					return {
+						html: null,
+						reason:
+							"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+					}
+				}
+				return {
+					html: html + insertionHtml,
+					skipDiff: true,
+				}
+			}
+		}
+
 		const target =
 			action.kind === "insert_after" || action.kind === "insert_before"
 				? action.targetText

@@ -134,10 +134,10 @@
 
 			if (!inQuoteBlock) {
 				if (colonMode && !listMode) {
-					if (hasOpenQuote && !hasCloseQuote) {
-						inQuoteBlock = true
+					if (hasOpenQuote) {
+						inQuoteBlock = !hasCloseQuote
 						collected.push(node)
-						if (hasCloseQuote) inQuoteBlock = false
+						if (!inQuoteBlock) break
 						continue
 					}
 					if (isSkippableBeforeQuote) {
