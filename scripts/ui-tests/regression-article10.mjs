@@ -4,7 +4,6 @@ const base =
   process.env.LEGI_UI_BASE ?? "http://127.0.0.1:5174/pjl/PRJLANR5L17B1906"
 const linkText =
   "article 10 de la loi n° 2025-127 du 14 février 2025 de finances pour 2025"
-const pjlLineNeedle = "Après le III, il est inséré un III bis"
 
 const browser = await webkit.launch()
 const page = await browser.newPage()
@@ -27,20 +26,11 @@ await articleLink.click()
 await page.waitForURL(/article=/, { timeout: 60000 })
 await page.waitForLoadState("domcontentloaded")
 
-const pjlLine = page.getByText(pjlLineNeedle, { exact: false }).first()
-await pjlLine.waitFor({ timeout: 60000 })
-await pjlLine.scrollIntoViewIfNeeded()
-await pjlLine.click({ force: true })
-
-const compare = page.locator("button", {
-  hasText: "Comparer au texte en vigueur",
+const showProjection = page.getByRole("button", {
+  name: "Voir la version projetée",
 })
-await compare.waitFor({ timeout: 60000 })
-for (let i = 0; i < 3; i += 1) {
-  await compare.click({ force: true })
-  await page.waitForTimeout(1500)
-  if ((await page.locator("div.rounded-b-md.bg-amber-50").count()) > 0) break
-}
+await showProjection.waitFor({ timeout: 60000 })
+await showProjection.click({ force: true })
 
 const diffRoot = page.locator("div.rounded-b-md.bg-amber-50").first()
 await diffRoot.waitFor({ timeout: 60000, state: "attached" })

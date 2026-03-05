@@ -13,6 +13,7 @@
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
 	import { simplifyHtml } from "@tricoteuses/tisseuse"
+	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 
 	interface Props {
 		pjlHTML: string | undefined
@@ -66,6 +67,71 @@
 
 	function normalizeLineText(value: string | null): string {
 		return (value ?? "").replace(/\s+/g, " ").trim()
+	}
+
+	function getPjlArticleLabelForLink(link: HTMLAnchorElement): string | null {
+		const section = link.closest('div[class^="assnatSection"]')
+		if (!section) return null
+		const text = normalizeLineText(section.textContent)
+		const match = /\bARTICLE\s+([0-9IVXLCDM]+|unique)\b/i.exec(text)
+		if (!match) return null
+		const raw = match[1] ?? ""
+		if (!raw) return null
+		if (/^unique$/i.test(raw)) return "Article unique"
+		return `Article ${raw.toUpperCase()}`
+	}
+
+	function buildPjlArticleBlocks(root: ShadowRoot): Record<
+		string,
+		{
+			pjlArticleLabel: string
+			blockHtml: string
+			blockText: string
+		}[]
+	> {
+		const result: Record<
+			string,
+			{
+				pjlArticleLabel: string
+				blockHtml: string
+				blockText: string
+			}[]
+		> = {}
+		const dedupe = new SvelteMap<string, SvelteSet<string>>()
+		const links = Array.from(
+			root.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
+		)
+		for (const link of links) {
+			const href = link.getAttribute("href")
+			if (!href) continue
+			const lawUrl = new URL(href, window.location.origin)
+			const lawArticle = lawUrl.searchParams.get("article")
+			if (!lawArticle) continue
+
+			const paragraph = link.closest("p, li") ?? link.parentElement
+			if (!paragraph) continue
+			const block = collectPjlBlock(root, paragraph)
+			const blockText = block.text
+			if (!blockText) continue
+
+			const pjlArticleLabel = getPjlArticleLabelForLink(link) ?? "Article"
+
+			const key = `${pjlArticleLabel}||${blockText}`
+			const existing = dedupe.get(lawArticle) ?? new SvelteSet<string>()
+			if (existing.has(key)) continue
+			existing.add(key)
+			dedupe.set(lawArticle, existing)
+
+			if (!result[lawArticle]) {
+				result[lawArticle] = []
+			}
+			result[lawArticle].push({
+				pjlArticleLabel,
+				blockHtml: block.html,
+				blockText: block.text,
+			})
+		}
+		return result
 	}
 
 	function collectPjlBlock(
@@ -134,7 +200,8 @@
 			}
 		}
 
-		const listItemRe = /^\s*(?:\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
+		const listItemRe =
+			/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
 		function getListMarkerLevel(text: string): number | null {
 			const match =
 				/^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(text)
@@ -188,17 +255,23 @@
 
 				if (listMode) {
 					if (listRoot && !listRoot.contains(node)) {
-						if (listQuotePending || hasOpenQuote) {
-							if (isSkippableBeforeQuote) continue
-							collected.push(node)
-							if (hasOpenQuote && !hasCloseQuote) {
-								inQuoteBlock = true
-								listQuotePending = false
+						const isNewListItem =
+							listItemRe.test(text) || getListMarkerLevel(text) !== null
+						if (isNewListItem) {
+							listRoot = node.closest("ol, ul")
+						} else {
+							if (listQuotePending || hasOpenQuote) {
+								if (isSkippableBeforeQuote) continue
+								collected.push(node)
+								if (hasOpenQuote && !hasCloseQuote) {
+									inQuoteBlock = true
+									listQuotePending = false
+								}
+								if (hasCloseQuote) listQuotePending = false
+								continue
 							}
-							if (hasCloseQuote) listQuotePending = false
-							continue
+							break
 						}
-						break
 					}
 					if (listStartLevel !== null && listItemRe.test(text)) {
 						const currentLevel = getListMarkerLevel(text)
@@ -249,6 +322,66 @@
 			}
 		}
 
+		if (colonMode) {
+			const fallback: Element[] = [start]
+			let sawList = false
+			let quoteOpen = false
+			for (let i = startIndex + 1; i < nodes.length; i += 1) {
+				const node = nodes[i]
+				const text = normalizeLineText(node.textContent)
+				const hasOpenQuote = text.includes("«")
+				const hasCloseQuote = text.includes("»")
+				const isEmpty = text.length === 0
+				const isLi = node.tagName === "LI"
+				const markerLevel = getListMarkerLevel(text)
+				if (!sawList) {
+					if (isEmpty) continue
+					if (isLi && markerLevel !== null) {
+						sawList = true
+						fallback.push(node)
+						if (hasOpenQuote && !hasCloseQuote) {
+							quoteOpen = true
+						}
+						continue
+					}
+					break
+				}
+
+				if (isLi) {
+					fallback.push(node)
+					if (hasOpenQuote && !hasCloseQuote) {
+						quoteOpen = true
+					}
+					if (hasCloseQuote) {
+						quoteOpen = false
+					}
+					continue
+				}
+
+				if (quoteOpen) {
+					if (!isEmpty) {
+						fallback.push(node)
+					}
+					if (hasCloseQuote) {
+						quoteOpen = false
+					}
+					continue
+				}
+
+				if (isEmpty) continue
+				break
+			}
+
+			if (sawList && fallback.length > collected.length) {
+				return {
+					html: fallback.map((node) => node.outerHTML).join("\n"),
+					text: fallback
+						.map((node) => normalizeLineText(node.textContent))
+						.join("\n"),
+				}
+			}
+		}
+
 		return {
 			html: collected.map((node) => node.outerHTML).join("\n"),
 			text: collected
@@ -258,12 +391,16 @@
 	}
 
 	$effect(() => {
-		if (!container || !pjlHTML) return
+		if (!container || !pjlHTML) {
+			shared.pjlArticleBlocksByLawArticle = undefined
+			return
+		}
 
 		if (!container.shadowRoot) {
 			const shadow = container.attachShadow({ mode: "open" })
 
 			shadow.innerHTML = pjlHTML
+			shared.pjlArticleBlocksByLawArticle = buildPjlArticleBlocks(shadow)
 
 			const initialHash = window.location.hash
 			if (initialHash) {
@@ -457,6 +594,9 @@
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
+			shared.pjlArticleBlocksByLawArticle = buildPjlArticleBlocks(
+				container.shadowRoot!,
+			)
 		}
 	})
 

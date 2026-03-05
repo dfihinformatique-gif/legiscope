@@ -18,6 +18,16 @@ export interface Shared {
 				blockText?: string
 		  }
 		| undefined
+	pjlArticleBlocksByLawArticle:
+		| Record<
+				string,
+				{
+					pjlArticleLabel: string
+					blockHtml: string
+					blockText: string
+				}[]
+		  >
+		| undefined
 }
 
 export const shared: Shared = $state({
@@ -30,6 +40,7 @@ export const shared: Shared = $state({
 	showSummaryDesktop: false,
 	pjlDate: "2025-10-01",
 	pjlSelectedLine: undefined,
+	pjlArticleBlocksByLawArticle: undefined,
 })
 
 export function formatDateFr(dateStr: string): string {

@@ -32,15 +32,11 @@ await lawLink.click({ force: true })
 await page.waitForURL(/article=/, { timeout: 60000 })
 await page.waitForLoadState("domcontentloaded")
 
-const compare = page.locator("button", {
-  hasText: "Comparer au texte en vigueur",
+const showProjection = page.getByRole("button", {
+  name: "Voir la version projetée",
 })
-await compare.waitFor({ timeout: 60000 })
-for (let i = 0; i < 3; i += 1) {
-  await compare.click({ force: true })
-  await page.waitForTimeout(1500)
-  if ((await page.locator("div.rounded-b-md.bg-amber-50").count()) > 0) break
-}
+await showProjection.waitFor({ timeout: 60000 })
+await showProjection.click({ force: true })
 
 const diffRoot = page.locator("div.rounded-b-md.bg-amber-50").first()
 await diffRoot.waitFor({ timeout: 60000, state: "attached" })

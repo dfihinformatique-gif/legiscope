@@ -58,6 +58,12 @@
 		showParameterModal: boolean
 		parametersToVariables: Record<string, string[]> | null
 	}
+
+	type PjlArticleBlock = {
+		pjlArticleLabel: string
+		blockHtml: string
+		blockText: string
+	}
 	let {
 		articleInfo,
 		showParameterModal,
@@ -511,14 +517,15 @@
 	let showDiff = $state(false)
 	let showPjlDiff = $state(false)
 	const selectedPjlLine = $derived(shared.pjlSelectedLine)
+	const pjlBlocksForArticle = $derived.by(() => {
+		const articleId = articleInfo.article?.legi_id
+		if (!articleId) return [] as PjlArticleBlock[]
+		return shared.pjlArticleBlocksByLawArticle?.[articleId] ?? []
+	})
 
 	$effect(() => {
 		const currentId = page.url.searchParams.get("article") ?? undefined
-		if (
-			!selectedPjlLine ||
-			!currentId ||
-			selectedPjlLine.articleId !== currentId
-		) {
+		if (!currentId || pjlBlocksForArticle.length === 0) {
 			showPjlDiff = false
 		}
 	})
@@ -2248,9 +2255,9 @@
 			.filter(Boolean)
 	}
 
-	const projectedHtmlResult = $derived.by(() => {
-		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
-		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
+	function buildDirectivesFromSourceText(
+		sourceText: string,
+	): ActionDirective[] {
 		const sourceBlocks = splitActionSourceBlocks(sourceText)
 		const rawDirectives = sourceBlocks.flatMap((block) =>
 			extractActionDirectivesFromText(block),
@@ -2258,7 +2265,7 @@
 		const hasNonDeleteArticle = rawDirectives.some(
 			(directive) => directive.kind !== "delete_article",
 		)
-		const directives = hasNonDeleteArticle
+		return hasNonDeleteArticle
 			? rawDirectives.filter((directive) => {
 					if (directive.kind !== "delete_article") return true
 					const text = directive.sourceText.toLowerCase()
@@ -2273,6 +2280,141 @@
 					return true
 				})
 			: rawDirectives
+	}
+
+	type PjlProjectionFailure = {
+		pjlArticleLabel: string
+		reason: string
+	}
+
+	type PjlAggregateProjection = {
+		html: string | null
+		skipDiff: boolean
+		appliedCount: number
+		failures: PjlProjectionFailure[]
+		reason?: string
+	}
+
+	const pjlAggregateProjection = $derived.by(() => {
+		if (!currentBlocTextuel || pjlBlocksForArticle.length === 0)
+			return undefined
+		let currentHtml = currentBlocTextuel
+		let skipDiff = true
+		let appliedCount = 0
+		const failures: PjlProjectionFailure[] = []
+
+		for (const block of pjlBlocksForArticle) {
+			const directives = buildDirectivesFromSourceText(block.blockText)
+			if (directives.length === 0) {
+				failures.push({
+					pjlArticleLabel: block.pjlArticleLabel,
+					reason:
+						"Disposition non reconnue pour l'instant pour projeter un diff.",
+				})
+				continue
+			}
+
+			const result = applyProjectActionsToHtml(currentHtml, directives)
+			if (result.html === null) {
+				failures.push({
+					pjlArticleLabel: block.pjlArticleLabel,
+					reason:
+						result.reason ??
+						"Disposition non reconnue pour l'instant pour projeter un diff.",
+				})
+				continue
+			}
+
+			currentHtml = result.html
+			appliedCount += 1
+			if (result.skipDiff !== true) {
+				skipDiff = false
+			}
+		}
+
+		if (appliedCount === 0) {
+			return {
+				html: null,
+				skipDiff,
+				appliedCount,
+				failures,
+				reason:
+					"Aucune disposition projetable n'a pu être appliquée à cet article.",
+			} satisfies PjlAggregateProjection
+		}
+
+		return {
+			html: currentHtml,
+			skipDiff,
+			appliedCount,
+			failures,
+		} satisfies PjlAggregateProjection
+	})
+
+	const pjlArticleSummary = $derived.by(() => {
+		if (pjlBlocksForArticle.length === 0) return undefined
+		const summary = new SvelteMap<string, { total: number; failed: number }>()
+		const order: string[] = []
+		for (const block of pjlBlocksForArticle) {
+			if (!summary.has(block.pjlArticleLabel)) {
+				summary.set(block.pjlArticleLabel, { total: 0, failed: 0 })
+				order.push(block.pjlArticleLabel)
+			}
+			const entry = summary.get(block.pjlArticleLabel)
+			if (entry) entry.total += 1
+		}
+		const failures = pjlAggregateProjection?.failures ?? []
+		for (const failure of failures) {
+			const entry = summary.get(failure.pjlArticleLabel)
+			if (entry) entry.failed += 1
+		}
+		return { order, summary }
+	})
+
+	function formatFrenchList(items: string[]): string {
+		if (items.length === 0) return ""
+		if (items.length === 1) return items[0] ?? ""
+		if (items.length === 2) return `${items[0]} et ${items[1]}`
+		return `${items.slice(0, -1).join(", ")} et ${items[items.length - 1]}`
+	}
+
+	const pjlArticleMention = $derived.by(() => {
+		if (!pjlArticleSummary) return ""
+		const labels = pjlArticleSummary.order
+		const normalized = labels.map((label) =>
+			label.replace(/^Article\s+/i, "").trim(),
+		)
+		if (
+			normalized.length === 1 &&
+			normalized[0] &&
+			/unique/i.test(normalized[0])
+		) {
+			return "Cet article est modifié par l’article unique du PJL : voir la version projetée"
+		}
+		const list = formatFrenchList(normalized)
+		return `Cet article est modifié par les articles ${list} du PJL : voir la version projetée`
+	})
+
+	const pjlNonProjectableSummary = $derived.by(() => {
+		if (!pjlArticleSummary) return [] as string[]
+		const entries = pjlArticleSummary.order.map((label) => {
+			const summary = pjlArticleSummary.summary.get(label)
+			if (!summary || summary.failed === 0) return null
+			const suffix =
+				summary.failed === summary.total
+					? "non projetable"
+					: `${summary.failed}/${summary.total} non projetable${
+							summary.failed > 1 ? "s" : ""
+						}`
+			return `${label} (${suffix})`
+		})
+		return entries.filter((entry): entry is string => Boolean(entry))
+	})
+
+	const projectedHtmlResult = $derived.by(() => {
+		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
+		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
+		const directives = buildDirectivesFromSourceText(sourceText)
 		if (directives.length === 0) {
 			return {
 				html: null,
@@ -2291,31 +2433,29 @@
 	})
 
 	const pjlDiffContent = $derived.by(() => {
-		if (showPjlDiff === true && currentBlocTextuel && selectedPjlLine?.text) {
-			if (
-				projectedHtmlResult &&
-				projectedHtmlResult.html !== null &&
-				projectedHtmlResult.html !== undefined
-			) {
-				if (projectedHtmlResult.skipDiff) {
-					return projectedHtmlResult.html
+		if (showPjlDiff === true && currentBlocTextuel) {
+			if (pjlAggregateProjection?.html) {
+				if (pjlAggregateProjection.skipDiff) {
+					return pjlAggregateProjection.html
 				}
 				return generateHtmlSplitDiff(
 					currentBlocTextuel,
-					projectedHtmlResult.html,
+					pjlAggregateProjection.html,
 				)
 			}
-			if (projectedHtmlResult && projectedHtmlResult.html === null) {
-				return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">${projectedHtmlResult.reason}</div>`
+			if (pjlAggregateProjection && pjlAggregateProjection.html === null) {
+				return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">${pjlAggregateProjection.reason}</div>`
 			}
 			return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'a pu être construite</div>`
 		}
-		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'est sélectionnée</div>`
+		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'est disponible</div>`
 	})
 
 	type DebugWindow = Window & {
 		__pjlProjectedHtml?: string | null
 		__pjlProjectedReason?: string | null
+		__pjlAggregateHtml?: string | null
+		__pjlAggregateReason?: string | null
 	}
 
 	$effect(() => {
@@ -2324,11 +2464,21 @@
 		if (!projectedHtmlResult) {
 			debugWindow.__pjlProjectedHtml = null
 			debugWindow.__pjlProjectedReason = null
-			return
+		} else {
+			debugWindow.__pjlProjectedHtml = projectedHtmlResult.html ?? null
+			debugWindow.__pjlProjectedReason =
+				projectedHtmlResult.html === null ? projectedHtmlResult.reason : null
 		}
-		debugWindow.__pjlProjectedHtml = projectedHtmlResult.html ?? null
-		debugWindow.__pjlProjectedReason =
-			projectedHtmlResult.html === null ? projectedHtmlResult.reason : null
+		if (!pjlAggregateProjection) {
+			debugWindow.__pjlAggregateHtml = null
+			debugWindow.__pjlAggregateReason = null
+		} else {
+			debugWindow.__pjlAggregateHtml = pjlAggregateProjection.html ?? null
+			debugWindow.__pjlAggregateReason =
+				pjlAggregateProjection.html === null
+					? (pjlAggregateProjection.reason ?? null)
+					: null
+		}
 	})
 
 	onMount(() => {
@@ -2815,6 +2965,36 @@
 					</div>
 				{/if}
 
+				{#if pjlBlocksForArticle.length > 0}
+					<div
+						class="my-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-left"
+					>
+						<div class="text-xs font-semibold text-amber-800 uppercase">
+							Version projetée
+						</div>
+						<p class="mt-2 text-sm text-amber-900">{pjlArticleMention}</p>
+						{#if pjlNonProjectableSummary.length > 0}
+							<p class="mt-1 text-xs text-amber-800">
+								Dispositions non projetables :
+								{pjlNonProjectableSummary.join(", ")}.
+							</p>
+						{/if}
+						<div class="mt-3 flex items-center justify-end">
+							<button
+								class="rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+								onclick={() => {
+									showPjlDiff = !showPjlDiff
+									if (showPjlDiff) showDiff = false
+								}}
+							>
+								{showPjlDiff
+									? "Masquer la version projetée"
+									: "Voir la version projetée"}
+							</button>
+						</div>
+					</div>
+				{/if}
+
 				{#if selectedPjlLine && page.url.searchParams.get("article") === selectedPjlLine.articleId}
 					<div
 						class="my-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-left"
@@ -2825,19 +3005,6 @@
 						<div class="mt-2 text-sm text-amber-900">
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html selectedPjlLine.html}
-						</div>
-						<div class="mt-3 flex items-center justify-end">
-							<button
-								class="rounded-md border border-amber-300 bg-white px-3 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
-								onclick={() => {
-									showPjlDiff = !showPjlDiff
-									if (showPjlDiff) showDiff = false
-								}}
-							>
-								{showPjlDiff
-									? "Masquer le diff projeté"
-									: "Comparer au texte en vigueur"}
-							</button>
 						</div>
 					</div>
 				{/if}
