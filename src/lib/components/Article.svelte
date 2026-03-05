@@ -2116,22 +2116,145 @@
 		const ordered = [...directives].sort(
 			(a, b) => a.sourcePosition.start - b.sourcePosition.start,
 		)
-
+		const grouped: Array<{ key: string; directives: ActionDirective[] }> = []
 		for (const directive of ordered) {
-			const result = applyProjectActionToHtml(currentHtml, directive)
-			if (result.html === null) return result
-			skipDiff = skipDiff && result.skipDiff === true
-			currentHtml = result.html
+			const key = getDirectiveKey(directive)
+			const last = grouped[grouped.length - 1]
+			if (last && last.key === key) {
+				last.directives.push(directive)
+			} else {
+				grouped.push({ key, directives: [directive] })
+			}
+		}
+
+		for (const group of grouped) {
+			const candidates = [...group.directives].sort(
+				(a, b) => getDirectiveSpecificity(b) - getDirectiveSpecificity(a),
+			)
+			let applied = false
+			let lastError: ProjectedHtmlResult | null = null
+			for (const directive of candidates) {
+				const result = applyProjectActionToHtml(currentHtml, directive)
+				if (result.html === null) {
+					lastError = result
+					continue
+				}
+				skipDiff = skipDiff && result.skipDiff === true
+				currentHtml = result.html
+				applied = true
+				break
+			}
+			if (!applied) {
+				return (
+					lastError ?? {
+						html: null,
+						reason:
+							"Disposition non reconnue pour l'instant pour projeter un diff.",
+					}
+				)
+			}
 		}
 		return skipDiff
 			? { html: currentHtml, skipDiff: true }
 			: { html: currentHtml }
 	}
 
+	function getSelectorScore(selector: PortionSelector): number {
+		if (selector.kind === "single") return selector.steps.length
+		const firstLength = selector.first.length
+		const lastLength = selector.last.length
+		return Math.max(firstLength, lastLength)
+	}
+
+	function getDirectiveSpecificity(directive: ActionDirective): number {
+		if (directive.portionSelectors.length === 0) return 0
+		const scores = directive.portionSelectors.map(getSelectorScore)
+		const best = Math.max(0, ...scores)
+		return 100 + best
+	}
+
+	function getDirectiveKey(directive: ActionDirective): string {
+		const insertText =
+			"insertText" in directive && directive.insertText
+				? directive.insertText
+				: ""
+		const replacementText =
+			"replacementText" in directive && directive.replacementText
+				? directive.replacementText
+				: ""
+		return [
+			directive.kind,
+			directive.targetText ?? "",
+			insertText,
+			replacementText,
+		].join("|")
+	}
+
+	function splitActionSourceBlocks(sourceText: string): string[] {
+		const lines = sourceText.split("\n")
+		const markerRe = /^\s*(?!«)([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\))\s+/u
+		const getMarkerLevel = (line: string): number | null => {
+			const match = markerRe.exec(line)
+			if (!match) return null
+			const marker = match[1] ?? ""
+			if (!marker) return null
+			if (/^[IVXLCDM]+$/i.test(marker)) return 1
+			if (/^\d+$/u.test(marker)) return 2
+			if (/^[a-zA-Z]$/u.test(marker)) return 3
+			return null
+		}
+
+		const prelude: string[] = []
+		const contextByLevel = new SvelteMap<number, string>()
+		const blocks: string[] = []
+		let current: string[] = []
+		let sawMarker = false
+
+		for (const line of lines) {
+			const level = getMarkerLevel(line)
+			if (level === null) {
+				if (!sawMarker) {
+					if (line.trim()) prelude.push(line)
+				} else if (current.length > 0) {
+					current.push(line)
+				}
+				continue
+			}
+
+			sawMarker = true
+			if (current.length > 0) {
+				blocks.push(current.join("\n"))
+			}
+			const prefix: string[] = []
+			for (const lineItem of prelude) prefix.push(lineItem)
+			for (let i = 1; i < level; i += 1) {
+				const context = contextByLevel.get(i)
+				if (context) prefix.push(context)
+			}
+			current = [...prefix, line]
+			contextByLevel.set(level, line)
+			for (const key of Array.from(contextByLevel.keys())) {
+				if (key > level) contextByLevel.delete(key)
+			}
+		}
+
+		if (current.length > 0) {
+			blocks.push(current.join("\n"))
+		}
+		if (!sawMarker) return [sourceText]
+		return blocks
+			.map((block) => block.split("\n").filter((line) => line.trim() !== ""))
+			.map((block) => block.join("\n"))
+			.filter(Boolean)
+	}
+
 	const projectedHtmlResult = $derived.by(() => {
 		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
 		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
-		const rawDirectives = extractActionDirectivesFromText(sourceText)
+		const sourceBlocks = splitActionSourceBlocks(sourceText)
+		const rawDirectives = sourceBlocks.flatMap((block) =>
+			extractActionDirectivesFromText(block),
+		)
 		const hasNonDeleteArticle = rawDirectives.some(
 			(directive) => directive.kind !== "delete_article",
 		)

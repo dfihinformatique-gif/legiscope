@@ -42,17 +42,13 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	function findFirstLinkAbove(
-		button: HTMLButtonElement,
-	): HTMLAnchorElement | null {
-		let current: HTMLElement | null = button
+	function findFirstLinkAbove(element: HTMLElement): HTMLAnchorElement | null {
+		let current: HTMLElement | null = element
 
 		while (current) {
 			let sibling = current.previousElementSibling
 			while (sibling) {
-				if (sibling instanceof HTMLAnchorElement) {
-					return sibling
-				}
+				if (sibling instanceof HTMLAnchorElement) return sibling
 
 				const links = sibling.querySelectorAll("a")
 				if (links.length > 0) {
@@ -98,7 +94,38 @@
 		let listRoot: Element | null = null
 		let listQuotePending = false
 		const listStartLevel = getListMarkerLevel(startText)
+		const normalizedStart = startText
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(/\p{Diacritic}/gu, "")
+		const allowSameLevelItems =
+			/^\s*1\s*(?:°|\.|\))\s+/u.test(startText) &&
+			/\bapres\s+le\b/u.test(normalizedStart) &&
+			/\binser/.test(normalizedStart)
+		if (colonMode && allowSameLevelItems) {
+			listMode = true
+			listRoot = start.closest("ol, ul")
+		}
 		if (!inQuoteBlock && !startText.endsWith(":")) {
+			const startLevel = listStartLevel
+			if (startLevel !== null) {
+				let currentLevel = startLevel
+				const context: Element[] = []
+				for (let i = startIndex - 1; i >= 0; i -= 1) {
+					const previous = nodes[i]
+					const prevText = normalizeLineText(previous.textContent)
+					if (!prevText) continue
+					const level = getListMarkerLevel(prevText)
+					if (level !== null && level < currentLevel) {
+						context.unshift(previous)
+						currentLevel = level
+						if (currentLevel === 1) break
+					}
+				}
+				if (context.length > 0) {
+					collected.unshift(...context)
+				}
+			}
 			return {
 				html: collected.map((node) => node.outerHTML).join("\n"),
 				text: collected
@@ -175,8 +202,11 @@
 					}
 					if (listStartLevel !== null && listItemRe.test(text)) {
 						const currentLevel = getListMarkerLevel(text)
-						if (currentLevel !== null && currentLevel <= listStartLevel) {
-							break
+						if (currentLevel !== null) {
+							if (currentLevel < listStartLevel) break
+							if (currentLevel === listStartLevel && !allowSameLevelItems) {
+								break
+							}
 						}
 					} else if (listStartLevel !== null && !listItemRe.test(text)) {
 						const currentLevel = getListMarkerLevel(text)
@@ -246,6 +276,10 @@
 
 				const link = target.closest('a[href^="#"]') as HTMLAnchorElement
 				const lawLink = target.closest("a.law-article-link")
+				const paragraph = target.closest("p, li, div")
+				const fallbackLink =
+					!lawLink && paragraph ? findFirstLinkAbove(paragraph) : null
+				const activeLawLink = lawLink ?? fallbackLink
 
 				if (link) {
 					e.preventDefault()
@@ -262,23 +296,24 @@
 					updateButtonColors()
 				}
 
-				if (lawLink) {
+				if (activeLawLink) {
 					e.preventDefault()
-					const href = lawLink.getAttribute("href")
+					const href = activeLawLink.getAttribute("href")
 					const lawUrl = href ? new URL(href, window.location.origin) : null
 					const lawArticle = lawUrl?.searchParams.get("article") ?? undefined
 					if (lawArticle) {
-						const paragraph = target.closest("p, li, div")
-						const html = paragraph?.innerHTML ?? lawLink.outerHTML
+						const html = paragraph?.innerHTML ?? activeLawLink.outerHTML
 						const text =
 							paragraph?.textContent?.replace(/\s+/g, " ").trim() ??
-							lawLink.textContent?.replace(/\s+/g, " ").trim() ??
+							activeLawLink.textContent?.replace(/\s+/g, " ").trim() ??
 							""
 						const block = paragraph
 							? collectPjlBlock(shadow, paragraph)
 							: {
-									html: lawLink.outerHTML,
-									text: lawLink.textContent?.replace(/\s+/g, " ").trim() ?? "",
+									html: activeLawLink.outerHTML,
+									text:
+										activeLawLink.textContent?.replace(/\s+/g, " ").trim() ??
+										"",
 								}
 						shared.pjlSelectedLine = {
 							articleId: lawArticle,
