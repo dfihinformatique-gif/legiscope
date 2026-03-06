@@ -2014,14 +2014,17 @@
 
 		if (
 			(action.kind === "insert_after" || action.kind === "insert_before") &&
-			action.targetType === "article" &&
 			(!action.targetText || action.targetText.trim() === "")
 		) {
 			const normalized = action.sourceText
 				.toLowerCase()
 				.normalize("NFD")
 				.replace(/\p{Diacritic}/gu, "")
-			if (/\bcomplet/.test(normalized) || /\bajout/.test(normalized)) {
+			if (
+				/\bcomplet/.test(normalized) ||
+				/\bajout/.test(normalized) ||
+				/\bretabl/.test(normalized)
+			) {
 				const insertionHtml = formatInsertionParagraphs(action.insertText, {
 					preserveLineBreaks: action.insertText.includes("\n"),
 					highlight: true,
