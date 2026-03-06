@@ -1392,6 +1392,15 @@
 			}
 		}
 
+		const selectorSteps = getSelectorSteps(action.portionSelectors[0])
+		const isAlineaOnly =
+			selectorSteps?.length === 1 && selectorSteps[0]?.type === "alinéa"
+		if (isAlineaOnly) {
+			return {
+				html: html.slice(0, bounds.start) + html.slice(bounds.stop),
+			}
+		}
+
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
 		const targetText = alinea.text
 		let targetPosition: FragmentPosition | null = null
