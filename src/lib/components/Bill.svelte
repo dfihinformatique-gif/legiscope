@@ -89,6 +89,17 @@
 			blockText: string
 		}[]
 	> {
+		const isDispositiveElement = (node: Element): boolean => {
+			let current: Element | null = node
+			while (current) {
+				const className = current.getAttribute("class")
+				if (className && className.toLowerCase().includes("projetloi")) {
+					return true
+				}
+				current = current.parentElement
+			}
+			return false
+		}
 		const result: Record<
 			string,
 			{
@@ -110,6 +121,9 @@
 
 			const paragraph = link.closest("p, li") ?? link.parentElement
 			if (!paragraph) continue
+			if (!isDispositiveElement(paragraph)) continue
+			const paragraphText = normalizeLineText(paragraph.textContent)
+			if (paragraphText.startsWith("«")) continue
 			const block = collectPjlBlock(root, paragraph)
 			const blockText = block.text
 			if (!blockText) continue
@@ -138,7 +152,7 @@
 		root: ShadowRoot,
 		startNode: Element,
 	): { html: string; text: string } {
-		const nodes = Array.from(root.querySelectorAll("p, li"))
+		const nodes = Array.from(root.querySelectorAll("p, li, table"))
 		const startIndex = nodes.findIndex((node) => node.contains(startNode))
 		if (startIndex === -1) {
 			return {

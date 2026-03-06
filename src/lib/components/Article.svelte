@@ -30,11 +30,14 @@
 		assertNever,
 		buildArticlePortionTreeFromHtml,
 		extractActionDirectivesFromText,
+		extractPortionSelectors,
+		getExtractedReferences,
 		newReverseTransformationsMergedFromPositionsIterator,
 		reversePositionsSplitFromPositions,
 		resolvePortionSelector,
 		simplifyHtml,
 		simplifyPlainText,
+		TextParserContext,
 		type ActionDirective,
 		type ArticlePortionAlinea,
 		type ArticlePortionMatch,
@@ -63,6 +66,10 @@
 		pjlArticleLabel: string
 		blockHtml: string
 		blockText: string
+	}
+
+	type ActionDirectiveWithHtml = ActionDirective & {
+		replacementHtml?: string
 	}
 	let {
 		articleInfo,
@@ -1011,6 +1018,26 @@
 		return escaped.replace(/\n+/g, "<br>")
 	}
 
+	function stripHtmlToText(value: string): string {
+		return value
+			.replace(/<[^>]+>/g, " ")
+			.replace(/\s+/g, " ")
+			.trim()
+	}
+
+	function extractFirstTableHtml(value: string | undefined): string | null {
+		if (!value) return null
+		const match = /<table\b[\s\S]*?<\/table>/i.exec(value)
+		return match?.[0] ?? null
+	}
+
+	function normalizeActionSource(text: string): string {
+		return text
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(/\p{Diacritic}/gu, "")
+	}
+
 	function formatInsertionInline(value: string): string {
 		return formatReplacementText(value).trim()
 	}
@@ -1037,6 +1064,24 @@
 			}
 			searchFrom = closeIndex + 4
 		}
+	}
+
+	function findTableBoundsAfter(
+		html: string,
+		startIndex: number,
+	): { start: number; stop: number } | null {
+		const lower = html.toLowerCase()
+		const tableStart = lower.indexOf("<table", startIndex)
+		if (tableStart === -1) return null
+		const tableEnd = lower.indexOf("</table>", tableStart)
+		if (tableEnd === -1) return null
+		return { start: tableStart, stop: tableEnd + "</table>".length }
+	}
+
+	function wrapTableReplacement(oldHtml: string, newHtml: string): string {
+		const removed = `<div class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${oldHtml}</div>`
+		const added = `<div class="rounded-md px-0.5 bg-green-50 text-green-900">${newHtml}</div>`
+		return `${removed}${added}`
 	}
 
 	function findBlockBoundsFromIndex(
@@ -1106,6 +1151,50 @@
 		return selector.last.length > 0 ? selector.last : selector.first
 	}
 
+	function buildTableReplacementDirective(
+		blockText: string,
+		blockHtml: string | undefined,
+	): ActionDirectiveWithHtml | null {
+		const tableHtml = extractFirstTableHtml(blockHtml)
+		if (!tableHtml) return null
+		const normalized = normalizeActionSource(blockText)
+		if (!/\btableau\b/.test(normalized) || !/\bremplac/.test(normalized)) {
+			return null
+		}
+		const actionMatch = /\bremplac(?:e|é|ée|és|ées)\b/i.exec(blockText)
+		const actionIndex = actionMatch?.index ?? blockText.length
+		const context = new TextParserContext(blockText)
+		const references = getExtractedReferences(context)
+		const candidates = references
+			.filter((reference) => (reference.position?.start ?? 0) <= actionIndex)
+			.map((reference) => ({
+				reference,
+				selectors: extractPortionSelectors(reference),
+			}))
+			.filter((candidate) => candidate.selectors.length > 0)
+		if (candidates.length === 0) return null
+
+		const best = candidates
+			.map((candidate) => ({
+				...candidate,
+				score: getSelectorsScore(candidate.selectors),
+			}))
+			.sort((a, b) => b.score - a.score)[0]
+
+		if (!best) return null
+
+		return {
+			kind: "replace_portion",
+			targetType: "portion",
+			reference: best.reference,
+			portionSelectors: best.selectors,
+			replacementText: stripHtmlToText(tableHtml),
+			replacementHtml: tableHtml,
+			sourcePosition: { start: 0, stop: blockText.length },
+			sourceText: blockText,
+		}
+	}
+
 	function getMatchAlinea(
 		match: ArticlePortionMatch,
 	): ArticlePortionAlinea | null {
@@ -1153,7 +1242,7 @@
 
 	function applyReplacePortionActionToHtml(
 		html: string,
-		action: Extract<ActionDirective, { kind: "replace_portion" }>,
+		action: Extract<ActionDirectiveWithHtml, { kind: "replace_portion" }>,
 	): ProjectedHtmlResult {
 		if (action.portionSelectors.length === 0) {
 			return {
@@ -1221,6 +1310,26 @@
 				html: null,
 				reason:
 					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		if (action.replacementHtml && /<table\b/i.test(action.replacementHtml)) {
+			const tableBounds =
+				findTableBoundsAfter(html, bounds.stop) ?? findTableBoundsAfter(html, 0)
+			if (tableBounds) {
+				const existingTable = html.slice(tableBounds.start, tableBounds.stop)
+				return {
+					html:
+						html.slice(0, tableBounds.start) +
+						wrapTableReplacement(existingTable, action.replacementHtml) +
+						html.slice(tableBounds.stop),
+					skipDiff: true,
+				}
+			}
+			return {
+				html: null,
+				reason:
+					"Tableau cible introuvable dans l'article en vigueur pour appliquer la modification.",
 			}
 		}
 
@@ -1991,7 +2100,7 @@
 
 	function applyProjectActionToHtml(
 		html: string,
-		action: ActionDirective,
+		action: ActionDirectiveWithHtml,
 	): ProjectedHtmlResult {
 		if (action.kind === "replace_portion") {
 			return applyReplacePortionActionToHtml(html, action)
@@ -2131,7 +2240,7 @@
 
 	function applyProjectActionsToHtml(
 		html: string,
-		directives: ActionDirective[],
+		directives: ActionDirectiveWithHtml[],
 	): ProjectedHtmlResult {
 		let currentHtml = html
 		let skipDiff = true
@@ -2188,14 +2297,19 @@
 		return Math.max(firstLength, lastLength)
 	}
 
-	function getDirectiveSpecificity(directive: ActionDirective): number {
+	function getSelectorsScore(selectors: PortionSelector[]): number {
+		if (selectors.length === 0) return 0
+		return Math.max(0, ...selectors.map(getSelectorScore))
+	}
+
+	function getDirectiveSpecificity(directive: ActionDirectiveWithHtml): number {
 		if (directive.portionSelectors.length === 0) return 0
 		const scores = directive.portionSelectors.map(getSelectorScore)
 		const best = Math.max(0, ...scores)
 		return 100 + best
 	}
 
-	function getDirectiveKey(directive: ActionDirective): string {
+	function getDirectiveKey(directive: ActionDirectiveWithHtml): string {
 		const insertText =
 			"insertText" in directive && directive.insertText
 				? directive.insertText
@@ -2204,11 +2318,16 @@
 			"replacementText" in directive && directive.replacementText
 				? directive.replacementText
 				: ""
+		const replacementHtml =
+			"replacementHtml" in directive && directive.replacementHtml
+				? directive.replacementHtml
+				: ""
 		return [
 			directive.kind,
 			directive.targetText ?? "",
 			insertText,
 			replacementText,
+			replacementHtml,
 		].join("|")
 	}
 
@@ -2270,31 +2389,37 @@
 			.filter(Boolean)
 	}
 
-	function buildDirectivesFromSourceText(
-		sourceText: string,
-	): ActionDirective[] {
-		const sourceBlocks = splitActionSourceBlocks(sourceText)
+	function buildDirectivesFromSourceBlock(
+		blockText: string,
+		blockHtml: string | undefined,
+	): ActionDirectiveWithHtml[] {
+		const sourceBlocks = splitActionSourceBlocks(blockText)
 		const rawDirectives = sourceBlocks.flatMap((block) =>
 			extractActionDirectivesFromText(block),
 		)
-		const hasNonDeleteArticle = rawDirectives.some(
-			(directive) => directive.kind !== "delete_article",
-		)
-		return hasNonDeleteArticle
-			? rawDirectives.filter((directive) => {
-					if (directive.kind !== "delete_article") return true
-					const text = directive.sourceText.toLowerCase()
-					if (text.includes(":")) return false
-					if (
-						text.includes("a l'article") ||
-						text.includes("à l'article") ||
-						text.includes("au article")
-					) {
-						return false
-					}
-					return true
-				})
-			: rawDirectives
+		if (rawDirectives.length > 0) {
+			const hasNonDeleteArticle = rawDirectives.some(
+				(directive) => directive.kind !== "delete_article",
+			)
+			return hasNonDeleteArticle
+				? rawDirectives.filter((directive) => {
+						if (directive.kind !== "delete_article") return true
+						const text = directive.sourceText.toLowerCase()
+						if (text.includes(":")) return false
+						if (
+							text.includes("a l'article") ||
+							text.includes("à l'article") ||
+							text.includes("au article")
+						) {
+							return false
+						}
+						return true
+					})
+				: rawDirectives
+		}
+
+		const tableDirective = buildTableReplacementDirective(blockText, blockHtml)
+		return tableDirective ? [tableDirective] : []
 	}
 
 	type PjlProjectionFailure = {
@@ -2319,7 +2444,10 @@
 		const failures: PjlProjectionFailure[] = []
 
 		for (const block of pjlBlocksForArticle) {
-			const directives = buildDirectivesFromSourceText(block.blockText)
+			const directives = buildDirectivesFromSourceBlock(
+				block.blockText,
+				block.blockHtml,
+			)
 			if (directives.length === 0) {
 				failures.push({
 					pjlArticleLabel: block.pjlArticleLabel,
@@ -2429,7 +2557,10 @@
 	const projectedHtmlResult = $derived.by(() => {
 		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
 		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
-		const directives = buildDirectivesFromSourceText(sourceText)
+		const directives = buildDirectivesFromSourceBlock(
+			sourceText,
+			selectedPjlLine.blockHtml,
+		)
 		if (directives.length === 0) {
 			return {
 				html: null,
