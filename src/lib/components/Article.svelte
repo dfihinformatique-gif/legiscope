@@ -32,6 +32,7 @@
 		extractActionDirectivesFromText,
 		extractPortionSelectors,
 		getExtractedReferences,
+		iterIncludedReferences,
 		newReverseTransformationsMergedFromPositionsIterator,
 		reversePositionsSplitFromPositions,
 		resolvePortionSelector,
@@ -49,7 +50,7 @@
 	} from "@tricoteuses/tisseuse"
 	import { Diff, diffArrays, type Change, type ChangeObject } from "diff"
 	import { onMount } from "svelte"
-	import { SvelteMap } from "svelte/reactivity"
+	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
 	import ArticlesModificateurs from "./ArticlesModificateurs.svelte"
@@ -524,8 +525,17 @@
 	let showDiff = $state(false)
 	let showPjlDiff = $state(false)
 	const selectedPjlLine = $derived(shared.pjlSelectedLine)
+	const isSectionRequest = $derived.by(() => {
+		const requestedId = page.url.searchParams.get("article") ?? ""
+		return /^LEGISCTA|^JORFCTA/i.test(requestedId)
+	})
 	const pjlBlocksForArticle = $derived.by(() => {
-		const articleId = articleInfo.article?.legi_id
+		const requestedId = page.url.searchParams.get("article") ?? undefined
+		const isSection =
+			requestedId !== undefined && /^LEGISCTA|^JORFCTA/i.test(requestedId)
+		const articleId = isSection
+			? requestedId
+			: (articleInfo.article?.legi_id ?? requestedId)
 		if (!articleId) return [] as PjlArticleBlock[]
 		return shared.pjlArticleBlocksByLawArticle?.[articleId] ?? []
 	})
@@ -1036,6 +1046,66 @@
 			.toLowerCase()
 			.normalize("NFD")
 			.replace(/\p{Diacritic}/gu, "")
+	}
+
+	function normalizeArticleNum(value: string | null | undefined): string {
+		return (value ?? "")
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(/\p{Diacritic}/gu, "")
+			.replace(/[^a-z0-9-]/g, "")
+	}
+
+	function collectArticleNumsFromReference(
+		reference: ActionDirectiveWithHtml["reference"],
+	): string[] {
+		const nums = new SvelteSet<string>()
+		for (const ref of iterIncludedReferences(reference)) {
+			if (ref.type !== "article") continue
+			const normalized = normalizeArticleNum(ref.num)
+			if (normalized) nums.add(normalized)
+		}
+		return Array.from(nums)
+	}
+
+	function collectArticleNumsFromText(text: string): string[] {
+		if (!text.trim()) return []
+		const context = new TextParserContext(text)
+		const references = getExtractedReferences(context)
+		const nums = new SvelteSet<string>()
+		for (const reference of references) {
+			for (const ref of iterIncludedReferences(reference)) {
+				if (ref.type !== "article") continue
+				const normalized = normalizeArticleNum(ref.num)
+				if (normalized) nums.add(normalized)
+			}
+		}
+		return Array.from(nums)
+	}
+
+	function filterDirectivesForArticle(
+		directives: ActionDirectiveWithHtml[],
+		articleNum: string | null | undefined,
+	): ActionDirectiveWithHtml[] {
+		const normalized = normalizeArticleNum(articleNum)
+		if (!normalized) return directives
+		return directives.filter((directive) => {
+			const fromReference = collectArticleNumsFromReference(directive.reference)
+			const candidates =
+				fromReference.length > 0
+					? fromReference
+					: collectArticleNumsFromText(directive.sourceText)
+			if (candidates.length === 0) return true
+			return candidates.includes(normalized)
+		})
+	}
+
+	function isActionLikeText(text: string): boolean {
+		const prefix = text.split("«")[0] ?? text
+		const normalized = normalizeActionSource(prefix)
+		return /\b(insere|ajoute|remplace|supprime|abroge|complete|retabl|modifie)\b/.test(
+			normalized,
+		)
 	}
 
 	function formatInsertionInline(value: string): string {
@@ -2116,8 +2186,26 @@
 		}
 
 		if (action.kind === "insert_after" || action.kind === "insert_before") {
+			if (!action.targetText && html.trim() === "") {
+				const insertionHtml = formatInsertionParagraphs(action.insertText, {
+					preserveLineBreaks: action.insertText.includes("\n"),
+					highlight: true,
+				})
+				if (!insertionHtml) {
+					return {
+						html: null,
+						reason:
+							"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+					}
+				}
+				return {
+					html: insertionHtml,
+					skipDiff: true,
+				}
+			}
 			if (action.portionSelectors.length > 0) {
-				return applyInsertPortionActionToHtml(html, action)
+				const result = applyInsertPortionActionToHtml(html, action)
+				if (result.html !== null) return result
 			}
 		}
 
@@ -2392,17 +2480,22 @@
 	function buildDirectivesFromSourceBlock(
 		blockText: string,
 		blockHtml: string | undefined,
-	): ActionDirectiveWithHtml[] {
+		articleNum?: string | null,
+	): { directives: ActionDirectiveWithHtml[]; isAction: boolean } {
 		const sourceBlocks = splitActionSourceBlocks(blockText)
 		const rawDirectives = sourceBlocks.flatMap((block) =>
 			extractActionDirectivesFromText(block),
 		)
-		if (rawDirectives.length > 0) {
-			const hasNonDeleteArticle = rawDirectives.some(
+		const scopedDirectives = filterDirectivesForArticle(
+			rawDirectives,
+			articleNum,
+		)
+		if (scopedDirectives.length > 0) {
+			const hasNonDeleteArticle = scopedDirectives.some(
 				(directive) => directive.kind !== "delete_article",
 			)
-			return hasNonDeleteArticle
-				? rawDirectives.filter((directive) => {
+			const directives = hasNonDeleteArticle
+				? scopedDirectives.filter((directive) => {
 						if (directive.kind !== "delete_article") return true
 						const text = directive.sourceText.toLowerCase()
 						if (text.includes(":")) return false
@@ -2415,11 +2508,19 @@
 						}
 						return true
 					})
-				: rawDirectives
+				: scopedDirectives
+			return { directives, isAction: true }
+		}
+		if (rawDirectives.length > 0) {
+			return { directives: [], isAction: false }
 		}
 
 		const tableDirective = buildTableReplacementDirective(blockText, blockHtml)
-		return tableDirective ? [tableDirective] : []
+		if (tableDirective) {
+			return { directives: [tableDirective], isAction: true }
+		}
+		const isAction = isActionLikeText(blockText)
+		return { directives: [], isAction }
 	}
 
 	type PjlProjectionFailure = {
@@ -2436,24 +2537,26 @@
 	}
 
 	const pjlAggregateProjection = $derived.by(() => {
-		if (!currentBlocTextuel || pjlBlocksForArticle.length === 0)
-			return undefined
-		let currentHtml = currentBlocTextuel
+		if (pjlBlocksForArticle.length === 0) return undefined
+		let currentHtml = isSectionRequest ? "" : (currentBlocTextuel ?? "")
 		let skipDiff = true
 		let appliedCount = 0
 		const failures: PjlProjectionFailure[] = []
 
 		for (const block of pjlBlocksForArticle) {
-			const directives = buildDirectivesFromSourceBlock(
+			const { directives, isAction } = buildDirectivesFromSourceBlock(
 				block.blockText,
 				block.blockHtml,
+				articleInfo.article?.num,
 			)
 			if (directives.length === 0) {
-				failures.push({
-					pjlArticleLabel: block.pjlArticleLabel,
-					reason:
-						"Disposition non reconnue pour l'instant pour projeter un diff.",
-				})
+				if (isAction) {
+					failures.push({
+						pjlArticleLabel: block.pjlArticleLabel,
+						reason:
+							"Disposition non reconnue pour l'instant pour projeter un diff.",
+					})
+				}
 				continue
 			}
 
@@ -2555,11 +2658,12 @@
 	})
 
 	const projectedHtmlResult = $derived.by(() => {
-		if (!currentBlocTextuel || !selectedPjlLine?.text) return undefined
+		if (!selectedPjlLine?.text) return undefined
 		const sourceText = selectedPjlLine.blockText ?? selectedPjlLine.text ?? ""
-		const directives = buildDirectivesFromSourceBlock(
+		const { directives } = buildDirectivesFromSourceBlock(
 			sourceText,
 			selectedPjlLine.blockHtml,
+			articleInfo.article?.num,
 		)
 		if (directives.length === 0) {
 			return {
@@ -2568,7 +2672,8 @@
 					"Disposition non reconnue pour l'instant pour projeter un diff.",
 			} satisfies ProjectedHtmlResult
 		}
-		return applyProjectActionsToHtml(currentBlocTextuel, directives)
+		const baseHtml = isSectionRequest ? "" : (currentBlocTextuel ?? "")
+		return applyProjectActionsToHtml(baseHtml, directives)
 	})
 
 	const diffContent = $derived.by(() => {
@@ -2579,9 +2684,9 @@
 	})
 
 	const pjlDiffContent = $derived.by(() => {
-		if (showPjlDiff === true && currentBlocTextuel) {
+		if (showPjlDiff === true) {
 			if (pjlAggregateProjection?.html) {
-				if (pjlAggregateProjection.skipDiff) {
+				if (!currentBlocTextuel || pjlAggregateProjection.skipDiff) {
 					return pjlAggregateProjection.html
 				}
 				return generateHtmlSplitDiff(
@@ -2602,6 +2707,7 @@
 		__pjlProjectedReason?: string | null
 		__pjlAggregateHtml?: string | null
 		__pjlAggregateReason?: string | null
+		__pjlAggregateFailures?: PjlProjectionFailure[] | null
 	}
 
 	$effect(() => {
@@ -2618,12 +2724,14 @@
 		if (!pjlAggregateProjection) {
 			debugWindow.__pjlAggregateHtml = null
 			debugWindow.__pjlAggregateReason = null
+			debugWindow.__pjlAggregateFailures = null
 		} else {
 			debugWindow.__pjlAggregateHtml = pjlAggregateProjection.html ?? null
 			debugWindow.__pjlAggregateReason =
 				pjlAggregateProjection.html === null
 					? (pjlAggregateProjection.reason ?? null)
 					: null
+			debugWindow.__pjlAggregateFailures = pjlAggregateProjection.failures
 		}
 	})
 

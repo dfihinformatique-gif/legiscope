@@ -89,6 +89,17 @@
 			blockText: string
 		}[]
 	> {
+		const hasActionVerb = (text: string): boolean => {
+			const prefix = text.split("«")[0] ?? text
+			const normalized = prefix
+				.toLowerCase()
+				.normalize("NFD")
+				.replace(/\p{Diacritic}/gu, "")
+			return /\b(insere|ajoute|remplace|supprime|abroge|complete|retabl|modifie)\b/.test(
+				normalized,
+			)
+		}
+
 		const isDispositiveElement = (node: Element): boolean => {
 			let current: Element | null = node
 			while (current) {
@@ -127,6 +138,7 @@
 			const block = collectPjlBlock(root, paragraph)
 			const blockText = block.text
 			if (!blockText) continue
+			if (!hasActionVerb(blockText)) continue
 
 			const pjlArticleLabel = getPjlArticleLabelForLink(link) ?? "Article"
 
