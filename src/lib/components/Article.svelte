@@ -2053,7 +2053,10 @@
 					"Aucune cible textuelle exploitable pour appliquer la modification.",
 			}
 		}
-		const targetPosition = findTextPositionInHtml(html, target)
+		let targetPosition = findTextPositionInHtml(html, target)
+		if (!targetPosition) {
+			targetPosition = findTextPositionInHtml(html, normalizeLabel(target))
+		}
 		if (!targetPosition) {
 			return {
 				html: null,
