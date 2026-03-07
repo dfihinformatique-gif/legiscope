@@ -1048,6 +1048,54 @@
 			.replace(/\p{Diacritic}/gu, "")
 	}
 
+	function extractQuotedBlockText(text: string): string | null {
+		const lines = text.split("\n")
+		const quoted: string[] = []
+		for (const line of lines) {
+			const match = /^\s*«\s*(.*)$/.exec(line)
+			if (!match) continue
+			quoted.push(match[1] ?? "")
+		}
+		if (quoted.length === 0) return null
+		const cleaned = quoted
+			.map((line, index) =>
+				index === quoted.length - 1
+					? line.replace(/\s*»\s*;?\s*$/, "")
+					: line,
+			)
+			.join("\n")
+			.trim()
+		return cleaned.length > 0 ? cleaned : null
+	}
+
+	function buildSectionReestablishDirective(
+		blockText: string,
+	): ActionDirectiveWithHtml | null {
+		const normalized = normalizeActionSource(blockText)
+		if (!/\bsection\b/.test(normalized) || !/\bretabl/.test(normalized)) {
+			return null
+		}
+		const insertText = extractQuotedBlockText(blockText)
+		if (!insertText) return null
+		const context = new TextParserContext(blockText)
+		const references = getExtractedReferences(context)
+		const reference =
+			references.find((ref) => extractPortionSelectors(ref).length > 0) ??
+			references[0]
+		if (!reference) return null
+		const sourcePosition = reference.position ?? { start: 0, stop: 0 }
+		return {
+			kind: "insert_after",
+			targetType: "division",
+			reference,
+			portionSelectors: extractPortionSelectors(reference),
+			targetText: "",
+			insertText,
+			sourcePosition,
+			sourceText: blockText,
+		}
+	}
+
 	function normalizeArticleNum(value: string | null | undefined): string {
 		return (value ?? "")
 			.toLowerCase()
@@ -1091,12 +1139,16 @@
 		if (!normalized) return directives
 		return directives.filter((directive) => {
 			const fromReference = collectArticleNumsFromReference(directive.reference)
-			const candidates =
-				fromReference.length > 0
-					? fromReference
-					: collectArticleNumsFromText(directive.sourceText)
+			if (fromReference.length > 0) {
+				return fromReference.includes(normalized)
+			}
+			if (directive.portionSelectors.length > 0) {
+				return true
+			}
+			const candidates = collectArticleNumsFromText(directive.sourceText)
 			if (candidates.length === 0) return true
-			return candidates.includes(normalized)
+			if (candidates.includes(normalized)) return true
+			return candidates.length > 1
 		})
 	}
 
@@ -2482,6 +2534,10 @@
 		blockHtml: string | undefined,
 		articleNum?: string | null,
 	): { directives: ActionDirectiveWithHtml[]; isAction: boolean } {
+		const sectionDirective = buildSectionReestablishDirective(blockText)
+		if (sectionDirective) {
+			return { directives: [sectionDirective], isAction: true }
+		}
 		const sourceBlocks = splitActionSourceBlocks(blockText)
 		const rawDirectives = sourceBlocks.flatMap((block) =>
 			extractActionDirectivesFromText(block),

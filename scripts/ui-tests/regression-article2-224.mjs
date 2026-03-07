@@ -2,9 +2,7 @@ import { webkit } from "playwright"
 
 const base =
   process.env.LEGI_UI_BASE ?? "http://127.0.0.1:5174/pjl/PRJLANR5L17B1906"
-const linkText = "article L. 1241-14"
-const insertedNeedle =
-  "11° Le produit de la majoration de la taxe régionale sur l'immatriculation des véhicules"
+const linkText = "article 224 du code général des impôts"
 
 const browser = await webkit.launch()
 const page = await browser.newPage()
@@ -17,22 +15,22 @@ const fail = async (message) => {
 await page.goto(base, { waitUntil: "domcontentloaded" })
 await page.waitForSelector("a.law-article-link", { timeout: 60000 })
 
-const lawLink = page
+const articleLink = page
   .locator("a.law-article-link", { hasText: linkText })
   .first()
-if ((await lawLink.count()) === 0) {
-  await fail(`Lien introuvable: ${linkText}`)
+if ((await articleLink.count()) === 0) {
+  await fail(`Lien d'article introuvable: ${linkText}`)
 }
-await lawLink.scrollIntoViewIfNeeded()
-await lawLink.click({ force: true })
+await articleLink.scrollIntoViewIfNeeded()
+await articleLink.click({ force: true })
 await page.waitForURL(/article=/, { timeout: 60000 })
 await page.waitForLoadState("domcontentloaded")
 
-const h1 = page.locator("h1", { hasText: /L1241-14/i }).first()
+const h1 = page.locator("h1", { hasText: /Article 224/i }).first()
 await h1.waitFor({ timeout: 60000 })
 const h1Text = (await h1.textContent()) ?? ""
-if (!h1Text.toLowerCase().includes("l1241-14")) {
-  await fail("Article L. 1241-14 introuvable dans les donnees locales")
+if (!h1Text.toLowerCase().includes("article 224")) {
+  await fail("Article 224 introuvable dans le panneau de droite.")
 }
 
 const showProjection = page.getByRole("button", {
@@ -49,12 +47,14 @@ if (diffText.includes("Cible introuvable")) {
   await fail("Diff en erreur: Cible introuvable")
 }
 
-const addedSpan = diffRoot
-  .locator("span.bg-green-50", { hasText: insertedNeedle })
-  .first()
-if ((await addedSpan.count()) === 0) {
-  await fail("Texte rétabli non surligné en vert")
+const addedCount = await diffRoot.locator("span.bg-green-50").count()
+if (addedCount === 0) {
+  await fail("Aucune insertion en vert dans le diff projeté.")
+}
+
+if (/\\bIII\\s+bis\\b/i.test(diffText)) {
+  await fail("Le contenu de l'article 10 fuit dans la version projetée (III bis).")
 }
 
 await browser.close()
-console.log("OK - Article 15 (L. 1241-14) rétablissement")
+console.log("OK - UI regression: Article 2 (CGI 224, version projetée).")

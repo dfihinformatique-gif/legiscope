@@ -95,7 +95,7 @@
 				.toLowerCase()
 				.normalize("NFD")
 				.replace(/\p{Diacritic}/gu, "")
-			return /\b(insere|ajoute|remplace|supprime|abroge|complete|retabl|modifie)\b/.test(
+			return /\b(insere|ajout|remplac|supprim|abrog|complet|retabl|modifi)/.test(
 				normalized,
 			)
 		}
@@ -111,6 +111,59 @@
 			}
 			return false
 		}
+
+		const findActionParagraphForLink = (
+			nodes: Element[],
+			paragraph: Element,
+		): Element => {
+			const paragraphText = normalizeLineText(paragraph.textContent)
+			if (!paragraphText.startsWith("«")) return paragraph
+			const isInDispositive = isDispositiveElement(paragraph)
+			if (!isInDispositive) return paragraph
+			const startIndex = nodes.findIndex((node) => node.contains(paragraph))
+			if (startIndex === -1) return paragraph
+			for (let i = startIndex - 1; i >= 0; i -= 1) {
+				const candidate = nodes[i]
+				if (!isDispositiveElement(candidate)) break
+				const candidateText = normalizeLineText(candidate.textContent)
+				if (!candidateText) continue
+				if (candidateText.startsWith("«")) continue
+				return candidate
+			}
+			return paragraph
+		}
+
+		const getLinkTargets = (node: Element): string[] => {
+			const actionLinks = Array.from(
+				node.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
+			)
+			return actionLinks
+				.map((actionLink) => {
+					const actionHref = actionLink.getAttribute("href")
+					if (!actionHref) return null
+					const actionUrl = new URL(actionHref, window.location.origin)
+					return actionUrl.searchParams.get("article")
+				})
+				.filter((value): value is string => Boolean(value))
+		}
+
+		const findContextTargets = (
+			nodes: Element[],
+			startNode: Element,
+		): string[] => {
+			const startIndex = nodes.findIndex((node) => node.contains(startNode))
+			if (startIndex === -1) return []
+			for (let i = startIndex; i >= 0; i -= 1) {
+				const candidate = nodes[i]
+				if (!isDispositiveElement(candidate)) break
+				const candidateText = normalizeLineText(candidate.textContent)
+				if (!candidateText || candidateText.startsWith("«")) continue
+				const targets = getLinkTargets(candidate)
+				if (targets.length > 0) return targets
+			}
+			return []
+		}
+
 		const result: Record<
 			string,
 			{
@@ -120,6 +173,7 @@
 			}[]
 		> = {}
 		const dedupe = new SvelteMap<string, SvelteSet<string>>()
+		const nodes = Array.from(root.querySelectorAll("p, li, table"))
 		const links = Array.from(
 			root.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
 		)
@@ -133,9 +187,21 @@
 			const paragraph = link.closest("p, li") ?? link.parentElement
 			if (!paragraph) continue
 			if (!isDispositiveElement(paragraph)) continue
-			const paragraphText = normalizeLineText(paragraph.textContent)
+			const isQuotedLine = normalizeLineText(paragraph.textContent).startsWith("«")
+			const actionParagraph = findActionParagraphForLink(nodes, paragraph)
+			const actionTargets = getLinkTargets(actionParagraph)
+			const contextTargets = findContextTargets(nodes, actionParagraph)
+			const targetPool =
+				contextTargets.length > 0 ? contextTargets : actionTargets
+			if (isQuotedLine && targetPool.length === 0) {
+				continue
+			}
+			if (targetPool.length > 0 && !targetPool.includes(lawArticle)) {
+				continue
+			}
+			const paragraphText = normalizeLineText(actionParagraph.textContent)
 			if (paragraphText.startsWith("«")) continue
-			const block = collectPjlBlock(root, paragraph)
+			const block = collectPjlBlock(root, actionParagraph)
 			const blockText = block.text
 			if (!blockText) continue
 			if (!hasActionVerb(blockText)) continue

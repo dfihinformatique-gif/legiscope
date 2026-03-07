@@ -177,10 +177,8 @@ async function getArticle(
 						)
 					}
 				} else {
-					throw error(
-						422,
-						`No text associated to ${requestedArticle} for date ${requestedDate} has been found.`,
-					)
+					output.text = undefined
+					output.sectionTitle = undefined
 				}
 			} else {
 				throw error(
