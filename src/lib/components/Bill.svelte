@@ -502,13 +502,32 @@
 			const handleClick = (e: Event) => {
 				const mouseEvent = e as MouseEvent
 				const target = mouseEvent.target as HTMLElement
+				const selection = window.getSelection()
+				if (selection && !selection.isCollapsed) {
+					const selectedText = selection.toString().trim()
+					if (selectedText.length > 0) {
+						const anchorNode = selection.anchorNode
+						const focusNode = selection.focusNode
+						const anchorElement =
+							anchorNode instanceof Element
+								? anchorNode
+								: anchorNode?.parentElement ?? null
+						const focusElement =
+							focusNode instanceof Element
+								? focusNode
+								: focusNode?.parentElement ?? null
+						if (
+							(anchorElement && shadow.contains(anchorElement)) ||
+							(focusElement && shadow.contains(focusElement))
+						) {
+							return
+						}
+					}
+				}
 
 				const link = target.closest('a[href^="#"]') as HTMLAnchorElement
 				const lawLink = target.closest("a.law-article-link")
 				const paragraph = target.closest("p, li, div")
-				const fallbackLink =
-					!lawLink && paragraph ? findFirstLinkAbove(paragraph) : null
-				const activeLawLink = lawLink ?? fallbackLink
 
 				if (link) {
 					e.preventDefault()
@@ -525,23 +544,23 @@
 					updateButtonColors()
 				}
 
-				if (activeLawLink) {
+				if (lawLink) {
 					e.preventDefault()
-					const href = activeLawLink.getAttribute("href")
+					const href = lawLink.getAttribute("href")
 					const lawUrl = href ? new URL(href, window.location.origin) : null
 					const lawArticle = lawUrl?.searchParams.get("article") ?? undefined
 					if (lawArticle) {
-						const html = paragraph?.innerHTML ?? activeLawLink.outerHTML
+						const html = paragraph?.innerHTML ?? lawLink.outerHTML
 						const text =
 							paragraph?.textContent?.replace(/\s+/g, " ").trim() ??
-							activeLawLink.textContent?.replace(/\s+/g, " ").trim() ??
+							lawLink.textContent?.replace(/\s+/g, " ").trim() ??
 							""
 						const block = paragraph
 							? collectPjlBlock(shadow, paragraph)
 							: {
-									html: activeLawLink.outerHTML,
+									html: lawLink.outerHTML,
 									text:
-										activeLawLink.textContent?.replace(/\s+/g, " ").trim() ??
+										lawLink.textContent?.replace(/\s+/g, " ").trim() ??
 										"",
 								}
 						shared.pjlSelectedLine = {

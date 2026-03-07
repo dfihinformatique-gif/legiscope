@@ -3305,20 +3305,6 @@
 					</div>
 				{/if}
 
-				{#if selectedPjlLine && page.url.searchParams.get("article") === selectedPjlLine.articleId}
-					<div
-						class="my-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-left"
-					>
-						<div class="text-xs font-semibold text-amber-800 uppercase">
-							Disposition du projet
-						</div>
-						<div class="mt-2 text-sm text-amber-900">
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html selectedPjlLine.html}
-						</div>
-					</div>
-				{/if}
-
 				{#if showDiff === true}
 					{#if showDiff === true && currentBlocTextuel && previousBlocTextuel}
 						<div
