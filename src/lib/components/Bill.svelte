@@ -90,8 +90,11 @@
 		}[]
 	> {
 		const hasActionVerb = (text: string): boolean => {
-			const prefix = text.split("«")[0] ?? text
-			const normalized = prefix
+			const withoutQuotes = text
+				.split("\n")
+				.map((line) => line.replace(/«[^»]*»/g, " "))
+				.join(" ")
+			const normalized = withoutQuotes
 				.toLowerCase()
 				.normalize("NFD")
 				.replace(/\p{Diacritic}/gu, "")
