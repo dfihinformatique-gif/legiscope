@@ -1809,9 +1809,20 @@
 					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
 			}
 		}
+		const removedHtml = html.slice(targetPosition.start, targetPosition.stop)
+		if (/<[^>]+>/.test(removedHtml)) {
+			return {
+				html:
+					html.slice(0, targetPosition.start) +
+					html.slice(targetPosition.stop),
+			}
+		}
 		return {
 			html:
-				html.slice(0, targetPosition.start) + html.slice(targetPosition.stop),
+				html.slice(0, targetPosition.start) +
+				`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+				html.slice(targetPosition.stop),
+			skipDiff: true,
 		}
 	}
 
@@ -1875,9 +1886,21 @@
 				action.occurrenceIndex ?? 1,
 			)
 		}
+		const removedHtml = paragraphHtml.slice(
+			targetPosition.start,
+			targetPosition.stop,
+		)
+		if (/<[^>]+>/.test(removedHtml)) {
+			return deleteTextInHtml(
+				html,
+				action.targetText,
+				action.occurrenceIndex ?? 1,
+			)
+		}
 
 		const updatedParagraph =
 			paragraphHtml.slice(0, targetPosition.start) +
+			`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
 			paragraphHtml.slice(targetPosition.stop)
 
 		return {
@@ -1885,6 +1908,7 @@
 				html.slice(0, bounds.start) +
 				updatedParagraph +
 				html.slice(bounds.stop),
+			skipDiff: true,
 		}
 	}
 
