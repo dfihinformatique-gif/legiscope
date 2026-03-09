@@ -1048,6 +1048,15 @@
 			.replace(/\p{Diacritic}/gu, "")
 	}
 
+	function normalizeLabel(value: string): string {
+		return value
+			.replace(/\u00a0/g, " ")
+			.replace(/[’]/g, "'")
+			.replace(/[\u2011\u2013\u2014]/g, "-")
+			.replace(/\s+/g, " ")
+			.trim()
+	}
+
 	function extractQuotedBlockText(text: string): string | null {
 		const lines = text.split("\n")
 		const quoted: string[] = []
@@ -2454,6 +2463,10 @@
 			"insertText" in directive && directive.insertText
 				? directive.insertText
 				: ""
+		const targetText =
+			"targetText" in directive && directive.targetText
+				? directive.targetText
+				: ""
 		const replacementText =
 			"replacementText" in directive && directive.replacementText
 				? directive.replacementText
@@ -2464,7 +2477,7 @@
 				: ""
 		return [
 			directive.kind,
-			directive.targetText ?? "",
+			targetText,
 			insertText,
 			replacementText,
 			replacementHtml,
