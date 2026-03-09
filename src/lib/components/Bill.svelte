@@ -69,6 +69,17 @@
 		return (value ?? "").replace(/\s+/g, " ").trim()
 	}
 
+	function trimBlockTextAtSectionBreak(text: string): string {
+		const startsWithLetterMarker =
+			/^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u.test(text)
+		if (!startsWithLetterMarker) return text
+		const sectionMarkerRe =
+			/\n\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
+		const match = sectionMarkerRe.exec(text)
+		if (!match || match.index <= 0) return text
+		return text.slice(0, match.index).trimEnd()
+	}
+
 	function getPjlArticleLabelForLink(link: HTMLAnchorElement): string | null {
 		const section = link.closest('div[class^="assnatSection"]')
 		if (!section) return null
@@ -205,7 +216,7 @@
 			const paragraphText = normalizeLineText(actionParagraph.textContent)
 			if (paragraphText.startsWith("«")) continue
 			const block = collectPjlBlock(root, actionParagraph)
-			const blockText = block.text
+			const blockText = trimBlockTextAtSectionBreak(block.text)
 			if (!blockText) continue
 			if (!hasActionVerb(blockText)) continue
 
@@ -223,7 +234,7 @@
 			result[lawArticle].push({
 				pjlArticleLabel,
 				blockHtml: block.html,
-				blockText: block.text,
+				blockText,
 			})
 		}
 		return result
@@ -255,6 +266,7 @@
 		let listRoot: Element | null = null
 		let listQuotePending = false
 		const listStartLevel = getListMarkerLevel(startText)
+		const shouldBreakOnLetterSection = listStartLevel === 3
 		const normalizedStart = startText
 			.toLowerCase()
 			.normalize("NFD")
@@ -297,6 +309,8 @@
 
 		const listItemRe =
 			/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
+		const topLevelLetterRe =
+			/^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
 		function getListMarkerLevel(text: string): number | null {
 			const match =
 				/^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(text)
@@ -320,6 +334,15 @@
 			const isShortMarker = text.length <= 2 && !/[\p{L}\p{N}]/u.test(text)
 			const isSkippableBeforeQuote =
 				text.length === 0 || isMarkerCell || isPastille || isShortMarker
+
+			if (
+				shouldBreakOnLetterSection &&
+				!inQuoteBlock &&
+				node !== start &&
+				topLevelLetterRe.test(text)
+			) {
+				break
+			}
 
 			if (!inQuoteBlock) {
 				if (colonMode && !listMode) {
@@ -571,7 +594,7 @@
 							html,
 							text,
 							blockHtml: block.html,
-							blockText: block.text,
+							blockText: trimBlockTextAtSectionBreak(block.text),
 						}
 					}
 					const currentHash = window.location.hash

@@ -34,8 +34,8 @@
 		getExtractedReferences,
 		iterIncludedReferences,
 		newReverseTransformationsMergedFromPositionsIterator,
-		reversePositionsSplitFromPositions,
 		resolvePortionSelector,
+		reversePositionsSplitFromPositions,
 		simplifyHtml,
 		simplifyPlainText,
 		TextParserContext,
@@ -905,6 +905,15 @@
 		return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 	}
 
+	function buildNeedleRegExp(needle: string, global = false): RegExp {
+		const pattern = escapeRegExp(needle)
+			.replace(/articles?/gi, "article[s]?")
+			.replace(/[’']/g, "['’]")
+			.replace(/\s+/g, "\\s+")
+		const flags = `${global ? "g" : ""}u`
+		return new RegExp(pattern, flags)
+	}
+
 	function findMatchInSimplifiedText(
 		text: string,
 		needle: string,
@@ -915,29 +924,99 @@
 			return { start: directIndex, stop: directIndex + needle.length }
 		}
 
-		const pattern = escapeRegExp(needle)
-			.replace(/articles?/gi, "article[s]?")
-			.replace(/[’']/g, "['’]")
-			.replace(/\s+/g, "\\s+")
-		const regex = new RegExp(pattern, "u")
+		const regex = buildNeedleRegExp(needle)
 		const match = regex.exec(text)
 		if (!match || match.index === undefined) return null
 
 		return { start: match.index, stop: match.index + match[0].length }
 	}
 
+	function countMatchesInSimplifiedText(text: string, needle: string): number {
+		if (!needle) return 0
+		const regex = buildNeedleRegExp(needle, true)
+		let match: RegExpExecArray | null
+		let count = 0
+		while ((match = regex.exec(text)) !== null) {
+			count += 1
+			if (match[0].length === 0) {
+				regex.lastIndex += 1
+			}
+		}
+		return count
+	}
+
+	function findNthMatchInSimplifiedText(
+		text: string,
+		needle: string,
+		occurrenceIndex: number,
+	): FragmentPosition | null {
+		if (!needle) return null
+		if (occurrenceIndex <= 1) {
+			return findMatchInSimplifiedText(text, needle)
+		}
+		const regex = buildNeedleRegExp(needle, true)
+		let match: RegExpExecArray | null
+		let count = 0
+		while ((match = regex.exec(text)) !== null) {
+			count += 1
+			if (count === occurrenceIndex) {
+				return { start: match.index, stop: match.index + match[0].length }
+			}
+			if (match[0].length === 0) {
+				regex.lastIndex += 1
+			}
+		}
+		return null
+	}
+
+	function countNeedleMatchesInHtml(html: string, needle: string): number {
+		const simplifiedNeedle = simplifyPlainText(needle).output
+		if (!simplifiedNeedle) return 0
+		const simplified = simplifyHtml()(html)
+		return countMatchesInSimplifiedText(simplified.output, simplifiedNeedle)
+	}
+
 	function findTextPositionInHtml(
 		html: string,
 		needle: string,
+		occurrenceIndex = 1,
 	): FragmentPosition | null {
+		const simplifiedNeedle = simplifyPlainText(needle).output
 		const simplified = simplifyHtml()(html)
-		const match = findMatchInSimplifiedText(simplified.output, needle)
+		const match =
+			occurrenceIndex > 1
+				? findNthMatchInSimplifiedText(
+						simplified.output,
+						simplifiedNeedle,
+						occurrenceIndex,
+					)
+				: findMatchInSimplifiedText(simplified.output, simplifiedNeedle)
 		if (!match) return null
 		const iterator =
 			newReverseTransformationsMergedFromPositionsIterator(simplified)
 		const reversed = iterator.next(match).value
 		if (!reversed) return null
 		return reversed.position
+	}
+
+	function findTextPositionInHtmlWithFallback(
+		html: string,
+		needle: string,
+		occurrenceIndex = 1,
+	): FragmentPosition | null {
+		const normalizedOccurrence = occurrenceIndex > 0 ? occurrenceIndex : 1
+		let targetPosition = findTextPositionInHtml(
+			html,
+			needle,
+			normalizedOccurrence,
+		)
+		if (!targetPosition && normalizedOccurrence > 1) {
+			const count = countNeedleMatchesInHtml(html, needle)
+			if (count === 1) {
+				targetPosition = findTextPositionInHtml(html, needle, 1)
+			}
+		}
+		return targetPosition
 	}
 
 	const NBSP_ENTITY = "&nbsp;"
@@ -1068,9 +1147,7 @@
 		if (quoted.length === 0) return null
 		const cleaned = quoted
 			.map((line, index) =>
-				index === quoted.length - 1
-					? line.replace(/\s*»\s*;?\s*$/, "")
-					: line,
+				index === quoted.length - 1 ? line.replace(/\s*»\s*;?\s*$/, "") : line,
 			)
 			.join("\n")
 			.trim()
@@ -1718,8 +1795,13 @@
 	function deleteTextInHtml(
 		html: string,
 		targetText: string,
+		occurrenceIndex = 1,
 	): ProjectedHtmlResult {
-		const targetPosition = findTextPositionInHtml(html, targetText)
+		const targetPosition = findTextPositionInHtmlWithFallback(
+			html,
+			targetText,
+			occurrenceIndex,
+		)
 		if (!targetPosition) {
 			return {
 				html: null,
@@ -1781,12 +1863,17 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
-		const targetPosition = findTextPositionInHtml(
+		const targetPosition = findTextPositionInHtmlWithFallback(
 			paragraphHtml,
 			action.targetText,
+			action.occurrenceIndex ?? 1,
 		)
 		if (!targetPosition) {
-			return deleteTextInHtml(html, action.targetText)
+			return deleteTextInHtml(
+				html,
+				action.targetText,
+				action.occurrenceIndex ?? 1,
+			)
 		}
 
 		const updatedParagraph =
@@ -2314,9 +2401,15 @@
 					"Aucune cible textuelle exploitable pour appliquer la modification.",
 			}
 		}
-		let targetPosition = findTextPositionInHtml(html, target)
+		const occurrenceIndex =
+			action.kind === "delete" ? (action.occurrenceIndex ?? 1) : 1
+		let targetPosition = findTextPositionInHtml(html, target, occurrenceIndex)
 		if (!targetPosition) {
-			targetPosition = findTextPositionInHtml(html, normalizeLabel(target))
+			targetPosition = findTextPositionInHtml(
+				html,
+				normalizeLabel(target),
+				occurrenceIndex,
+			)
 		}
 		if (!targetPosition) {
 			return {
@@ -2393,9 +2486,27 @@
 	): ProjectedHtmlResult {
 		let currentHtml = html
 		let skipDiff = true
-		const ordered = [...directives].sort(
-			(a, b) => a.sourcePosition.start - b.sourcePosition.start,
-		)
+		const ordered = [...directives].sort((a, b) => {
+			const aOccurrence =
+				a.kind === "delete" && typeof a.occurrenceIndex === "number"
+					? a.occurrenceIndex
+					: 0
+			const bOccurrence =
+				b.kind === "delete" && typeof b.occurrenceIndex === "number"
+					? b.occurrenceIndex
+					: 0
+			const aHasOccurrence = a.kind === "delete" && aOccurrence > 1
+			const bHasOccurrence = b.kind === "delete" && bOccurrence > 1
+			if (aHasOccurrence !== bHasOccurrence) {
+				return bHasOccurrence ? 1 : -1
+			}
+			if (aHasOccurrence && bHasOccurrence && aOccurrence !== bOccurrence) {
+				return bOccurrence - aOccurrence
+			}
+			const positionDiff = a.sourcePosition.start - b.sourcePosition.start
+			if (positionDiff !== 0) return positionDiff
+			return 0
+		})
 		const grouped: Array<{ key: string; directives: ActionDirective[] }> = []
 		for (const directive of ordered) {
 			const key = getDirectiveKey(directive)
@@ -2704,10 +2815,10 @@
 			normalized[0] &&
 			/unique/i.test(normalized[0])
 		) {
-			return "Cet article est modifié par l’article unique du PJL : voir la version projetée"
+			return "Cet article est modifié par l’article unique du PJL"
 		}
 		const list = formatFrenchList(normalized)
-		return `Cet article est modifié par les articles ${list} du PJL : voir la version projetée`
+		return `Cet article est modifié par les articles ${list} du PJL`
 	})
 
 	const pjlNonProjectableSummary = $derived.by(() => {
