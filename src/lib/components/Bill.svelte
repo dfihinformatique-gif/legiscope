@@ -376,7 +376,7 @@
 			style="top: {selectionMenuPosition.top}px; left: {selectionMenuPosition.left}px; transform: translate(-50%, -100%);"
 		>
 			<button
-				class="bg-le-gris-dispositif-dark flex items-center gap-2 rounded px-3 py-1 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-neutral-800"
+				class="bg-le-gris-dispositif-dark flex cursor-pointer items-center gap-2 rounded px-3 py-1 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-neutral-800"
 			>
 				<iconify-icon class="text-lg" icon="ri-eye-line"></iconify-icon>
 				Voir le droit projeté
