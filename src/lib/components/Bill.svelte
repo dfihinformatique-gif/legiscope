@@ -23,6 +23,9 @@
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
 
+	let showSelectionMenu = $state(false)
+	let selectionMenuPosition = $state({ top: 0, left: 0 })
+
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
 		if (
@@ -109,9 +112,105 @@
 					const newUrl = href + currentHash
 					goto(resolve(newUrl as Pathname & {}))
 				}
+
+				// Nouvelle interaction par bloc : clique sur un bloc de texte (p, div, li, td...) mais on évite les trop gros conteneurs
+				// On cible les éléments de texte courants dans les lois : p, li, td, .alinea, blockquote
+				const p = target.closest(
+					"p, li, td, blockquote, .alinea, div.citation",
+				) as HTMLElement
+
+				// On vérifie si c'est dans l'exposé des motifs (ceux-ci n'ont pas de droit projeté)
+				const isExposeDesMotifs = p && p.closest(".expose-des-motifs") !== null
+
+				if (
+					p &&
+					!isExposeDesMotifs &&
+					!target.closest("button.highlighted") &&
+					!target.closest("a") &&
+					(p.tagName !== "DIV" ||
+						(p.tagName === "DIV" && p.classList.contains("citation")))
+				) {
+					// Enlève l'ancien surlignage
+					Array.from(shadow.querySelectorAll(".active-projected-zone")).forEach(
+						(el) => el.classList.remove("active-projected-zone"),
+					)
+
+					// Ajoute le surlignage au nouveau bloc
+					p.classList.add("active-projected-zone")
+
+					const rect = p.getBoundingClientRect()
+					selectionMenuPosition = {
+						top: rect.top - 10,
+						left: rect.left + rect.width / 2,
+					}
+
+					showSelectionMenu = true
+				} else if (!target.closest("button.highlighted")) {
+					// Si on clique ailleurs dans le projet de loi (et hors menu) : on ferme
+					showSelectionMenu = false
+					Array.from(shadow.querySelectorAll(".active-projected-zone")).forEach(
+						(el) => el.classList.remove("active-projected-zone"),
+					)
+				}
 			}
 
 			shadow.addEventListener("click", handleClick)
+
+			// Injection d'un style pour le surlignage de la zone projetée active
+			if (!shadow.querySelector("#projected-zone-styles")) {
+				const style = document.createElement("style")
+				style.id = "projected-zone-styles"
+				style.textContent = `
+					.active-projected-zone {
+						background-color: #fef3c7 !important; /*  */
+						border-radius: 4px;
+						box-shadow: 0 0 0 4px #fef3c7; /* Pour "padding" sans casser layout */
+						transition: background-color 0.2s;
+					}
+				`
+				shadow.appendChild(style)
+			}
+
+			// Mettre à jour la position au scroll et cacher si la zone sort de l'écran
+			const handleScroll = () => {
+				if (!showSelectionMenu) return
+
+				const activeZone = shadow.querySelector(".active-projected-zone")
+				if (activeZone && container) {
+					const rect = activeZone.getBoundingClientRect()
+					const containerRect = container.getBoundingClientRect()
+
+					// Si la zone est complètement au-dessus ou en-dessous de la zone visible du conteneur
+					if (
+						rect.bottom < containerRect.top ||
+						rect.top > containerRect.bottom
+					) {
+						showSelectionMenu = false
+						activeZone.classList.remove("active-projected-zone")
+					} else {
+						// Sinon, on met à jour sa position pour la garder toujours à l'écran
+						// Placer au-dessus par défaut (rect.top - 10)
+						let targetTop = rect.top - 10
+
+						// Si le haut de la zone sort du cadre par le haut, le bouton reste scotché au haut du conteneur
+						// On ajoute un bon d'environ 60px pour qu'il ne passe pas au-dessus ou sous l'en-tête (Navbar)
+						if (targetTop < containerRect.top + 60) {
+							targetTop = containerRect.top + 60
+						}
+
+						// Si le bouton descend trop bas (quand le texte disparaît par le bas) le bouton reste scotché au bas de la zone visible
+						if (targetTop > containerRect.bottom - 40) {
+							targetTop = containerRect.bottom - 40
+						}
+
+						selectionMenuPosition = {
+							top: targetTop,
+							left: rect.left + rect.width / 2,
+						}
+					}
+				}
+			}
+			container.addEventListener("scroll", handleScroll)
 
 			// BOUTON PARAMÈTRES du simulateur ou OpenFIsca
 
@@ -235,6 +334,7 @@
 
 			return () => {
 				shadow.removeEventListener("click", handleClick)
+				container?.removeEventListener("scroll", handleScroll)
 			}
 		} else {
 			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
@@ -261,12 +361,28 @@
 	}
 </script>
 
-<div class="flex h-full w-full max-w-6xl flex-col">
+<div class="relative flex h-full w-full max-w-6xl flex-col">
 	<BillSummary {pjlHTML} {container} />
 	<div
 		bind:this={container}
 		class=" w-full flex-1 overflow-y-auto bg-white px-3 shadow-md @sm/section-bill:px-5 @md/section-bill:px-6 @lg/section-bill:px-8"
 	></div>
+
+	{#if showSelectionMenu}
+		<!-- On gère les clics à l'extérieur pour fermer le menu -->
+
+		<div
+			class="fixed z-50 flex gap-2 rounded-md border border-gray-200 bg-white p-2 shadow-lg"
+			style="top: {selectionMenuPosition.top}px; left: {selectionMenuPosition.left}px; transform: translate(-50%, -100%);"
+		>
+			<button
+				class="bg-le-gris-dispositif-dark flex items-center gap-2 rounded px-3 py-1 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-neutral-800"
+			>
+				<iconify-icon class="text-lg" icon="ri-eye-line"></iconify-icon>
+				Voir le droit projeté
+			</button>
+		</div>
+	{/if}
 </div>
 
 <ParameterLinkModal
