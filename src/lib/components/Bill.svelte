@@ -73,8 +73,7 @@
 		const startsWithLetterMarker =
 			/^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u.test(text)
 		if (!startsWithLetterMarker) return text
-		const sectionMarkerRe =
-			/\n\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
+		const sectionMarkerRe = /\n\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
 		const match = sectionMarkerRe.exec(text)
 		if (!match || match.index <= 0) return text
 		return text.slice(0, match.index).trimEnd()
@@ -201,7 +200,9 @@
 			const paragraph = link.closest("p, li") ?? link.parentElement
 			if (!paragraph) continue
 			if (!isDispositiveElement(paragraph)) continue
-			const isQuotedLine = normalizeLineText(paragraph.textContent).startsWith("«")
+			const isQuotedLine = normalizeLineText(paragraph.textContent).startsWith(
+				"«",
+			)
 			const actionParagraph = findActionParagraphForLink(nodes, paragraph)
 			const actionTargets = getLinkTargets(actionParagraph)
 			const contextTargets = findContextTargets(nodes, actionParagraph)
@@ -309,8 +310,7 @@
 
 		const listItemRe =
 			/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
-		const topLevelLetterRe =
-			/^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
+		const topLevelLetterRe = /^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
 		function getListMarkerLevel(text: string): number | null {
 			const match =
 				/^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(text)
@@ -537,11 +537,11 @@
 						const anchorElement =
 							anchorNode instanceof Element
 								? anchorNode
-								: anchorNode?.parentElement ?? null
+								: (anchorNode?.parentElement ?? null)
 						const focusElement =
 							focusNode instanceof Element
 								? focusNode
-								: focusNode?.parentElement ?? null
+								: (focusNode?.parentElement ?? null)
 						if (
 							(anchorElement && shadow.contains(anchorElement)) ||
 							(focusElement && shadow.contains(focusElement))
@@ -585,9 +585,7 @@
 							? collectPjlBlock(shadow, paragraph)
 							: {
 									html: lawLink.outerHTML,
-									text:
-										lawLink.textContent?.replace(/\s+/g, " ").trim() ??
-										"",
+									text: lawLink.textContent?.replace(/\s+/g, " ").trim() ?? "",
 								}
 						shared.pjlSelectedLine = {
 							articleId: lawArticle,

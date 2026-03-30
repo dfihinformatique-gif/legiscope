@@ -53,7 +53,9 @@ if (addedCount === 0) {
 }
 
 if (/\\bIII\\s+bis\\b/i.test(diffText)) {
-  await fail("Le contenu de l'article 10 fuit dans la version projetée (III bis).")
+  await fail(
+    "Le contenu de l'article 10 fuit dans la version projetée (III bis).",
+  )
 }
 
 await browser.close()

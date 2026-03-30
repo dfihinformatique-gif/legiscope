@@ -1036,7 +1036,10 @@
 		while ((match = separatorRegex.exec(text)) !== null) {
 			let segmentStart = start
 			let segmentStop = match.index
-			while (segmentStart < segmentStop && /\s/u.test(text[segmentStart] ?? "")) {
+			while (
+				segmentStart < segmentStop &&
+				/\s/u.test(text[segmentStart] ?? "")
+			) {
 				segmentStart += 1
 			}
 			while (
@@ -1425,24 +1428,19 @@
 	function buildItemLabelNeedles(label: string): string[] {
 		const normalized = label.trim()
 		if (!normalized) return []
-		const variants = Array.from(
-			new Set([normalized, normalized.toLowerCase(), normalized.toUpperCase()]),
-		)
+		const variants = [
+			normalized,
+			normalized.toLowerCase(),
+			normalized.toUpperCase(),
+		].filter((variant, index, array) => array.indexOf(variant) === index)
 		return variants.flatMap((variant) => {
-			const suffixes = new Set<string>([
-				". ",
-				") ",
-				".- ",
-				". – ",
-				". — ",
-				" - ",
-				" – ",
-				" — ",
-			])
+			const suffixes = [". ", ") ", ".- ", ". – ", ". — ", " - ", " – ", " — "]
 			if (/[°.)]$/.test(variant)) {
-				suffixes.add(" ")
+				suffixes.push(" ")
 			}
-			return Array.from(suffixes, (suffix) => `${variant}${suffix}`)
+			return suffixes
+				.filter((suffix, index, array) => array.indexOf(suffix) === index)
+				.map((suffix) => `${variant}${suffix}`)
 		})
 	}
 
@@ -1918,8 +1916,7 @@
 		if (/<[^>]+>/.test(removedHtml)) {
 			return {
 				html:
-					html.slice(0, targetPosition.start) +
-					html.slice(targetPosition.stop),
+					html.slice(0, targetPosition.start) + html.slice(targetPosition.stop),
 			}
 		}
 		return {
@@ -2064,7 +2061,9 @@
 						action.targetText,
 					)
 					if (targetPosition) {
-						const replacementHtml = formatReplacementText(action.replacementText)
+						const replacementHtml = formatReplacementText(
+							action.replacementText,
+						)
 						const removedHtml = line.html.slice(
 							targetPosition.start,
 							targetPosition.stop,
@@ -2939,7 +2938,8 @@
 			}
 
 			sawMarker = true
-			const parentContext = level > 1 ? contextByLevel.get(level - 1) : undefined
+			const parentContext =
+				level > 1 ? contextByLevel.get(level - 1) : undefined
 			const shouldKeepSiblingItemsTogether =
 				level === 3 &&
 				parentContext !== undefined &&

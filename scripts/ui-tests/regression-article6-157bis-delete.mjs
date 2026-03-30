@@ -15,7 +15,9 @@ const fail = async (message) => {
 await page.goto(base, { waitUntil: "domcontentloaded" })
 await page.waitForSelector("a.law-article-link", { timeout: 60000 })
 
-const lawLink = page.locator("a.law-article-link", { hasText: linkText }).first()
+const lawLink = page
+  .locator("a.law-article-link", { hasText: linkText })
+  .first()
 if ((await lawLink.count()) === 0) {
   await fail(`Lien introuvable: ${linkText}`)
 }

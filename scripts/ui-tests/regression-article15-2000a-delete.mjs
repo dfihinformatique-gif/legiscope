@@ -15,7 +15,9 @@ const fail = async (message) => {
 await page.goto(base, { waitUntil: "domcontentloaded" })
 await page.waitForSelector("a.law-article-link", { timeout: 60000 })
 
-const lawLink = page.locator("a.law-article-link", { hasText: linkText }).first()
+const lawLink = page
+  .locator("a.law-article-link", { hasText: linkText })
+  .first()
 if ((await lawLink.count()) === 0) {
   await fail(`Lien introuvable: ${linkText}`)
 }
@@ -40,10 +42,14 @@ const redVicies = await diffRoot
   .locator("span.bg-red-50", { hasText: "199 vicies A" })
   .count()
 if (redQuater === 0) {
-  await fail("La référence 199 quater F n'est pas supprimée (surlignage rouge absent).")
+  await fail(
+    "La référence 199 quater F n'est pas supprimée (surlignage rouge absent).",
+  )
 }
 if (redVicies === 0) {
-  await fail("La référence 199 vicies A n'est pas supprimée (surlignage rouge absent).")
+  await fail(
+    "La référence 199 vicies A n'est pas supprimée (surlignage rouge absent).",
+  )
 }
 
 await browser.close()
