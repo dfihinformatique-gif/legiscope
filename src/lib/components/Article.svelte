@@ -906,10 +906,16 @@
 	}
 
 	function buildNeedleRegExp(needle: string, global = false): RegExp {
-		const pattern = escapeRegExp(needle)
+		const trimmed = needle.trim()
+		const startsWithWord = /^[\p{L}\p{N}]/u.test(trimmed)
+		const endsWithWord = /[\p{L}\p{N}]$/u.test(trimmed)
+		const corePattern = escapeRegExp(needle)
 			.replace(/articles?/gi, "article[s]?")
 			.replace(/[’']/g, "['’]")
 			.replace(/\s+/g, "\\s+")
+		const pattern =
+			`${startsWithWord ? "(?<![\\p{L}\\p{N}])" : ""}${corePattern}` +
+			`${endsWithWord ? "(?![\\p{L}\\p{N}])" : ""}`
 		const flags = `${global ? "g" : ""}u`
 		return new RegExp(pattern, flags)
 	}
@@ -919,11 +925,6 @@
 		needle: string,
 	): FragmentPosition | null {
 		if (!needle) return null
-		const directIndex = text.indexOf(needle)
-		if (directIndex !== -1) {
-			return { start: directIndex, stop: directIndex + needle.length }
-		}
-
 		const regex = buildNeedleRegExp(needle)
 		const match = regex.exec(text)
 		if (!match || match.index === undefined) return null
@@ -1017,6 +1018,96 @@
 			}
 		}
 		return targetPosition
+	}
+
+	function findPhraseBoundsInHtml(
+		html: string,
+		phraseIndex: number,
+	): FragmentPosition | null {
+		const simplified = simplifyHtml()(html)
+		const text = simplified.output
+		if (!text.trim()) return null
+
+		const textBounds: FragmentPosition[] = []
+		const separatorRegex = /(?<=[.!?;:])\s+/gu
+		let start = 0
+		let match: RegExpExecArray | null
+
+		while ((match = separatorRegex.exec(text)) !== null) {
+			let segmentStart = start
+			let segmentStop = match.index
+			while (segmentStart < segmentStop && /\s/u.test(text[segmentStart] ?? "")) {
+				segmentStart += 1
+			}
+			while (
+				segmentStop > segmentStart &&
+				/\s/u.test(text[segmentStop - 1] ?? "")
+			) {
+				segmentStop -= 1
+			}
+			if (segmentStop > segmentStart) {
+				textBounds.push({ start: segmentStart, stop: segmentStop })
+			}
+			start = match.index + match[0].length
+		}
+
+		let lastStart = start
+		let lastStop = text.length
+		while (lastStart < lastStop && /\s/u.test(text[lastStart] ?? "")) {
+			lastStart += 1
+		}
+		while (lastStop > lastStart && /\s/u.test(text[lastStop - 1] ?? "")) {
+			lastStop -= 1
+		}
+		if (lastStop > lastStart) {
+			textBounds.push({ start: lastStart, stop: lastStop })
+		}
+
+		if (textBounds.length === 0) return null
+		const resolvedIndex =
+			phraseIndex < 0 ? textBounds.length + phraseIndex + 1 : phraseIndex
+		if (resolvedIndex < 1 || resolvedIndex > textBounds.length) return null
+
+		const iterator =
+			newReverseTransformationsMergedFromPositionsIterator(simplified)
+		const reversed = iterator.next(textBounds[resolvedIndex - 1]).value
+		return reversed?.position ?? null
+	}
+
+	function findScopedTargetPositionInHtml(
+		html: string,
+		needle: string,
+		selectorSteps: PortionSelectorStep[] | undefined,
+		occurrenceIndex = 1,
+	): FragmentPosition | null {
+		const lastStep = selectorSteps?.at(-1)
+		if (
+			lastStep?.type !== "phrase" ||
+			typeof lastStep.index !== "number" ||
+			!needle.trim()
+		) {
+			return findTextPositionInHtmlWithFallback(html, needle, occurrenceIndex)
+		}
+
+		const phraseBounds = findPhraseBoundsInHtml(html, lastStep.index)
+		if (!phraseBounds) {
+			return findTextPositionInHtmlWithFallback(html, needle, occurrenceIndex)
+		}
+
+		const phraseHtml = html.slice(phraseBounds.start, phraseBounds.stop)
+		const scopedPosition = findTextPositionInHtmlWithFallback(
+			phraseHtml,
+			needle,
+			occurrenceIndex,
+		)
+		if (scopedPosition) {
+			return {
+				start: phraseBounds.start + scopedPosition.start,
+				stop: phraseBounds.start + scopedPosition.stop,
+			}
+		}
+
+		return findTextPositionInHtmlWithFallback(html, needle, occurrenceIndex)
 	}
 
 	const NBSP_ENTITY = "&nbsp;"
@@ -1125,6 +1216,12 @@
 			.toLowerCase()
 			.normalize("NFD")
 			.replace(/\p{Diacritic}/gu, "")
+	}
+
+	function isListBlockIntroLine(line: string): boolean {
+		if (!line.trim().endsWith(":")) return false
+		const normalized = normalizeActionSource(line)
+		return /\bainsi\s+modifie/.test(normalized)
 	}
 
 	function normalizeLabel(value: string): string {
@@ -1325,29 +1422,37 @@
 		return null
 	}
 
+	function buildItemLabelNeedles(label: string): string[] {
+		const normalized = label.trim()
+		if (!normalized) return []
+		const variants = Array.from(
+			new Set([normalized, normalized.toLowerCase(), normalized.toUpperCase()]),
+		)
+		return variants.flatMap((variant) => {
+			const suffixes = new Set<string>([
+				". ",
+				") ",
+				".- ",
+				". – ",
+				". — ",
+				" - ",
+				" – ",
+				" — ",
+			])
+			if (/[°.)]$/.test(variant)) {
+				suffixes.add(" ")
+			}
+			return Array.from(suffixes, (suffix) => `${variant}${suffix}`)
+		})
+	}
+
 	function findItemLabelBounds(
 		html: string,
 		steps: Array<{ type: string; num?: string }> | undefined,
 	): { start: number; stop: number } | null {
 		const lastStep = steps && steps.length > 0 ? steps[steps.length - 1] : null
 		if (!lastStep || lastStep.type !== "item" || !lastStep.num) return null
-		const variants = Array.from(
-			new Set([
-				lastStep.num,
-				lastStep.num.toLowerCase(),
-				lastStep.num.toUpperCase(),
-			]),
-		)
-		const needles = variants.flatMap((label) => [
-			`${label}. `,
-			`${label}) `,
-			`${label}.- `,
-			`${label}. – `,
-			`${label}. — `,
-			`${label} - `,
-			`${label} – `,
-			`${label} — `,
-		])
+		const needles = buildItemLabelNeedles(lastStep.num)
 		return findBlockBoundsForNeedles(html, needles)
 	}
 
@@ -1874,9 +1979,11 @@
 		}
 
 		const paragraphHtml = html.slice(bounds.start, bounds.stop)
-		const targetPosition = findTextPositionInHtmlWithFallback(
+		const selectorSteps = getSelectorSteps(action.portionSelectors[0])
+		const targetPosition = findScopedTargetPositionInHtml(
 			paragraphHtml,
 			action.targetText,
+			selectorSteps,
 			action.occurrenceIndex ?? 1,
 		)
 		if (!targetPosition) {
@@ -1901,6 +2008,138 @@
 		const updatedParagraph =
 			paragraphHtml.slice(0, targetPosition.start) +
 			`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+			paragraphHtml.slice(targetPosition.stop)
+
+		return {
+			html:
+				html.slice(0, bounds.start) +
+				updatedParagraph +
+				html.slice(bounds.stop),
+			skipDiff: true,
+		}
+	}
+
+	function applyReplacePortionTextActionToHtml(
+		html: string,
+		action: Extract<ActionDirective, { kind: "replace" }>,
+	): ProjectedHtmlResult {
+		if (action.portionSelectors.length === 0) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible de portion exploitable pour appliquer la modification.",
+			}
+		}
+		if (!action.targetText) {
+			return {
+				html: null,
+				reason:
+					"Aucune cible textuelle exploitable pour appliquer la modification.",
+			}
+		}
+		if (!action.replacementText) {
+			return {
+				html: null,
+				reason:
+					"Aucune valeur de remplacement trouvée pour appliquer la modification.",
+			}
+		}
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		let match: ArticlePortionMatch | null = null
+		for (const selector of action.portionSelectors) {
+			match = resolvePortionSelector(article, selector)
+			if (match) break
+		}
+		if (!match) {
+			const inlineContext = resolveInlineItemLineContext(
+				html,
+				action.portionSelectors[0],
+			)
+			if (inlineContext) {
+				const line = inlineContext.lines[inlineContext.lineIndex]
+				if (line) {
+					const targetPosition = findTextPositionInHtmlWithFallback(
+						line.html,
+						action.targetText,
+					)
+					if (targetPosition) {
+						const replacementHtml = formatReplacementText(action.replacementText)
+						const removedHtml = line.html.slice(
+							targetPosition.start,
+							targetPosition.stop,
+						)
+						const updatedLineHtml =
+							line.html.slice(0, targetPosition.start) +
+							`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+							`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
+							line.html.slice(targetPosition.stop)
+						const updatedParagraph = inlineContext.lines
+							.map((currentLine, index) =>
+								index === inlineContext.lineIndex
+									? updatedLineHtml
+									: currentLine.html,
+							)
+							.join("<br>")
+						return {
+							html:
+								html.slice(0, inlineContext.bounds.start) +
+								updatedParagraph +
+								html.slice(inlineContext.bounds.stop),
+							skipDiff: true,
+						}
+					}
+				}
+			}
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const alinea = resolveReplacementAlinea(match)
+		if (!alinea) {
+			return {
+				html: null,
+				reason:
+					"Disposition non reconnue pour l'instant pour projeter un diff.",
+			}
+		}
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const selectorSteps = getSelectorSteps(action.portionSelectors[0])
+		const targetPosition = findScopedTargetPositionInHtml(
+			paragraphHtml,
+			action.targetText,
+			selectorSteps,
+		)
+		if (!targetPosition) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		}
+
+		const removedHtml = paragraphHtml.slice(
+			targetPosition.start,
+			targetPosition.stop,
+		)
+		const replacementHtml = formatReplacementText(action.replacementText)
+		const updatedParagraph =
+			paragraphHtml.slice(0, targetPosition.start) +
+			`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+			`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
 			paragraphHtml.slice(targetPosition.stop)
 
 		return {
@@ -2020,17 +2259,63 @@
 		return `<p>${trimmed}</p>`
 	}
 
+	type InlineItemLineContext = {
+		bounds: FragmentPosition
+		lineIndex: number
+		lines: Array<{ text: string; html: string }>
+		paragraphHtml: string
+	}
+
 	function findLineIndexByItemLabel(
 		lines: Array<{ text: string; html: string }>,
 		itemLabel: string,
 	): number {
 		const normalized = itemLabel.trim()
 		if (!normalized) return -1
-		const prefix = new RegExp(
-			`^\\s*${escapeRegExp(normalized)}\\s*(?:°|\\.|\\)|-|–|—)`,
-			"i",
+		const needles = buildItemLabelNeedles(normalized)
+		return lines.findIndex((line) =>
+			needles.some((needle) =>
+				line.text.toLowerCase().startsWith(needle.trim().toLowerCase()),
+			),
 		)
-		return lines.findIndex((line) => prefix.test(line.text))
+	}
+
+	function resolveInlineItemLineContext(
+		html: string,
+		selector: PortionSelector | undefined,
+	): InlineItemLineContext | null {
+		const selectorSteps = getSelectorSteps(selector)
+		if (!selectorSteps || selectorSteps.length < 2) return null
+		const lastStep = selectorSteps.at(-1)
+		if (!lastStep || lastStep.type !== "item" || !lastStep.num) return null
+
+		const article = buildArticlePortionTreeFromHtml(html)
+		const parentSelector: PortionSelector = {
+			kind: "single",
+			steps: selectorSteps.slice(0, -1),
+		}
+		const parentMatch = resolvePortionSelector(article, parentSelector)
+		if (!parentMatch) return null
+
+		const alinea = resolveReplacementAlinea(parentMatch)
+		if (!alinea) return null
+
+		const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+		if (!bounds) return null
+
+		const paragraphHtml = html.slice(bounds.start, bounds.stop)
+		const lines = splitParagraphLines(paragraphHtml)
+		if (lines.length === 0) return null
+
+		const lineIndex = findLineIndexByItemLabel(lines, lastStep.num)
+		if (lineIndex < 0) return null
+
+		return {
+			bounds,
+			lineIndex,
+			lines,
+			paragraphHtml,
+		}
 	}
 
 	function applyInsertPortionActionToHtml(
@@ -2356,6 +2641,9 @@
 		if (action.kind === "delete" && action.portionSelectors.length > 0) {
 			return applyDeletePortionTextActionToHtml(html, action)
 		}
+		if (action.kind === "replace" && action.portionSelectors.length > 0) {
+			return applyReplacePortionTextActionToHtml(html, action)
+		}
 
 		if (action.kind === "insert_after" || action.kind === "insert_before") {
 			if (!action.targetText && html.trim() === "") {
@@ -2651,8 +2939,21 @@
 			}
 
 			sawMarker = true
-			if (current.length > 0) {
+			const parentContext = level > 1 ? contextByLevel.get(level - 1) : undefined
+			const shouldKeepSiblingItemsTogether =
+				level === 3 &&
+				parentContext !== undefined &&
+				isListBlockIntroLine(parentContext)
+			if (current.length > 0 && !shouldKeepSiblingItemsTogether) {
 				blocks.push(current.join("\n"))
+			}
+			if (shouldKeepSiblingItemsTogether) {
+				current.push(line)
+				contextByLevel.set(level, line)
+				for (const key of Array.from(contextByLevel.keys())) {
+					if (key > level) contextByLevel.delete(key)
+				}
+				continue
 			}
 			const prefix: string[] = []
 			for (const lineItem of prelude) prefix.push(lineItem)
@@ -2686,15 +2987,10 @@
 		if (sectionDirective) {
 			return { directives: [sectionDirective], isAction: true }
 		}
-		const sourceBlocks = splitActionSourceBlocks(blockText)
-		const rawDirectives = sourceBlocks.flatMap((block) =>
-			extractActionDirectivesFromText(block),
-		)
-		const scopedDirectives = filterDirectivesForArticle(
-			rawDirectives,
-			articleNum,
-		)
-		if (scopedDirectives.length > 0) {
+		const finalizeScopedDirectives = (
+			scopedDirectives: ActionDirectiveWithHtml[],
+		): { directives: ActionDirectiveWithHtml[]; isAction: boolean } | null => {
+			if (scopedDirectives.length === 0) return null
 			const hasNonDeleteArticle = scopedDirectives.some(
 				(directive) => directive.kind !== "delete_article",
 			)
@@ -2714,6 +3010,28 @@
 					})
 				: scopedDirectives
 			return { directives, isAction: true }
+		}
+
+		const fullBlockScopedDirectives = filterDirectivesForArticle(
+			extractActionDirectivesFromText(blockText),
+			articleNum,
+		)
+		const fullBlockResult = finalizeScopedDirectives(fullBlockScopedDirectives)
+		if (fullBlockResult) {
+			return fullBlockResult
+		}
+
+		const sourceBlocks = splitActionSourceBlocks(blockText)
+		const rawDirectives = sourceBlocks.flatMap((block) =>
+			extractActionDirectivesFromText(block),
+		)
+		const scopedDirectives = filterDirectivesForArticle(
+			rawDirectives,
+			articleNum,
+		)
+		const splitBlockResult = finalizeScopedDirectives(scopedDirectives)
+		if (splitBlockResult) {
+			return splitBlockResult
 		}
 		if (rawDirectives.length > 0) {
 			return { directives: [], isAction: false }
