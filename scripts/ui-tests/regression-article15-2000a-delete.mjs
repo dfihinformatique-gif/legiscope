@@ -21,16 +21,23 @@ const lawLink = page
 if ((await lawLink.count()) === 0) {
   await fail(`Lien introuvable: ${linkText}`)
 }
-await lawLink.scrollIntoViewIfNeeded()
-await lawLink.click({ force: true })
-await page.waitForURL(/article=/, { timeout: 60000 })
-await page.waitForLoadState("domcontentloaded")
+const href = await lawLink.getAttribute("href")
+if (!href) {
+  await fail(`Href introuvable pour ${linkText}`)
+}
+await page.goto(new URL(href, base).toString(), {
+  waitUntil: "domcontentloaded",
+  timeout: 60000,
+})
 
 const showProjection = page.getByRole("button", {
   name: "Voir la version projetée",
 })
 await showProjection.waitFor({ timeout: 60000 })
 await showProjection.click({ force: true })
+await page
+  .getByRole("button", { name: "Masquer la version projetée" })
+  .waitFor({ timeout: 60000 })
 
 const diffRoot = page.locator("div.rounded-b-md.bg-amber-50").first()
 await diffRoot.waitFor({ timeout: 60000, state: "attached" })

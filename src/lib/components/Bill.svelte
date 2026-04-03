@@ -3,8 +3,16 @@
 	import { resolve } from "$app/paths"
 	import type { Pathname } from "$app/types"
 
+	import { createParameterButtonController } from "$lib/bill/parameter_buttons"
 	import BillSummary from "$lib/components/BillSummary.svelte"
 	import ParameterLinkModal from "$lib/components/ParameterLinkModal.svelte"
+	import {
+		buildPjlArticleBlocks,
+		collectPjlBlock,
+		createPjlPreviewController,
+		trimBlockTextAtSectionBreak,
+		type PjlPreviewController,
+	} from "$lib/pjl/bill_preview"
 	import {
 		decodeParametersToVariables,
 		getParameter,
@@ -12,8 +20,6 @@
 		variablesSummaries,
 	} from "$lib/openfisca_parameters"
 	import { shared } from "$lib/shared.svelte"
-	import { simplifyHtml } from "@tricoteuses/tisseuse"
-	import { SvelteMap, SvelteSet } from "svelte/reactivity"
 
 	interface Props {
 		pjlHTML: string | undefined
@@ -24,6 +30,11 @@
 	let parameterSimulatorlinksOpen = $state(false)
 	let selectedParameter = $state<string | null>(null)
 	let clickedParameterButtons = $state<HTMLButtonElement[]>([])
+	let activeParam: string | null = null
+	let parameterButtonController:
+		| ReturnType<typeof createParameterButtonController>
+		| undefined
+	let pjlPreviewController: PjlPreviewController | undefined
 
 	// si parametersToVariables change et que le param sélectionné n'existe plus -> reset
 	$effect(() => {
@@ -43,474 +54,47 @@
 		parametersToVariables = $bindable(),
 	}: Props = $props()
 
-	function findFirstLinkAbove(element: HTMLElement): HTMLAnchorElement | null {
-		let current: HTMLElement | null = element
-
-		while (current) {
-			let sibling = current.previousElementSibling
-			while (sibling) {
-				if (sibling instanceof HTMLAnchorElement) return sibling
-
-				const links = sibling.querySelectorAll("a")
-				if (links.length > 0) {
-					return links[links.length - 1] as HTMLAnchorElement
-				}
-
-				sibling = sibling.previousElementSibling
-			}
-
-			current = current.parentElement
-		}
-
-		return null
+	function resetPjlPreviewController(): void {
+		pjlPreviewController?.cleanup()
+		pjlPreviewController = undefined
 	}
 
-	function normalizeLineText(value: string | null): string {
-		return (value ?? "").replace(/\s+/g, " ").trim()
+	function rebuildPjlProjectionState(shadowRoot: ShadowRoot): void {
+		shared.pjlArticleBlocksByLawArticle = buildPjlArticleBlocks(shadowRoot)
+		resetPjlPreviewController()
+		pjlPreviewController = createPjlPreviewController(shadowRoot)
 	}
 
-	function trimBlockTextAtSectionBreak(text: string): string {
-		const startsWithLetterMarker =
-			/^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u.test(text)
-		if (!startsWithLetterMarker) return text
-		const sectionMarkerRe = /\n\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
-		const match = sectionMarkerRe.exec(text)
-		if (!match || match.index <= 0) return text
-		return text.slice(0, match.index).trimEnd()
-	}
-
-	function getPjlArticleLabelForLink(link: HTMLAnchorElement): string | null {
-		const section = link.closest('div[class^="assnatSection"]')
-		if (!section) return null
-		const text = normalizeLineText(section.textContent)
-		const match = /\bARTICLE\s+([0-9IVXLCDM]+|unique)\b/i.exec(text)
-		if (!match) return null
-		const raw = match[1] ?? ""
-		if (!raw) return null
-		if (/^unique$/i.test(raw)) return "Article unique"
-		return `Article ${raw.toUpperCase()}`
-	}
-
-	function buildPjlArticleBlocks(root: ShadowRoot): Record<
-		string,
-		{
-			pjlArticleLabel: string
-			blockHtml: string
-			blockText: string
-		}[]
-	> {
-		const hasActionVerb = (text: string): boolean => {
-			const withoutQuotes = text
-				.split("\n")
-				.map((line) => line.replace(/«[^»]*»/g, " "))
-				.join(" ")
-			const normalized = withoutQuotes
-				.toLowerCase()
-				.normalize("NFD")
-				.replace(/\p{Diacritic}/gu, "")
-			return /\b(insere|ajout|remplac|supprim|abrog|complet|retabl|modifi)/.test(
-				normalized,
-			)
-		}
-
-		const isDispositiveElement = (node: Element): boolean => {
-			let current: Element | null = node
-			while (current) {
-				const className = current.getAttribute("class")
-				if (className && className.toLowerCase().includes("projetloi")) {
-					return true
-				}
-				current = current.parentElement
-			}
-			return false
-		}
-
-		const findActionParagraphForLink = (
-			nodes: Element[],
-			paragraph: Element,
-		): Element => {
-			const paragraphText = normalizeLineText(paragraph.textContent)
-			if (!paragraphText.startsWith("«")) return paragraph
-			const isInDispositive = isDispositiveElement(paragraph)
-			if (!isInDispositive) return paragraph
-			const startIndex = nodes.findIndex((node) => node.contains(paragraph))
-			if (startIndex === -1) return paragraph
-			for (let i = startIndex - 1; i >= 0; i -= 1) {
-				const candidate = nodes[i]
-				if (!isDispositiveElement(candidate)) break
-				const candidateText = normalizeLineText(candidate.textContent)
-				if (!candidateText) continue
-				if (candidateText.startsWith("«")) continue
-				return candidate
-			}
-			return paragraph
-		}
-
-		const getLinkTargets = (node: Element): string[] => {
-			const actionLinks = Array.from(
-				node.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
-			)
-			return actionLinks
-				.map((actionLink) => {
-					const actionHref = actionLink.getAttribute("href")
-					if (!actionHref) return null
-					const actionUrl = new URL(actionHref, window.location.origin)
-					return actionUrl.searchParams.get("article")
-				})
-				.filter((value): value is string => Boolean(value))
-		}
-
-		const findContextTargets = (
-			nodes: Element[],
-			startNode: Element,
-		): string[] => {
-			const startIndex = nodes.findIndex((node) => node.contains(startNode))
-			if (startIndex === -1) return []
-			for (let i = startIndex; i >= 0; i -= 1) {
-				const candidate = nodes[i]
-				if (!isDispositiveElement(candidate)) break
-				const candidateText = normalizeLineText(candidate.textContent)
-				if (!candidateText || candidateText.startsWith("«")) continue
-				const targets = getLinkTargets(candidate)
-				if (targets.length > 0) return targets
-			}
-			return []
-		}
-
-		const result: Record<
-			string,
-			{
-				pjlArticleLabel: string
-				blockHtml: string
-				blockText: string
-			}[]
-		> = {}
-		const dedupe = new SvelteMap<string, SvelteSet<string>>()
-		const nodes = Array.from(root.querySelectorAll("p, li, table"))
-		const links = Array.from(
-			root.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
-		)
-		for (const link of links) {
-			const href = link.getAttribute("href")
-			if (!href) continue
-			const lawUrl = new URL(href, window.location.origin)
-			const lawArticle = lawUrl.searchParams.get("article")
-			if (!lawArticle) continue
-
-			const paragraph = link.closest("p, li") ?? link.parentElement
-			if (!paragraph) continue
-			if (!isDispositiveElement(paragraph)) continue
-			const isQuotedLine = normalizeLineText(paragraph.textContent).startsWith(
-				"«",
-			)
-			const actionParagraph = findActionParagraphForLink(nodes, paragraph)
-			const actionTargets = getLinkTargets(actionParagraph)
-			const contextTargets = findContextTargets(nodes, actionParagraph)
-			const targetPool =
-				contextTargets.length > 0 ? contextTargets : actionTargets
-			if (isQuotedLine && targetPool.length === 0) {
-				continue
-			}
-			if (targetPool.length > 0 && !targetPool.includes(lawArticle)) {
-				continue
-			}
-			const paragraphText = normalizeLineText(actionParagraph.textContent)
-			if (paragraphText.startsWith("«")) continue
-			const block = collectPjlBlock(root, actionParagraph)
-			const blockText = trimBlockTextAtSectionBreak(block.text)
-			if (!blockText) continue
-			if (!hasActionVerb(blockText)) continue
-
-			const pjlArticleLabel = getPjlArticleLabelForLink(link) ?? "Article"
-
-			const key = `${pjlArticleLabel}||${blockText}`
-			const existing = dedupe.get(lawArticle) ?? new SvelteSet<string>()
-			if (existing.has(key)) continue
-			existing.add(key)
-			dedupe.set(lawArticle, existing)
-
-			if (!result[lawArticle]) {
-				result[lawArticle] = []
-			}
-			result[lawArticle].push({
-				pjlArticleLabel,
-				blockHtml: block.html,
-				blockText,
-			})
-		}
-		return result
-	}
-
-	function collectPjlBlock(
-		root: ShadowRoot,
-		startNode: Element,
-	): { html: string; text: string } {
-		const nodes = Array.from(root.querySelectorAll("p, li, table"))
-		const startIndex = nodes.findIndex((node) => node.contains(startNode))
-		if (startIndex === -1) {
-			return {
-				html: startNode.outerHTML,
-				text: normalizeLineText(startNode.textContent),
-			}
-		}
-
-		const collected: Element[] = []
-		const start = nodes[startIndex]
-		const startText = normalizeLineText(start.textContent)
-		collected.push(start)
-
-		const startHasOpenQuote = startText.includes("«")
-		const startHasCloseQuote = startText.includes("»")
-		let inQuoteBlock = startHasOpenQuote && !startHasCloseQuote
-		const colonMode = !inQuoteBlock && startText.endsWith(":")
-		let listMode = false
-		let listRoot: Element | null = null
-		let listQuotePending = false
-		const listStartLevel = getListMarkerLevel(startText)
-		const shouldBreakOnLetterSection = listStartLevel === 3
-		const normalizedStart = startText
-			.toLowerCase()
-			.normalize("NFD")
-			.replace(/\p{Diacritic}/gu, "")
-		const allowSameLevelItems =
-			/^\s*1\s*(?:°|\.|\))\s+/u.test(startText) &&
-			/\bapres\s+le\b/u.test(normalizedStart) &&
-			/\binser/.test(normalizedStart)
-		if (colonMode && allowSameLevelItems) {
-			listMode = true
-			listRoot = start.closest("ol, ul")
-		}
-		if (!inQuoteBlock && !startText.endsWith(":")) {
-			const startLevel = listStartLevel
-			if (startLevel !== null) {
-				let currentLevel = startLevel
-				const context: Element[] = []
-				for (let i = startIndex - 1; i >= 0; i -= 1) {
-					const previous = nodes[i]
-					const prevText = normalizeLineText(previous.textContent)
-					if (!prevText) continue
-					const level = getListMarkerLevel(prevText)
-					if (level !== null && level < currentLevel) {
-						context.unshift(previous)
-						currentLevel = level
-						if (currentLevel === 1) break
-					}
-				}
-				if (context.length > 0) {
-					collected.unshift(...context)
-				}
-			}
-			return {
-				html: collected.map((node) => node.outerHTML).join("\n"),
-				text: collected
-					.map((node) => normalizeLineText(node.textContent))
-					.join("\n"),
-			}
-		}
-
-		const listItemRe =
-			/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
-		const topLevelLetterRe = /^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
-		function getListMarkerLevel(text: string): number | null {
-			const match =
-				/^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(text)
-			if (!match) return null
-			const marker = match[1] ?? ""
-			if (!marker) return null
-			if (/^[IVXLCDM]+$/i.test(marker)) return 1
-			if (/^\d+$/u.test(marker)) return 2
-			if (/^[a-zA-Z]$/u.test(marker)) return 3
-			return null
-		}
-		for (let i = startIndex + 1; i < nodes.length; i += 1) {
-			const node = nodes[i]
-			const text = normalizeLineText(node.textContent)
-			const hasOpenQuote = text.includes("«")
-			const hasCloseQuote = text.includes("»")
-			const isMarkerCell = node.closest("td.texte-col-0") !== null
-			const isPastille =
-				node.classList.contains("pastille") ||
-				node.getAttribute("data-pastille") !== null
-			const isShortMarker = text.length <= 2 && !/[\p{L}\p{N}]/u.test(text)
-			const isSkippableBeforeQuote =
-				text.length === 0 || isMarkerCell || isPastille || isShortMarker
-
-			if (
-				shouldBreakOnLetterSection &&
-				!inQuoteBlock &&
-				node !== start &&
-				topLevelLetterRe.test(text)
-			) {
-				break
-			}
-
-			if (!inQuoteBlock) {
-				if (colonMode && !listMode) {
-					if (hasOpenQuote) {
-						inQuoteBlock = !hasCloseQuote
-						collected.push(node)
-						if (!inQuoteBlock) break
-						continue
-					}
-					if (isSkippableBeforeQuote) {
-						continue
-					}
-					if (listItemRe.test(text)) {
-						listMode = true
-						if (!listRoot) {
-							listRoot = node.closest("ol, ul")
-						}
-						collected.push(node)
-						listQuotePending = text.trim().endsWith(":")
-						if (hasOpenQuote && !hasCloseQuote) {
-							inQuoteBlock = true
-							listQuotePending = false
-						}
-						continue
-					}
-					break
-				}
-
-				if (listMode) {
-					if (listRoot && !listRoot.contains(node)) {
-						const isNewListItem =
-							listItemRe.test(text) || getListMarkerLevel(text) !== null
-						if (isNewListItem) {
-							listRoot = node.closest("ol, ul")
-						} else {
-							if (listQuotePending || hasOpenQuote) {
-								if (isSkippableBeforeQuote) continue
-								collected.push(node)
-								if (hasOpenQuote && !hasCloseQuote) {
-									inQuoteBlock = true
-									listQuotePending = false
-								}
-								if (hasCloseQuote) listQuotePending = false
-								continue
-							}
-							break
-						}
-					}
-					if (listStartLevel !== null && listItemRe.test(text)) {
-						const currentLevel = getListMarkerLevel(text)
-						if (currentLevel !== null) {
-							if (currentLevel < listStartLevel) break
-							if (currentLevel === listStartLevel && !allowSameLevelItems) {
-								break
-							}
-						}
-					} else if (listStartLevel !== null && !listItemRe.test(text)) {
-						const currentLevel = getListMarkerLevel(text)
-						if (currentLevel !== null && currentLevel <= listStartLevel) {
-							break
-						}
-					}
-					if (isSkippableBeforeQuote) continue
-					collected.push(node)
-					if (listItemRe.test(text)) {
-						if (hasOpenQuote && !hasCloseQuote) {
-							inQuoteBlock = true
-							listQuotePending = false
-						} else {
-							listQuotePending = text.trim().endsWith(":")
-						}
-					} else if (hasOpenQuote && !hasCloseQuote) {
-						inQuoteBlock = true
-						listQuotePending = false
-					}
-					continue
-				}
-
-				if (hasOpenQuote) {
-					inQuoteBlock = true
-				} else if (isSkippableBeforeQuote) {
-					continue
-				} else {
-					break
-				}
-			}
-
-			if (inQuoteBlock) {
-				collected.push(node)
-				if (hasCloseQuote) {
-					inQuoteBlock = false
-					listQuotePending = false
-					if (!listMode) break
-				}
-			}
-		}
-
-		if (colonMode) {
-			const fallback: Element[] = [start]
-			let sawList = false
-			let quoteOpen = false
-			for (let i = startIndex + 1; i < nodes.length; i += 1) {
-				const node = nodes[i]
-				const text = normalizeLineText(node.textContent)
-				const hasOpenQuote = text.includes("«")
-				const hasCloseQuote = text.includes("»")
-				const isEmpty = text.length === 0
-				const isLi = node.tagName === "LI"
-				const markerLevel = getListMarkerLevel(text)
-				if (!sawList) {
-					if (isEmpty) continue
-					if (isLi && markerLevel !== null) {
-						sawList = true
-						fallback.push(node)
-						if (hasOpenQuote && !hasCloseQuote) {
-							quoteOpen = true
-						}
-						continue
-					}
-					break
-				}
-
-				if (isLi) {
-					fallback.push(node)
-					if (hasOpenQuote && !hasCloseQuote) {
-						quoteOpen = true
-					}
-					if (hasCloseQuote) {
-						quoteOpen = false
-					}
-					continue
-				}
-
-				if (quoteOpen) {
-					if (!isEmpty) {
-						fallback.push(node)
-					}
-					if (hasCloseQuote) {
-						quoteOpen = false
-					}
-					continue
-				}
-
-				if (isEmpty) continue
-				break
-			}
-
-			if (sawList && fallback.length > collected.length) {
-				return {
-					html: fallback.map((node) => node.outerHTML).join("\n"),
-					text: fallback
-						.map((node) => normalizeLineText(node.textContent))
-						.join("\n"),
-				}
-			}
-		}
-
-		return {
-			html: collected.map((node) => node.outerHTML).join("\n"),
-			text: collected
-				.map((node) => normalizeLineText(node.textContent))
-				.join("\n"),
-		}
+	function buildParameterButtonController(
+		shadowRoot: ShadowRoot,
+	): ReturnType<typeof createParameterButtonController> {
+		return createParameterButtonController(shadowRoot, {
+			getShowParameterModal: () => showParameterModal,
+			setShowParameterModal: (value) => {
+				showParameterModal = value
+			},
+			getActiveParam: () => activeParam,
+			setActiveParam: (value) => {
+				activeParam = value
+			},
+			setClickedParameterButtons: (buttons) => {
+				clickedParameterButtons = buttons
+			},
+			setParametersToVariables: (value) => {
+				parametersToVariables = value
+			},
+			decodeParametersToVariables: (value) =>
+				decodeParametersToVariables(value) ?? {},
+			navigateToHref: (href) => {
+				goto(resolve(href as Pathname))
+			},
+		})
 	}
 
 	$effect(() => {
 		if (!container || !pjlHTML) {
 			shared.pjlArticleBlocksByLawArticle = undefined
+			resetPjlPreviewController()
 			return
 		}
 
@@ -518,16 +102,24 @@
 			const shadow = container.attachShadow({ mode: "open" })
 
 			shadow.innerHTML = pjlHTML
-			shared.pjlArticleBlocksByLawArticle = buildPjlArticleBlocks(shadow)
+			rebuildPjlProjectionState(shadow)
 
 			const initialHash = window.location.hash
 			if (initialHash) {
-				requestAnimationFrame(() => scrollToAnchor(initialHash, shadow))
+				requestAnimationFrame(() =>
+					requestAnimationFrame(() => scrollToAnchor(initialHash, shadow)),
+				)
 			}
 
 			const handleClick = (e: Event) => {
 				const mouseEvent = e as MouseEvent
 				const target = mouseEvent.target as HTMLElement
+				const previewActionButton = target.closest(
+					"button.pjl-preview-popover-action",
+				) as HTMLButtonElement | null
+				const previewClickable = target.closest(
+					".pjl-preview-clickable[data-preview-id]",
+				) as HTMLElement | null
 				const selection = window.getSelection()
 				if (selection && !selection.isCollapsed) {
 					const selectedText = selection.toString().trim()
@@ -555,6 +147,39 @@
 				const lawLink = target.closest("a.law-article-link")
 				const paragraph = target.closest("p, li, div")
 
+				if (previewActionButton) {
+					e.preventDefault()
+					e.stopPropagation()
+					const previewId = previewActionButton.dataset.previewId
+					if (!previewId) return
+					const request = pjlPreviewController?.previewRequests.get(previewId)
+					if (!request) return
+					shared.pjlPreviewRequest = {
+						articleId: request.articleId,
+						mode: request.mode,
+						blockText: request.blockText,
+						blockHtml: request.blockHtml,
+						directiveId: request.directiveId,
+					}
+					const currentHash = window.location.hash
+					const hrefToUse =
+						request.href ??
+						`${window.location.pathname}?article=${encodeURIComponent(request.articleId)}`
+					goto(resolve(`${hrefToUse}${currentHash}` as Pathname & {}))
+					return
+				}
+
+				if (previewClickable) {
+					e.preventDefault()
+					e.stopPropagation()
+					const previewId = previewClickable.dataset.previewId
+					if (!previewId) return
+					pjlPreviewController?.activatePreview(previewId, previewClickable)
+					return
+				}
+
+				pjlPreviewController?.clearActivePreview()
+
 				if (link) {
 					e.preventDefault()
 					const hash = link.getAttribute("href")
@@ -565,13 +190,12 @@
 				}
 
 				if (!target.closest("button.highlighted")) {
-					showParameterModal = false
-					activeParam = null
-					updateButtonColors()
+					parameterButtonController?.clearActiveSelection()
 				}
 
 				if (lawLink) {
 					e.preventDefault()
+					shared.pjlPreviewRequest = undefined
 					const href = lawLink.getAttribute("href")
 					const lawUrl = href ? new URL(href, window.location.origin) : null
 					const lawArticle = lawUrl?.searchParams.get("article") ?? undefined
@@ -602,136 +226,26 @@
 			}
 
 			shadow.addEventListener("click", handleClick)
-
-			// BOUTON PARAMÈTRES du simulateur ou OpenFIsca
-
-			const baseBg = "#ccd3e7" /* Fond bleu clair */
-			const hoverBg =
-				"rgba(127, 122, 9, 0.5)" /* Fond vert translucide au hover + actif */
-
-			let activeParam: string | null =
-				null /* Pour savoir quel paramètre est actif */
-
-			/* Nettoyer anciens listeners */
-			Array.from(
-				shadow.querySelectorAll<HTMLButtonElement>("button.highlighted"),
-			).forEach((btn) => {
-				const clone = btn.cloneNode(true) as HTMLButtonElement
-				btn.replaceWith(clone)
-			})
-
-			/* Re-sélectionner les boutons */
-			const buttons = Array.from(
-				shadow.querySelectorAll<HTMLButtonElement>("button.highlighted"),
-			)
-
-			/* Style initial + listeners */
-			buttons.forEach((button) => {
-				button.style.setProperty("appearance", "none", "important")
-				button.style.setProperty("-webkit-appearance", "none", "important")
-				button.style.setProperty("border", "none", "important")
-				button.style.setProperty("box-shadow", "none", "important")
-				button.style.setProperty("background-color", baseBg, "important")
-				button.style.setProperty("color", "#000", "important")
-				button.style.setProperty("cursor", "pointer", "important")
-				button.style.setProperty("font-family", "inherit", "important")
-				button.style.setProperty("font-size", "inherit", "important")
-				button.style.setProperty(
-					"transition",
-					"background-color 0.2s ease",
-					"important",
-				)
-				const buttonInnerText = simplifyHtml({ removeAWithHref: true })(
-					button.innerHTML,
-				).output.replace(" ", "")
-				/* Hover : seulement si le bouton n’est pas celui du paramètre actif */
-				button.addEventListener("mouseenter", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", hoverBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							const btnInnerText = simplifyHtml({ removeAWithHref: true })(
-								btn.innerHTML,
-							).output.replace(" ", "")
-
-							if (
-								btn.dataset.params === button.dataset.params &&
-								btnInnerText === buttonInnerText
-							)
-								btn.style.setProperty("background-color", hoverBg, "important")
-						})
-					}
-				})
-				button.addEventListener("mouseleave", () => {
-					if (!showParameterModal) {
-						button.style.setProperty("background-color", baseBg, "important")
-						Array.from(
-							document.querySelectorAll<HTMLButtonElement>(
-								"button.highlighted",
-							),
-						).forEach((btn) => {
-							if (btn.dataset.params === button.dataset.params)
-								btn.style.setProperty("background-color", baseBg, "important")
-						})
-					}
-				})
-
-				/* Clic sur le bouton */
-				button.addEventListener("click", (e: Event) => {
-					e.stopPropagation()
-					clickedParameterButtons = buttons
-					const clickedParam = button.dataset.params ?? null
-
-					/* Si on clique sur le même paramètre => toggle */
-					if (showParameterModal && activeParam === clickedParam) {
-						showParameterModal = false
-						activeParam = null
-					} else {
-						/* Sinon, on ouvre le nouveau paramètre */
-						activeParam = clickedParam
-						const linkAbove = findFirstLinkAbove(button)
-						if (linkAbove && linkAbove.href) {
-							const url = new URL(linkAbove.href)
-							goto(
-								resolve(`${url.pathname}${url.search}${url.hash}` as Pathname),
-							)
-						}
-						parametersToVariables = clickedParam
-							? decodeParametersToVariables(clickedParam)
-							: {}
-						showParameterModal = true
-					}
-
-					/* Met à jour les couleurs selon l'état du modal */
-					updateButtonColors()
-				})
-			})
-
-			/* 🔹 Fonction utilitaire pour gérer les couleurs selon showParameterModal */
-			function updateButtonColors() {
-				buttons.forEach((b) => {
-					if (showParameterModal && b.dataset.params === activeParam) {
-						/* Bouton du paramètre actif -> vert */
-						b.style.setProperty("background-color", hoverBg, "important")
-					} else {
-						/* Tous les autres -> bleu */
-						b.style.setProperty("background-color", baseBg, "important")
-					}
-				})
-			}
+			parameterButtonController = buildParameterButtonController(shadow)
 
 			return () => {
 				shadow.removeEventListener("click", handleClick)
+				parameterButtonController = undefined
+				resetPjlPreviewController()
 			}
 		} else {
-			const wrapper = container.shadowRoot!.querySelector(".content-wrapper")
+			const shadowRoot = container.shadowRoot!
+			const wrapper = shadowRoot.querySelector(".content-wrapper")
 			if (wrapper) wrapper.innerHTML = pjlHTML
-			shared.pjlArticleBlocksByLawArticle = buildPjlArticleBlocks(
-				container.shadowRoot!,
-			)
+			rebuildPjlProjectionState(shadowRoot)
+			parameterButtonController = buildParameterButtonController(shadowRoot)
+			if (window.location.hash) {
+				requestAnimationFrame(() =>
+					requestAnimationFrame(() =>
+						scrollToAnchor(window.location.hash, shadowRoot),
+					),
+				)
+			}
 		}
 	})
 
@@ -745,11 +259,8 @@
 		if (element && host) {
 			const elementRect = element.getBoundingClientRect().top
 			const hostRect = host.getBoundingClientRect().top
-			const finalPosition = elementRect - hostRect + host.scrollTop
-			host.scrollTo({
-				top: finalPosition,
-				behavior: "smooth",
-			})
+			const finalPosition = Math.max(0, elementRect - hostRect + host.scrollTop)
+			host.scrollTop = finalPosition
 		}
 	}
 </script>

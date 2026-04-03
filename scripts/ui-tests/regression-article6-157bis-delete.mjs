@@ -21,10 +21,14 @@ const lawLink = page
 if ((await lawLink.count()) === 0) {
   await fail(`Lien introuvable: ${linkText}`)
 }
-await lawLink.scrollIntoViewIfNeeded()
-await lawLink.click({ force: true })
-await page.waitForURL(/article=/, { timeout: 60000 })
-await page.waitForLoadState("domcontentloaded")
+const href = await lawLink.getAttribute("href")
+if (!href) {
+  await fail(`Href introuvable pour ${linkText}`)
+}
+await page.goto(new URL(href, base).toString(), {
+  waitUntil: "domcontentloaded",
+  timeout: 60000,
+})
 
 const showProjection = page.getByRole("button", {
   name: "Voir la version projetée",

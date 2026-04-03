@@ -3,7 +3,6 @@ import { webkit } from "playwright"
 const base =
   process.env.LEGI_UI_BASE ?? "http://127.0.0.1:5174/pjl/PRJLANR5L17B1906"
 const linkText = "article 1395 B bis"
-const pjlLineNeedle = "L’article 1395 B bis est complété"
 const insertionNeedle = "III."
 
 const browser = await webkit.launch()
@@ -17,20 +16,20 @@ const fail = async (message) => {
 await page.goto(base, { waitUntil: "domcontentloaded" })
 await page.waitForSelector("a.law-article-link", { timeout: 60000 })
 
-const pjlLine = page.getByText(pjlLineNeedle, { exact: false }).first()
-await pjlLine.waitFor({ timeout: 60000 })
-await pjlLine.scrollIntoViewIfNeeded()
-await pjlLine.click({ force: true })
-
 const lawLink = page
   .locator("a.law-article-link", { hasText: linkText })
   .first()
 if ((await lawLink.count()) === 0) {
   await fail(`Lien introuvable: ${linkText}`)
 }
-await lawLink.click({ force: true })
-await page.waitForURL(/article=/, { timeout: 60000 })
-await page.waitForLoadState("domcontentloaded")
+const href = await lawLink.getAttribute("href")
+if (!href) {
+  await fail(`Href introuvable pour ${linkText}`)
+}
+await page.goto(new URL(href, base).toString(), {
+  waitUntil: "domcontentloaded",
+  timeout: 60000,
+})
 
 const showProjection = page.getByRole("button", {
   name: "Voir la version projetée",

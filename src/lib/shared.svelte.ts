@@ -1,3 +1,4 @@
+import type { PjlArticleBlock, PjlPreviewRequest } from "$lib/pjl/types"
 import { SvelteDate } from "svelte/reactivity"
 
 export interface Shared {
@@ -18,16 +19,8 @@ export interface Shared {
 				blockText?: string
 		  }
 		| undefined
-	pjlArticleBlocksByLawArticle:
-		| Record<
-				string,
-				{
-					pjlArticleLabel: string
-					blockHtml: string
-					blockText: string
-				}[]
-		  >
-		| undefined
+	pjlArticleBlocksByLawArticle: Record<string, PjlArticleBlock[]> | undefined
+	pjlPreviewRequest: PjlPreviewRequest | undefined
 }
 
 export const shared: Shared = $state({
@@ -41,6 +34,7 @@ export const shared: Shared = $state({
 	pjlDate: "2025-10-01",
 	pjlSelectedLine: undefined,
 	pjlArticleBlocksByLawArticle: undefined,
+	pjlPreviewRequest: undefined,
 })
 
 export function formatDateFr(dateStr: string): string {

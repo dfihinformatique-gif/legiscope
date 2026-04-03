@@ -21,10 +21,14 @@ const articleLink = page
 if ((await articleLink.count()) === 0) {
   await fail(`Lien d'article introuvable: ${linkText}`)
 }
-await articleLink.scrollIntoViewIfNeeded()
-await articleLink.click({ force: true })
-await page.waitForURL(/article=/, { timeout: 60000 })
-await page.waitForLoadState("domcontentloaded")
+const href = await articleLink.getAttribute("href")
+if (!href) {
+  await fail(`Href introuvable pour ${linkText}`)
+}
+await page.goto(new URL(href, base).toString(), {
+  waitUntil: "domcontentloaded",
+  timeout: 60000,
+})
 
 const h1 = page.locator("h1", { hasText: /Article 224/i }).first()
 await h1.waitFor({ timeout: 60000 })

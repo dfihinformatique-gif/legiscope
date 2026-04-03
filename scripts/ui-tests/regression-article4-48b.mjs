@@ -34,9 +34,14 @@ const articleLink = page
 if ((await articleLink.count()) === 0) {
   await fail(`Lien d'article introuvable: ${linkText}`)
 }
-await articleLink.click()
-await page.waitForURL(/article=/, { timeout: 60000 })
-await page.waitForLoadState("domcontentloaded")
+const href = await articleLink.getAttribute("href")
+if (!href) {
+  await fail(`Href introuvable pour ${linkText}`)
+}
+await page.goto(new URL(href, base).toString(), {
+  waitUntil: "domcontentloaded",
+  timeout: 60000,
+})
 
 const pjlLine = page.getByText(pjlLineNeedle, { exact: false }).first()
 await pjlLine.waitFor({ timeout: 60000 })
