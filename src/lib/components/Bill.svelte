@@ -13,6 +13,7 @@
 		trimBlockTextAtSectionBreak,
 		type PjlPreviewController,
 	} from "$lib/pjl/bill_preview"
+	import { hasMeaningfulSelectionWithinRoot } from "$lib/pjl/bill_interactions"
 	import {
 		decodeParametersToVariables,
 		getParameter,
@@ -120,27 +121,8 @@
 				const previewClickable = target.closest(
 					".pjl-preview-clickable[data-preview-id]",
 				) as HTMLElement | null
-				const selection = window.getSelection()
-				if (selection && !selection.isCollapsed) {
-					const selectedText = selection.toString().trim()
-					if (selectedText.length > 0) {
-						const anchorNode = selection.anchorNode
-						const focusNode = selection.focusNode
-						const anchorElement =
-							anchorNode instanceof Element
-								? anchorNode
-								: (anchorNode?.parentElement ?? null)
-						const focusElement =
-							focusNode instanceof Element
-								? focusNode
-								: (focusNode?.parentElement ?? null)
-						if (
-							(anchorElement && shadow.contains(anchorElement)) ||
-							(focusElement && shadow.contains(focusElement))
-						) {
-							return
-						}
-					}
+				if (hasMeaningfulSelectionWithinRoot(window.getSelection(), shadow)) {
+					return
 				}
 
 				const link = target.closest('a[href^="#"]') as HTMLAnchorElement

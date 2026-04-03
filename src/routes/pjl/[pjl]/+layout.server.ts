@@ -8,6 +8,7 @@ import {
 	getSimplifiedCoordOfValuesToHighlight,
 	parameterReferences,
 } from "$lib/openfisca_parameters"
+import { getPjlDate } from "$lib/pjl/pjl_dates"
 import { getDbPool } from "$lib/server/db-connect"
 import { shared } from "$lib/shared.svelte"
 import type { ScaleParameter, ValueParameter } from "@openfisca/json-model"
@@ -19,21 +20,6 @@ import {
 } from "@tricoteuses/tisseuse"
 import { readFileSync } from "fs"
 import type { LayoutServerLoad } from "./$types"
-
-const PJL_DATES = new Map<string, string>([
-	["PRJLANR5L17B1906", "2025-10-14"],
-	["PRJLANR5L17B1907", "2025-10-14"],
-	["pjl25-024", "2025-10-14"],
-	["pjl25-138", "2025-11-24"],
-	["PRJLANR5L17B2247", "2025-12-15"],
-	["pjl25-122", "2025-11-13"],
-	["PRJLANR5L17B2141", "2025-11-26"],
-	["pjl25-193", "2025-12-09"],
-	["pjl25-112", "2025-11-05"],
-	["PRJLANR5L17B2115", "2025-11-05"],
-	["PRJLANR5L17BTC2250", "2025-12-17"],
-	["DECLANR5L17B2247-N0", "2026-01-21"],
-])
 
 export const load: LayoutServerLoad = async ({
 	params,
@@ -62,7 +48,7 @@ export const load: LayoutServerLoad = async ({
 	const pjl = params.pjl
 	const filePath = path.resolve(`static/${pjl}.html`)
 
-	const pjlDate = PJL_DATES.get(pjl) ?? new Date().toISOString().split("T")[0]
+	const pjlDate = getPjlDate(pjl) ?? new Date().toISOString().split("T")[0]
 
 	shared.pjlDate = pjlDate
 

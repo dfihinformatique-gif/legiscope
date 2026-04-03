@@ -1,31 +1,9 @@
-import { readdir } from "node:fs/promises"
-import { join, resolve } from "node:path"
-import { pathToFileURL } from "node:url"
+import { performance } from "node:perf_hooks"
 
-const root = resolve(process.cwd(), "scripts", "ui-tests")
-const entries = await readdir(root, { withFileTypes: true })
-const tests = entries
-  .filter((entry) => entry.isFile())
-  .map((entry) => entry.name)
-  .filter((name) => name.endsWith(".mjs"))
-  .filter((name) => name !== "run-all.mjs")
-  .sort()
+const startedAt = performance.now()
 
-if (tests.length === 0) {
-  console.log("No UI tests found in scripts/ui-tests.")
-  process.exit(0)
-}
+await import(new URL("../projection-tests/run-all.mjs", import.meta.url).href)
+await import(new URL("./run-dom.mjs", import.meta.url).href)
 
-for (const test of tests) {
-  const file = join(root, test)
-  console.log(`\n[ui-tests] running ${test}`)
-  try {
-    await import(pathToFileURL(file).href)
-  } catch (error) {
-    console.error(`[ui-tests] failed ${test}`)
-    console.error(error)
-    process.exit(1)
-  }
-}
-
-console.log(`\n[ui-tests] all tests passed (${tests.length}).`)
+const durationMs = Math.round(performance.now() - startedAt)
+console.log(`\n[tests] full suite passed in ${durationMs} ms.`)
