@@ -147,10 +147,21 @@ export async function createProjectionHarness() {
       globalThis.Element = Element
     }
 
+    const actionContexts =
+      billPreviewModule.collectPjlActionContexts(rootAdapter)
     const blocksByArticle = billPreviewModule.buildPjlArticleBlocks(rootAdapter)
     const entry = {
       pjlId,
       rawHtml,
+      actionContexts,
+      orderedBlocks: actionContexts.map((context) => ({
+        articleId: context.articleId,
+        href: context.href,
+        pjlArticleLabel: context.pjlArticleLabel,
+        blockHtml: context.blockHtml,
+        blockText: context.blockText,
+        articleNum: context.articleNum,
+      })),
       blocksByArticle,
       linkEntries,
       date:
@@ -207,6 +218,79 @@ export async function createProjectionHarness() {
     return {
       articleId: resolvedArticleId,
       blocks: blocksByArticle[resolvedArticleId] ?? [],
+    }
+  }
+
+  async function analyzeBlock({ pjlId, articleId, block, isSection = false }) {
+    const articleInfo = isSection
+      ? undefined
+      : await getArticleInfo(pjlId, articleId)
+    const currentHtml = isSection
+      ? ""
+      : (articleInfo?.article?.bloc_textuel ?? "")
+    const articleNum = isSection
+      ? undefined
+      : (articleInfo?.article?.num ?? undefined)
+    const { directives, isAction } =
+      blockDirectivesModule.buildDirectivesFromPjlBlock(block, articleNum)
+
+    let projection
+    if (directives.length === 0) {
+      projection = {
+        html: null,
+        skipDiff: true,
+        appliedCount: 0,
+        failures: isAction
+          ? [
+              {
+                pjlArticleLabel: block.pjlArticleLabel,
+                reason:
+                  "Disposition non reconnue pour l'instant pour projeter un diff.",
+              },
+            ]
+          : [],
+        reason: isAction
+          ? "Aucune disposition projetable n'a pu être appliquée à cet article."
+          : "Bloc sans action projetable reconnue.",
+      }
+    } else {
+      const result = projectionModule.applyProjectActionsToHtml(
+        currentHtml,
+        directives,
+      )
+      projection =
+        result.html === null
+          ? {
+              html: null,
+              skipDiff: true,
+              appliedCount: 0,
+              failures: [
+                {
+                  pjlArticleLabel: block.pjlArticleLabel,
+                  reason:
+                    result.reason ??
+                    "Disposition non reconnue pour l'instant pour projeter un diff.",
+                },
+              ],
+              reason:
+                result.reason ??
+                "Aucune disposition projetable n'a pu être appliquée à cet article.",
+            }
+          : {
+              ...result,
+              appliedCount: 1,
+              failures: [],
+            }
+    }
+
+    return {
+      articleId,
+      articleInfo,
+      currentHtml,
+      articleNum,
+      directives,
+      isAction,
+      projection,
     }
   }
 
@@ -339,6 +423,7 @@ export async function createProjectionHarness() {
     resolveArticleId,
     getArticleInfo,
     getBlocksForArticle,
+    analyzeBlock,
     projectArticle,
     async cleanup() {
       await dbConnectModule.closeDbPool?.()

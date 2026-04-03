@@ -21,6 +21,8 @@ import {
 
 export type ActionDirectiveWithHtml = ActionDirective & {
 	replacementHtml?: string
+	tableColumnIndex?: number
+	tableRowIndex?: number
 }
 
 export type ProjectedHtmlResult =
@@ -36,7 +38,11 @@ export function escapeRegExp(text: string): string {
 	return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
-function buildNeedleRegExp(needle: string, global = false): RegExp {
+function buildNeedleRegExp(
+	needle: string,
+	global = false,
+	relaxRightBoundary = false,
+): RegExp {
 	const trimmed = needle.trim()
 	const startsWithWord = /^[\p{L}\p{N}]/u.test(trimmed)
 	const endsWithWord = /[\p{L}\p{N}]$/u.test(trimmed)
@@ -46,7 +52,7 @@ function buildNeedleRegExp(needle: string, global = false): RegExp {
 		.replace(/\s+/g, "\\s+")
 	const pattern =
 		`${startsWithWord ? "(?<![\\p{L}\\p{N}])" : ""}${corePattern}` +
-		`${endsWithWord ? "(?![\\p{L}\\p{N}])" : ""}`
+		`${endsWithWord ? (relaxRightBoundary ? "(?:(?![\\p{L}\\p{N}])|(?=[\\p{Ll}]))" : "(?![\\p{L}\\p{N}])") : ""}`
 	const flags = `${global ? "g" : ""}u`
 	return new RegExp(pattern, flags)
 }
@@ -56,8 +62,10 @@ function findMatchInSimplifiedText(
 	needle: string,
 ): FragmentPosition | null {
 	if (!needle) return null
-	const regex = buildNeedleRegExp(needle)
-	const match = regex.exec(text)
+	let match = buildNeedleRegExp(needle).exec(text)
+	if (!match) {
+		match = buildNeedleRegExp(needle, false, true).exec(text)
+	}
 	if (!match || match.index === undefined) return null
 
 	return { start: match.index, stop: match.index + match[0].length }
@@ -203,6 +211,39 @@ function findPhraseBoundsInHtml(
 		newReverseTransformationsMergedFromPositionsIterator(simplified)
 	const reversed = iterator.next(textBounds[resolvedIndex - 1]).value
 	return reversed?.position ?? null
+}
+
+function findSelectorPortionBoundsInHtml(
+	html: string,
+	selector: PortionSelector | undefined,
+): FragmentPosition | null {
+	if (!selector) return null
+	if (selector.kind === "single") {
+		const lastStep = selector.steps.at(-1)
+		if (lastStep?.type === "phrase" && typeof lastStep.index === "number") {
+			return findPhraseBoundsInHtml(html, lastStep.index)
+		}
+		return null
+	}
+
+	const firstStep = selector.first.at(-1)
+	const lastStep = selector.last.at(-1)
+	if (
+		firstStep?.type !== "phrase" ||
+		lastStep?.type !== "phrase" ||
+		typeof firstStep.index !== "number" ||
+		typeof lastStep.index !== "number"
+	) {
+		return null
+	}
+
+	const firstBounds = findPhraseBoundsInHtml(html, firstStep.index)
+	const lastBounds = findPhraseBoundsInHtml(html, lastStep.index)
+	if (!firstBounds || !lastBounds) return null
+	return {
+		start: Math.min(firstBounds.start, lastBounds.start),
+		stop: Math.max(firstBounds.stop, lastBounds.stop),
+	}
 }
 
 function findScopedTargetPositionInHtml(
@@ -430,6 +471,75 @@ export function collectArticleNumsFromReference(
 	return Array.from(nums)
 }
 
+function visitReferenceTree(
+	reference: ActionDirectiveWithHtml["reference"],
+	visit: (reference: ActionDirectiveWithHtml["reference"]) => void,
+): void {
+	visit(reference)
+	switch (reference.type) {
+		case "parent-enfant":
+			visitReferenceTree(reference.parent, visit)
+			visitReferenceTree(reference.child, visit)
+			break
+		case "bounded-interval":
+			visitReferenceTree(reference.first, visit)
+			visitReferenceTree(reference.last, visit)
+			break
+		case "counted-interval":
+			visitReferenceTree(reference.first, visit)
+			break
+		case "enumeration":
+		case "exclusion":
+			visitReferenceTree(reference.left, visit)
+			visitReferenceTree(reference.right, visit)
+			break
+		case "reference_et_action":
+			visitReferenceTree(reference.reference, visit)
+			break
+	}
+}
+
+function specializeDirectiveForArticle(
+	directive: ActionDirectiveWithHtml,
+	articleNum: string,
+): ActionDirectiveWithHtml {
+	if (directive.portionSelectors.length === 0) return directive
+	const candidates: Array<{
+		reference: ActionDirectiveWithHtml["reference"]
+		selectors: PortionSelector[]
+		articleCount: number
+		specificity: number
+	}> = []
+
+	visitReferenceTree(directive.reference, (reference) => {
+		const articleNums = collectArticleNumsFromReference(reference)
+		if (articleNums.length === 0 || !articleNums.includes(articleNum)) return
+		const selectors = extractPortionSelectors(reference)
+		if (selectors.length === 0) return
+		candidates.push({
+			reference,
+			selectors,
+			articleCount: articleNums.length,
+			specificity: getSelectorsScore(selectors),
+		})
+	})
+
+	if (candidates.length === 0) return directive
+	const best = candidates.sort((left, right) => {
+		if (left.articleCount !== right.articleCount) {
+			return left.articleCount - right.articleCount
+		}
+		return right.specificity - left.specificity
+	})[0]
+	if (!best) return directive
+
+	return {
+		...directive,
+		reference: best.reference,
+		portionSelectors: best.selectors,
+	}
+}
+
 export function collectArticleNumsFromText(text: string): string[] {
 	if (!text.trim()) return []
 	const context = new TextParserContext(text)
@@ -451,18 +561,20 @@ export function filterDirectivesForArticle(
 ): ActionDirectiveWithHtml[] {
 	const normalized = normalizeArticleNum(articleNum)
 	if (!normalized) return directives
-	return directives.filter((directive) => {
+	return directives.flatMap((directive) => {
 		const fromReference = collectArticleNumsFromReference(directive.reference)
 		if (fromReference.length > 0) {
 			return fromReference.includes(normalized)
+				? [specializeDirectiveForArticle(directive, normalized)]
+				: []
 		}
 		if (directive.portionSelectors.length > 0) {
-			return true
+			return [directive]
 		}
 		const candidates = collectArticleNumsFromText(directive.sourceText)
-		if (candidates.length === 0) return true
-		if (candidates.includes(normalized)) return true
-		return candidates.length > 1
+		if (candidates.length === 0) return [directive]
+		if (candidates.includes(normalized)) return [directive]
+		return candidates.length > 1 ? [directive] : []
 	})
 }
 
@@ -500,6 +612,148 @@ function findParagraphBounds(
 		}
 		searchFrom = closeIndex + 4
 	}
+}
+
+function listParagraphBounds(
+	html: string,
+): Array<{ start: number; stop: number }> {
+	const bounds: Array<{ start: number; stop: number }> = []
+	let searchFrom = 0
+	const lower = html.toLowerCase()
+
+	while (true) {
+		const openIndex = lower.indexOf("<p", searchFrom)
+		if (openIndex === -1) return bounds
+		const openEnd = lower.indexOf(">", openIndex)
+		if (openEnd === -1) return bounds
+		const closeIndex = lower.indexOf("</p>", openEnd)
+		if (closeIndex === -1) return bounds
+		bounds.push({ start: openEnd + 1, stop: closeIndex })
+		searchFrom = closeIndex + 4
+	}
+}
+
+function findParagraphBoundsBySelectorSteps(
+	html: string,
+	selectorSteps: PortionSelectorStep[] | undefined,
+): { start: number; stop: number } | null {
+	const alineaStep = selectorSteps
+		? [...selectorSteps]
+				.reverse()
+				.find(
+					(step) => step.type === "alinéa" && typeof step.index === "number",
+				)
+		: undefined
+	if (!alineaStep || typeof alineaStep.index !== "number") return null
+	const paragraphs = listParagraphBounds(html)
+	if (paragraphs.length === 0) return null
+	if (alineaStep.index > 0) {
+		return paragraphs[alineaStep.index - 1] ?? null
+	}
+	const resolvedIndex = paragraphs.length + alineaStep.index
+	return resolvedIndex >= 0 ? (paragraphs[resolvedIndex] ?? null) : null
+}
+
+function getItemStepLevel(num: string | undefined): number | null {
+	const normalized = (num ?? "").trim()
+	if (!normalized) return null
+	if (/^[IVXLCDM]+(?:\s+\w+)*$/u.test(normalized)) return 1
+	if (/^\d+(?:°)?(?:\s+\w+)*$/u.test(normalized)) return 2
+	if (/^[a-z](?:\s+\w+)*$/u.test(normalized)) return 3
+	if (/^[ivxlcdm]+(?:\s+\w+)*$/u.test(normalized)) return 4
+	return null
+}
+
+function detectParagraphItemLevel(text: string): number | null {
+	const trimmed = text.trim()
+	if (
+		/^[IVXLCDM]+(?:\s+\w+)*\.\s*(?:[-–—]\s*)?/u.test(trimmed) ||
+		/^[IVXLCDM]+(?:\s+\w+)*\s*[):]\s+/u.test(trimmed)
+	) {
+		return 1
+	}
+	if (/^\d+°(?:\s+|$)/u.test(trimmed) || /^\d+[.)]\s+/u.test(trimmed)) {
+		return 2
+	}
+	if (/^[a-z](?:\s+\w+)*\)\s+/u.test(trimmed)) {
+		return 3
+	}
+	if (/^[ivxlcdm]+\)\s+/u.test(trimmed)) {
+		return 4
+	}
+	return null
+}
+
+function listParagraphEntries(
+	html: string,
+): Array<{ bounds: { start: number; stop: number }; text: string }> {
+	return listParagraphBounds(html).map((bounds) => ({
+		bounds,
+		text: simplifyHtml()(html.slice(bounds.start, bounds.stop)).output.trim(),
+	}))
+}
+
+function findParagraphBoundsWithinItemScope(
+	html: string,
+	selectorSteps: PortionSelectorStep[] | undefined,
+): { start: number; stop: number } | null {
+	const itemStep = selectorSteps
+		? [...selectorSteps]
+				.reverse()
+				.find((step) => step.type === "item" && typeof step.num === "string")
+		: undefined
+	if (!itemStep?.num) return null
+
+	const entries = listParagraphEntries(html)
+	if (entries.length === 0) return null
+	const needles = buildItemLabelNeedles(itemStep.num)
+	const startIndex = entries.findIndex((entry) =>
+		needles.some((needle) =>
+			entry.text.toLowerCase().startsWith(needle.trim().toLowerCase()),
+		),
+	)
+	if (startIndex < 0) return null
+
+	const currentLevel = getItemStepLevel(itemStep.num)
+	let endIndex = entries.length
+	for (let index = startIndex + 1; index < entries.length; index += 1) {
+		const level = detectParagraphItemLevel(entries[index]?.text ?? "")
+		if (level !== null && currentLevel !== null && level <= currentLevel) {
+			endIndex = index
+			break
+		}
+	}
+
+	const alineaStep = selectorSteps
+		? [...selectorSteps]
+				.reverse()
+				.find(
+					(step) => step.type === "alinéa" && typeof step.index === "number",
+				)
+		: undefined
+	if (!alineaStep || typeof alineaStep.index !== "number") {
+		return entries[startIndex]?.bounds ?? null
+	}
+
+	const scopedLength = endIndex - startIndex
+	if (scopedLength <= 0) return null
+	const resolvedIndex =
+		alineaStep.index > 0
+			? startIndex + alineaStep.index - 1
+			: endIndex + alineaStep.index
+	return resolvedIndex >= startIndex && resolvedIndex < endIndex
+		? (entries[resolvedIndex]?.bounds ?? null)
+		: null
+}
+
+function findParagraphBoundsByScopedSelectorSteps(
+	html: string,
+	selectorSteps: PortionSelectorStep[] | undefined,
+): { start: number; stop: number } | null {
+	return (
+		findParagraphBoundsWithinItemScope(html, selectorSteps) ??
+		findParagraphBoundsBySelectorSteps(html, selectorSteps)
+	)
 }
 
 function findTableBoundsAfter(
@@ -631,6 +885,280 @@ function buildTableReplacementDirective(
 		replacementHtml: tableHtml,
 		sourcePosition: { start: 0, stop: blockText.length },
 		sourceText: blockText,
+	}
+}
+
+function parseTableOrdinalIndex(token: string): number | null {
+	const normalized = normalizeActionSource(token).replace(/\.$/, "")
+	if (!normalized) return null
+	if (/^\d+$/.test(normalized)) {
+		const value = Number.parseInt(normalized, 10)
+		return Number.isFinite(value) && value > 0 ? value : null
+	}
+	const ordinals: Record<string, number> = {
+		premier: 1,
+		premiere: 1,
+		second: 2,
+		seconde: 2,
+		deuxieme: 2,
+		troisieme: 3,
+		quatrieme: 4,
+		cinquieme: 5,
+		sixieme: 6,
+		septieme: 7,
+		huitieme: 8,
+		neuvieme: 9,
+		dixieme: 10,
+		onzieme: 11,
+		douzieme: 12,
+		treizieme: 13,
+		quatorzieme: 14,
+		quinzieme: 15,
+		seizieme: 16,
+		dixseptieme: 17,
+		dixhuitieme: 18,
+		dixneuvieme: 19,
+		vingtieme: 20,
+	}
+	return ordinals[normalized] ?? null
+}
+
+function findBestReferenceCandidate(blockText: string): {
+	reference: ActionDirective["reference"]
+	selectors: PortionSelector[]
+} | null {
+	const context = new TextParserContext(blockText)
+	const references = getExtractedReferences(context)
+	const candidates = references
+		.map((reference) => ({
+			reference,
+			selectors: extractPortionSelectors(reference),
+		}))
+		.filter((candidate) => candidate.selectors.length > 0)
+	if (candidates.length === 0) return null
+	return candidates
+		.map((candidate) => ({
+			...candidate,
+			score: getSelectorsScore(candidate.selectors),
+		}))
+		.sort((a, b) => b.score - a.score)[0]
+}
+
+function buildTableStructuredDirectives(
+	blockText: string,
+): ActionDirectiveWithHtml[] | null {
+	const firstLine = blockText
+		.split("\n")
+		.map((line) => line.trim())
+		.find(Boolean)
+	if (!firstLine) return null
+	const normalizedFirstLine = normalizeActionSource(firstLine)
+	if (!/^(?:\d+°\s+)?au tableau\b/.test(normalizedFirstLine)) {
+		return null
+	}
+	const bestReference = findBestReferenceCandidate(blockText)
+	if (!bestReference) return null
+
+	const directives: ActionDirectiveWithHtml[] = []
+	const lines = blockText
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean)
+	let activeRowIndex: number | null = null
+	let activeColumnIndex: number | null = null
+
+	for (const line of lines) {
+		const deleteRowMatch =
+			/^[a-z]\)\s+La\s+([0-9A-Za-zÀ-ÖØ-öø-ÿ'’.-]+)\s+ligne\s+est\s+supprimée\s*;?$/iu.exec(
+				line,
+			)
+		if (deleteRowMatch) {
+			const rowIndex = parseTableOrdinalIndex(deleteRowMatch[1])
+			if (rowIndex) {
+				directives.push({
+					kind: "delete_portion",
+					targetType: "portion",
+					reference: bestReference.reference,
+					portionSelectors: [],
+					sourcePosition: { start: 0, stop: line.length },
+					sourceText: line,
+					tableRowIndex: rowIndex,
+				})
+			}
+			activeRowIndex = null
+			activeColumnIndex = null
+			continue
+		}
+
+		const cellContextMatch =
+			/^[a-z]\)\s+A\s+la\s+([0-9A-Za-zÀ-ÖØ-öø-ÿ'’.-]+)\s+ligne\s+de\s+la\s+([0-9A-Za-zÀ-ÖØ-öø-ÿ'’.-]+)\s+colonne\s*:\s*$/iu.exec(
+				line,
+			)
+		if (cellContextMatch) {
+			activeRowIndex = parseTableOrdinalIndex(cellContextMatch[1])
+			activeColumnIndex = parseTableOrdinalIndex(cellContextMatch[2])
+			continue
+		}
+
+		const replacementMatch =
+			/^(?:[ivxlcdm]+\)\s+)?Le montant\s*:\s*«\s*(.+?)\s*»\s+est remplacé par le montant\s*:\s*«\s*(.+?)\s*»\s*;?$/iu.exec(
+				line,
+			)
+		if (
+			replacementMatch &&
+			activeRowIndex &&
+			activeColumnIndex &&
+			!/\bau\s+1er\s+janvier\b/iu.test(line)
+		) {
+			directives.push({
+				kind: "replace",
+				targetType: "portion",
+				reference: bestReference.reference,
+				portionSelectors: [],
+				targetText: replacementMatch[1].trim(),
+				replacementText: replacementMatch[2].trim(),
+				sourcePosition: { start: 0, stop: line.length },
+				sourceText: line,
+				tableRowIndex: activeRowIndex,
+				tableColumnIndex: activeColumnIndex,
+			})
+		}
+	}
+
+	return directives.length > 0 ? directives : null
+}
+
+function findNthTableRowBounds(
+	tableHtml: string,
+	rowIndex: number,
+): { start: number; stop: number } | null {
+	if (rowIndex < 1) return null
+	const regex = /<tr\b[^>]*>[\s\S]*?<\/tr>/giu
+	let match: RegExpExecArray | null
+	let currentIndex = 0
+	while ((match = regex.exec(tableHtml)) !== null) {
+		currentIndex += 1
+		if (currentIndex === rowIndex) {
+			return {
+				start: match.index,
+				stop: match.index + match[0].length,
+			}
+		}
+	}
+	return null
+}
+
+function addClassToOpeningTag(tagHtml: string, className: string): string {
+	const classMatch = /\bclass=(["'])(.*?)\1/iu.exec(tagHtml)
+	if (!classMatch) {
+		return tagHtml.replace(/^<([A-Za-z0-9:-]+)/u, `<$1 class="${className}"`)
+	}
+	const existing = classMatch[2].trim()
+	const merged = existing ? `${existing} ${className}` : className
+	return (
+		tagHtml.slice(0, classMatch.index) +
+		`class=${classMatch[1]}${merged}${classMatch[1]}` +
+		tagHtml.slice(classMatch.index + classMatch[0].length)
+	)
+}
+
+function highlightDeletedTableRow(rowHtml: string): string {
+	const openTagMatch = /^<tr\b[^>]*>/iu.exec(rowHtml)
+	if (!openTagMatch) return rowHtml
+	return (
+		addClassToOpeningTag(
+			openTagMatch[0],
+			"bg-red-50 text-red-900 line-through-diff",
+		) + rowHtml.slice(openTagMatch[0].length)
+	)
+}
+
+function applyTableRowDeletionToHtml(
+	html: string,
+	rowIndex: number,
+): ProjectedHtmlResult {
+	const tableBounds = findTableBoundsAfter(html, 0)
+	if (!tableBounds) {
+		return {
+			html: null,
+			reason:
+				"Tableau cible introuvable dans l'article en vigueur pour appliquer la modification.",
+		}
+	}
+	const tableHtml = html.slice(tableBounds.start, tableBounds.stop)
+	const rowBounds = findNthTableRowBounds(tableHtml, rowIndex)
+	if (!rowBounds) {
+		return {
+			html: null,
+			reason:
+				"Ligne cible introuvable dans le tableau pour appliquer la modification.",
+		}
+	}
+	const rowHtml = tableHtml.slice(rowBounds.start, rowBounds.stop)
+	const updatedTable =
+		tableHtml.slice(0, rowBounds.start) +
+		highlightDeletedTableRow(rowHtml) +
+		tableHtml.slice(rowBounds.stop)
+	return {
+		html:
+			html.slice(0, tableBounds.start) +
+			updatedTable +
+			html.slice(tableBounds.stop),
+		skipDiff: true,
+	}
+}
+
+function findNthTableCellContentBounds(
+	rowHtml: string,
+	columnIndex: number,
+): { start: number; stop: number } | null {
+	if (columnIndex < 1) return null
+	const regex = /<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/giu
+	let match: RegExpExecArray | null
+	let currentIndex = 0
+	while ((match = regex.exec(rowHtml)) !== null) {
+		currentIndex += 1
+		if (currentIndex === columnIndex) {
+			const openTagLength = match[0].indexOf(">") + 1
+			const start = match.index + openTagLength
+			const stop = match.index + match[0].length - `</${match[1]}>`.length
+			return { start, stop }
+		}
+	}
+	return null
+}
+
+function findScopedTargetPositionInTableCell(
+	html: string,
+	rowIndex: number,
+	columnIndex: number,
+	targetText: string,
+): FragmentPosition | null {
+	const tableBounds = findTableBoundsAfter(html, 0)
+	if (!tableBounds) return null
+	const tableHtml = html.slice(tableBounds.start, tableBounds.stop)
+	const rowBounds = findNthTableRowBounds(tableHtml, rowIndex)
+	if (!rowBounds) return null
+	const rowHtml = tableHtml.slice(rowBounds.start, rowBounds.stop)
+	const cellBounds = findNthTableCellContentBounds(rowHtml, columnIndex)
+	if (!cellBounds) return null
+	const cellHtml = rowHtml.slice(cellBounds.start, cellBounds.stop)
+	const targetPosition = findTextPositionInHtmlWithFallback(
+		cellHtml,
+		targetText,
+	)
+	if (!targetPosition) return null
+	return {
+		start:
+			tableBounds.start +
+			rowBounds.start +
+			cellBounds.start +
+			targetPosition.start,
+		stop:
+			tableBounds.start +
+			rowBounds.start +
+			cellBounds.start +
+			targetPosition.stop,
 	}
 }
 
@@ -844,6 +1372,35 @@ function resolveInlineItemLineContext(
 	}
 }
 
+function findFallbackScopedTargetInItemBlock(
+	html: string,
+	selector: PortionSelector | undefined,
+	needle: string,
+	occurrenceIndex = 1,
+): {
+	bounds: { start: number; stop: number }
+	targetPosition: FragmentPosition
+	blockHtml: string
+} | null {
+	if (!needle.trim()) return null
+	const selectorSteps = getSelectorSteps(selector)
+	const bounds = findItemLabelBounds(html, selectorSteps)
+	if (!bounds) return null
+	const blockHtml = html.slice(bounds.start, bounds.stop)
+	const targetPosition = findScopedTargetPositionInHtml(
+		blockHtml,
+		needle,
+		selectorSteps,
+		occurrenceIndex,
+	)
+	if (!targetPosition) return null
+	return {
+		bounds,
+		targetPosition,
+		blockHtml,
+	}
+}
+
 function applyReplacePortionActionToHtml(
 	html: string,
 	action: Extract<ActionDirectiveWithHtml, { kind: "replace_portion" }>,
@@ -858,15 +1415,50 @@ function applyReplacePortionActionToHtml(
 
 	const article = buildArticlePortionTreeFromHtml(html)
 	let match: ArticlePortionMatch | null = null
+	let matchedSelector: PortionSelector | null = null
 	for (const selector of action.portionSelectors) {
 		match = resolvePortionSelector(article, selector)
-		if (match) break
+		if (match) {
+			matchedSelector = selector
+			break
+		}
 	}
+	const selectorSteps = getSelectorSteps(
+		matchedSelector ?? action.portionSelectors[0],
+	)
 	if (!match) {
-		const bounds = findItemLabelBounds(
+		const fallbackParagraphBounds = findParagraphBoundsByScopedSelectorSteps(
 			html,
-			getSelectorSteps(action.portionSelectors[0]),
+			selectorSteps,
 		)
+		if (fallbackParagraphBounds) {
+			const paragraphHtml = html.slice(
+				fallbackParagraphBounds.start,
+				fallbackParagraphBounds.stop,
+			)
+			const portionBounds = findSelectorPortionBoundsInHtml(
+				paragraphHtml,
+				matchedSelector ?? action.portionSelectors[0],
+			)
+			if (portionBounds) {
+				const replacementHtml = formatReplacementText(action.replacementText)
+				const removedHtml = paragraphHtml.slice(
+					portionBounds.start,
+					portionBounds.stop,
+				)
+				return {
+					html:
+						html.slice(0, fallbackParagraphBounds.start) +
+						paragraphHtml.slice(0, portionBounds.start) +
+						`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+						`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
+						paragraphHtml.slice(portionBounds.stop) +
+						html.slice(fallbackParagraphBounds.stop),
+					skipDiff: true,
+				}
+			}
+		}
+		const bounds = findItemLabelBounds(html, selectorSteps)
 		if (bounds) {
 			return {
 				html: html.slice(0, bounds.start) + html.slice(bounds.stop),
@@ -881,10 +1473,7 @@ function applyReplacePortionActionToHtml(
 
 	const alinea = resolveReplacementAlinea(match)
 	if (!alinea) {
-		const bounds = findItemLabelBounds(
-			html,
-			getSelectorSteps(action.portionSelectors[0]),
-		)
+		const bounds = findItemLabelBounds(html, selectorSteps)
 		if (bounds) {
 			return {
 				html: html.slice(0, bounds.start) + html.slice(bounds.stop),
@@ -898,10 +1487,7 @@ function applyReplacePortionActionToHtml(
 
 	const bounds = findParagraphBounds(html, alinea.paragraphIndex)
 	if (!bounds) {
-		const fallbackBounds = findItemLabelBounds(
-			html,
-			getSelectorSteps(action.portionSelectors[0]),
-		)
+		const fallbackBounds = findItemLabelBounds(html, selectorSteps)
 		if (fallbackBounds) {
 			return {
 				html:
@@ -936,7 +1522,6 @@ function applyReplacePortionActionToHtml(
 	}
 
 	const paragraphHtml = html.slice(bounds.start, bounds.stop)
-	const selectorSteps = getSelectorSteps(action.portionSelectors[0])
 	const lastStep = selectorSteps?.at(-1)
 	if (lastStep && lastStep.type === "item" && lastStep.num) {
 		const label = lastStep.num.toLowerCase()
@@ -1027,6 +1612,10 @@ function applyDeletePortionActionToHtml(
 	html: string,
 	action: Extract<ActionDirective, { kind: "delete_portion" }>,
 ): ProjectedHtmlResult {
+	if ("tableRowIndex" in action && typeof action.tableRowIndex === "number") {
+		return applyTableRowDeletionToHtml(html, action.tableRowIndex)
+	}
+
 	if (action.portionSelectors.length === 0) {
 		return {
 			html: null,
@@ -1037,15 +1626,19 @@ function applyDeletePortionActionToHtml(
 
 	const article = buildArticlePortionTreeFromHtml(html)
 	let match: ArticlePortionMatch | null = null
+	let matchedSelector: PortionSelector | null = null
 	for (const selector of action.portionSelectors) {
 		match = resolvePortionSelector(article, selector)
-		if (match) break
+		if (match) {
+			matchedSelector = selector
+			break
+		}
 	}
+	const selectorSteps = getSelectorSteps(
+		matchedSelector ?? action.portionSelectors[0],
+	)
 	if (!match) {
-		const fallbackBounds = findItemLabelBounds(
-			html,
-			getSelectorSteps(action.portionSelectors[0]),
-		)
+		const fallbackBounds = findItemLabelBounds(html, selectorSteps)
 		if (fallbackBounds) {
 			return {
 				html:
@@ -1061,10 +1654,7 @@ function applyDeletePortionActionToHtml(
 
 	const alinea = resolveReplacementAlinea(match)
 	if (!alinea) {
-		const fallbackBounds = findItemLabelBounds(
-			html,
-			getSelectorSteps(action.portionSelectors[0]),
-		)
+		const fallbackBounds = findItemLabelBounds(html, selectorSteps)
 		if (fallbackBounds) {
 			return {
 				html:
@@ -1096,7 +1686,6 @@ function applyDeletePortionActionToHtml(
 		}
 	}
 
-	const selectorSteps = getSelectorSteps(action.portionSelectors[0])
 	const isAlineaOnly =
 		selectorSteps?.length === 1 && selectorSteps[0]?.type === "alinéa"
 	if (isAlineaOnly) {
@@ -1230,23 +1819,58 @@ function applyDeletePortionTextActionToHtml(
 
 	const article = buildArticlePortionTreeFromHtml(html)
 	let match: ArticlePortionMatch | null = null
+	let matchedSelector: PortionSelector | null = null
 	for (const selector of action.portionSelectors) {
 		match = resolvePortionSelector(article, selector)
-		if (match) break
+		if (match) {
+			matchedSelector = selector
+			break
+		}
 	}
+	const selectorSteps = getSelectorSteps(
+		matchedSelector ?? action.portionSelectors[0],
+	)
 	if (!match) {
-		return deleteTextInHtml(html, action.targetText)
-	}
-
-	const alinea = resolveReplacementAlinea(match)
-	if (!alinea) {
-		return {
-			html: null,
-			reason: "Disposition non reconnue pour l'instant pour projeter un diff.",
+		const fallbackMatch = findFallbackScopedTargetInItemBlock(
+			html,
+			matchedSelector ?? action.portionSelectors[0],
+			action.targetText,
+			action.occurrenceIndex ?? 1,
+		)
+		if (fallbackMatch) {
+			const removedHtml = fallbackMatch.blockHtml.slice(
+				fallbackMatch.targetPosition.start,
+				fallbackMatch.targetPosition.stop,
+			)
+			if (!/<[^>]+>/.test(removedHtml)) {
+				return {
+					html:
+						html.slice(0, fallbackMatch.bounds.start) +
+						fallbackMatch.blockHtml.slice(
+							0,
+							fallbackMatch.targetPosition.start,
+						) +
+						`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+						fallbackMatch.blockHtml.slice(fallbackMatch.targetPosition.stop) +
+						html.slice(fallbackMatch.bounds.stop),
+					skipDiff: true,
+				}
+			}
+		}
+		const fallbackBounds = findParagraphBoundsByScopedSelectorSteps(
+			html,
+			selectorSteps,
+		)
+		if (!fallbackBounds) {
+			return deleteTextInHtml(html, action.targetText)
 		}
 	}
 
-	const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+	const alinea = match ? resolveReplacementAlinea(match) : null
+	const bounds = alinea
+		? (findParagraphBounds(html, alinea.paragraphIndex) ??
+			findParagraphBoundsByScopedSelectorSteps(html, selectorSteps))
+		: findParagraphBoundsByScopedSelectorSteps(html, selectorSteps)
 	if (!bounds) {
 		return {
 			html: null,
@@ -1256,7 +1880,6 @@ function applyDeletePortionTextActionToHtml(
 	}
 
 	const paragraphHtml = html.slice(bounds.start, bounds.stop)
-	const selectorSteps = getSelectorSteps(action.portionSelectors[0])
 	const targetPosition = findScopedTargetPositionInHtml(
 		paragraphHtml,
 		action.targetText,
@@ -1264,6 +1887,32 @@ function applyDeletePortionTextActionToHtml(
 		action.occurrenceIndex ?? 1,
 	)
 	if (!targetPosition) {
+		const fallbackMatch = findFallbackScopedTargetInItemBlock(
+			html,
+			matchedSelector ?? action.portionSelectors[0],
+			action.targetText,
+			action.occurrenceIndex ?? 1,
+		)
+		if (fallbackMatch) {
+			const removedHtml = fallbackMatch.blockHtml.slice(
+				fallbackMatch.targetPosition.start,
+				fallbackMatch.targetPosition.stop,
+			)
+			if (!/<[^>]+>/.test(removedHtml)) {
+				return {
+					html:
+						html.slice(0, fallbackMatch.bounds.start) +
+						fallbackMatch.blockHtml.slice(
+							0,
+							fallbackMatch.targetPosition.start,
+						) +
+						`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+						fallbackMatch.blockHtml.slice(fallbackMatch.targetPosition.stop) +
+						html.slice(fallbackMatch.bounds.stop),
+					skipDiff: true,
+				}
+			}
+		}
 		return deleteTextInHtml(
 			html,
 			action.targetText,
@@ -1322,14 +1971,43 @@ function applyReplacePortionTextActionToHtml(
 
 	const article = buildArticlePortionTreeFromHtml(html)
 	let match: ArticlePortionMatch | null = null
+	let matchedSelector: PortionSelector | null = null
 	for (const selector of action.portionSelectors) {
 		match = resolvePortionSelector(article, selector)
-		if (match) break
+		if (match) {
+			matchedSelector = selector
+			break
+		}
 	}
+	const selectorSteps = getSelectorSteps(
+		matchedSelector ?? action.portionSelectors[0],
+	)
 	if (!match) {
+		const fallbackMatch = findFallbackScopedTargetInItemBlock(
+			html,
+			matchedSelector ?? action.portionSelectors[0],
+			action.targetText,
+		)
+		if (fallbackMatch) {
+			const replacementHtml = formatReplacementText(action.replacementText)
+			const removedHtml = fallbackMatch.blockHtml.slice(
+				fallbackMatch.targetPosition.start,
+				fallbackMatch.targetPosition.stop,
+			)
+			return {
+				html:
+					html.slice(0, fallbackMatch.bounds.start) +
+					fallbackMatch.blockHtml.slice(0, fallbackMatch.targetPosition.start) +
+					`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+					`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
+					fallbackMatch.blockHtml.slice(fallbackMatch.targetPosition.stop) +
+					html.slice(fallbackMatch.bounds.stop),
+				skipDiff: true,
+			}
+		}
 		const inlineContext = resolveInlineItemLineContext(
 			html,
-			action.portionSelectors[0],
+			matchedSelector ?? action.portionSelectors[0],
 		)
 		if (inlineContext) {
 			const line = inlineContext.lines[inlineContext.lineIndex]
@@ -1366,22 +2044,24 @@ function applyReplacePortionTextActionToHtml(
 				}
 			}
 		}
-		return {
-			html: null,
-			reason:
-				"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+		const fallbackBounds = findParagraphBoundsByScopedSelectorSteps(
+			html,
+			selectorSteps,
+		)
+		if (!fallbackBounds) {
+			return {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
 		}
 	}
 
-	const alinea = resolveReplacementAlinea(match)
-	if (!alinea) {
-		return {
-			html: null,
-			reason: "Disposition non reconnue pour l'instant pour projeter un diff.",
-		}
-	}
-
-	const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+	const alinea = match ? resolveReplacementAlinea(match) : null
+	const bounds = alinea
+		? (findParagraphBounds(html, alinea.paragraphIndex) ??
+			findParagraphBoundsByScopedSelectorSteps(html, selectorSteps))
+		: findParagraphBoundsByScopedSelectorSteps(html, selectorSteps)
 	if (!bounds) {
 		return {
 			html: null,
@@ -1391,13 +2071,34 @@ function applyReplacePortionTextActionToHtml(
 	}
 
 	const paragraphHtml = html.slice(bounds.start, bounds.stop)
-	const selectorSteps = getSelectorSteps(action.portionSelectors[0])
 	const targetPosition = findScopedTargetPositionInHtml(
 		paragraphHtml,
 		action.targetText,
 		selectorSteps,
 	)
 	if (!targetPosition) {
+		const fallbackMatch = findFallbackScopedTargetInItemBlock(
+			html,
+			matchedSelector ?? action.portionSelectors[0],
+			action.targetText,
+		)
+		if (fallbackMatch) {
+			const replacementHtml = formatReplacementText(action.replacementText)
+			const removedHtml = fallbackMatch.blockHtml.slice(
+				fallbackMatch.targetPosition.start,
+				fallbackMatch.targetPosition.stop,
+			)
+			return {
+				html:
+					html.slice(0, fallbackMatch.bounds.start) +
+					fallbackMatch.blockHtml.slice(0, fallbackMatch.targetPosition.start) +
+					`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+					`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
+					fallbackMatch.blockHtml.slice(fallbackMatch.targetPosition.stop) +
+					html.slice(fallbackMatch.bounds.stop),
+				skipDiff: true,
+			}
+		}
 		return {
 			html: null,
 			reason:
@@ -1445,23 +2146,16 @@ function applyInsertPortionActionToHtml(
 			break
 		}
 	}
-	if (!match) {
-		return {
-			html: null,
-			reason:
-				"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
-		}
+	const alinea = match ? resolveInsertionAlinea(match, action.kind) : null
+	const selectorSteps = getSelectorSteps(
+		matchedSelector ?? action.portionSelectors[0],
+	)
+	let bounds = alinea
+		? findParagraphBounds(html, alinea.paragraphIndex)
+		: findParagraphBoundsByScopedSelectorSteps(html, selectorSteps)
+	if (!bounds) {
+		bounds = findParagraphBoundsByScopedSelectorSteps(html, selectorSteps)
 	}
-
-	const alinea = resolveInsertionAlinea(match, action.kind)
-	if (!alinea) {
-		return {
-			html: null,
-			reason: "Disposition non reconnue pour l'instant pour projeter un diff.",
-		}
-	}
-
-	const bounds = findParagraphBounds(html, alinea.paragraphIndex)
 	if (!bounds) {
 		return {
 			html: null,
@@ -1471,9 +2165,17 @@ function applyInsertPortionActionToHtml(
 	}
 
 	const paragraphHtml = html.slice(bounds.start, bounds.stop)
+	const fallbackAlineaText = simplifyHtml()(paragraphHtml).output.trim()
+	const lastSelectorStep = selectorSteps?.at(-1)
+	const phraseBounds =
+		!action.targetText &&
+		lastSelectorStep?.type === "phrase" &&
+		typeof lastSelectorStep.index === "number"
+			? findPhraseBoundsInHtml(paragraphHtml, lastSelectorStep.index)
+			: null
 	const targetPosition = action.targetText
 		? findTextPositionInHtml(paragraphHtml, action.targetText)
-		: findTextPositionInHtml(paragraphHtml, alinea.text)
+		: findTextPositionInHtml(paragraphHtml, alinea?.text ?? fallbackAlineaText)
 
 	const shouldInsertAsParagraphs = (): boolean => {
 		if (!action.insertText.includes("\n")) return false
@@ -1496,6 +2198,7 @@ function applyInsertPortionActionToHtml(
 	}
 
 	const findCompletionInsertionIndex = (): number | null => {
+		if (!alinea) return null
 		const simplifiedParagraph = simplifyHtml()(paragraphHtml)
 		const simplifiedAlinea = simplifyPlainText(alinea.text)
 		const match = findMatchInSimplifiedText(
@@ -1548,6 +2251,27 @@ function applyInsertPortionActionToHtml(
 		}
 	}
 
+	if (phraseBounds) {
+		const absoluteTargetStart = bounds.start + phraseBounds.start
+		const absoluteTargetStop = bounds.start + phraseBounds.stop
+		const anchorStart = isInsideAnchor(
+			html,
+			action.kind === "insert_before"
+				? absoluteTargetStart
+				: absoluteTargetStop,
+		)
+		const insertionIndex =
+			action.kind === "insert_before"
+				? (anchorStart ?? absoluteTargetStart)
+				: skipHtmlWhitespace(
+						html,
+						anchorStart !== null
+							? getAfterAnchorIndex(html, absoluteTargetStop)
+							: absoluteTargetStop,
+					)
+		return insertInlineAtIndex(insertionIndex, true)
+	}
+
 	if (action.targetText && !targetPosition) {
 		return {
 			html: null,
@@ -1569,15 +2293,12 @@ function applyInsertPortionActionToHtml(
 			}
 		}
 
-		const selectorSteps = getSelectorSteps(
-			matchedSelector ?? action.portionSelectors[0],
-		)
 		const lastStep = selectorSteps?.at(-1)
 		const itemLabel =
 			lastStep && lastStep.type === "item" ? lastStep.num : undefined
 		const lines = splitParagraphLines(paragraphHtml)
 		if (lines.length > 1) {
-			const lineNeedle = action.targetText || alinea.text
+			const lineNeedle = action.targetText || alinea?.text || ""
 			const lineIndexByLabel =
 				itemLabel && itemLabel.trim()
 					? findLineIndexByItemLabel(lines, itemLabel)
@@ -1816,7 +2537,20 @@ function applyProjectActionToHtml(
 	}
 	const occurrenceIndex =
 		action.kind === "delete" ? (action.occurrenceIndex ?? 1) : 1
-	let targetPosition = findTextPositionInHtml(html, target, occurrenceIndex)
+	let targetPosition =
+		action.kind === "replace" &&
+		typeof action.tableRowIndex === "number" &&
+		typeof action.tableColumnIndex === "number"
+			? findScopedTargetPositionInTableCell(
+					html,
+					action.tableRowIndex,
+					action.tableColumnIndex,
+					target,
+				)
+			: null
+	if (!targetPosition) {
+		targetPosition = findTextPositionInHtml(html, target, occurrenceIndex)
+	}
 	if (!targetPosition) {
 		targetPosition = findTextPositionInHtml(
 			html,
@@ -2017,13 +2751,22 @@ export function buildDirectivePreviewId(
 
 export function splitActionSourceBlocks(sourceText: string): string[] {
 	const lines = sourceText.split("\n")
-	const markerRe = /^\s*(?!«)([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\))\s+/u
+	const markerRe =
+		/^\s*(?!«)([IVXLCDM]+|[ivxlcdm]+|\d+|[a-zA-Z])\s*(°|\.|\))\s+/u
 	const getMarkerLevel = (line: string): number | null => {
 		const match = markerRe.exec(line)
 		if (!match) return null
 		const marker = match[1] ?? ""
+		const separator = match[2] ?? ""
 		if (!marker) return null
-		if (/^[IVXLCDM]+$/i.test(marker)) return 1
+		if (/^[IVXLCDM]+$/u.test(marker)) return 1
+		if (/^[A-Z]$/u.test(marker) && separator !== ")") return 1
+		if (
+			/^[ivxlcdm]+$/u.test(marker) &&
+			(marker.length > 1 || /^[ivx]$/u.test(marker))
+		) {
+			return 4
+		}
 		if (/^\d+$/u.test(marker)) return 2
 		if (/^[a-zA-Z]$/u.test(marker)) return 3
 		return null
@@ -2086,6 +2829,101 @@ export function splitActionSourceBlocks(sourceText: string): string[] {
 		.filter(Boolean)
 }
 
+function hasBarePhraseOnlyDirective(
+	directives: ActionDirectiveWithHtml[],
+): boolean {
+	return directives.some((directive) =>
+		directive.portionSelectors.some((selector) => {
+			const steps = getSelectorSteps(selector)
+			return steps?.length === 1 && steps[0]?.type === "phrase"
+		}),
+	)
+}
+
+function getDirectivesTotalSpecificity(
+	directives: ActionDirectiveWithHtml[],
+): number {
+	return directives.reduce(
+		(total, directive) => total + getDirectiveSpecificity(directive),
+		0,
+	)
+}
+
+function collectSplitBlockContextSteps(
+	blockText: string,
+): PortionSelectorStep[] {
+	const lines = blockText
+		.split("\n")
+		.map((line) => line.trim())
+		.filter(Boolean)
+	const contextSteps: PortionSelectorStep[] = []
+
+	for (const line of lines) {
+		if (extractActionDirectivesFromText(line).length > 0) {
+			break
+		}
+		const context = new TextParserContext(line)
+		const selectors = getExtractedReferences(context)
+			.flatMap((reference) => extractPortionSelectors(reference))
+			.filter(
+				(selector): selector is Extract<PortionSelector, { kind: "single" }> =>
+					selector.kind === "single" && selector.steps.length > 0,
+			)
+		if (selectors.length === 0) continue
+		const best = selectors.sort(
+			(a, b) => getSelectorScore(b) - getSelectorScore(a),
+		)[0]
+		if (!best) continue
+		contextSteps.push(...best.steps)
+	}
+
+	return contextSteps
+}
+
+function mergeSelectorWithContext(
+	selector: PortionSelector,
+	contextSteps: PortionSelectorStep[],
+): PortionSelector {
+	if (selector.kind !== "single" || contextSteps.length === 0) return selector
+	let sharedPrefixLength = 0
+	while (
+		sharedPrefixLength < contextSteps.length &&
+		sharedPrefixLength < selector.steps.length
+	) {
+		const contextStep = contextSteps[sharedPrefixLength]
+		const selectorStep = selector.steps[sharedPrefixLength]
+		if (
+			contextStep?.type !== selectorStep?.type ||
+			contextStep?.index !== selectorStep?.index ||
+			contextStep?.num !== selectorStep?.num
+		) {
+			break
+		}
+		sharedPrefixLength += 1
+	}
+	return {
+		...selector,
+		steps: [...contextSteps, ...selector.steps.slice(sharedPrefixLength)],
+	}
+}
+
+function enrichDirectivesWithSplitBlockContext(
+	blockText: string,
+	directives: ActionDirectiveWithHtml[],
+): ActionDirectiveWithHtml[] {
+	const contextSteps = collectSplitBlockContextSteps(blockText)
+	if (contextSteps.length === 0) return directives
+	return directives.map((directive) => {
+		if (directive.portionSelectors.length === 0) return directive
+		return {
+			...directive,
+			portionSelectors: directive.portionSelectors.map((selector) =>
+				mergeSelectorWithContext(selector, contextSteps),
+			),
+		}
+	})
+}
+
 export function buildDirectivesFromSourceBlock(
 	blockText: string,
 	blockHtml: string | undefined,
@@ -2094,6 +2932,10 @@ export function buildDirectivesFromSourceBlock(
 	const sectionDirective = buildSectionReestablishDirective(blockText)
 	if (sectionDirective) {
 		return { directives: [sectionDirective], isAction: true }
+	}
+	const tableStructuredDirectives = buildTableStructuredDirectives(blockText)
+	if (tableStructuredDirectives) {
+		return { directives: tableStructuredDirectives, isAction: true }
 	}
 	const finalizeScopedDirectives = (
 		scopedDirectives: ActionDirectiveWithHtml[],
@@ -2125,16 +2967,33 @@ export function buildDirectivesFromSourceBlock(
 		articleNum,
 	)
 	const fullBlockResult = finalizeScopedDirectives(fullBlockScopedDirectives)
-	if (fullBlockResult) {
-		return fullBlockResult
-	}
 
 	const sourceBlocks = splitActionSourceBlocks(blockText)
 	const rawDirectives = sourceBlocks.flatMap((block) =>
-		extractActionDirectivesFromText(block),
+		enrichDirectivesWithSplitBlockContext(
+			block,
+			extractActionDirectivesFromText(block),
+		),
 	)
 	const scopedDirectives = filterDirectivesForArticle(rawDirectives, articleNum)
 	const splitBlockResult = finalizeScopedDirectives(scopedDirectives)
+	if (splitBlockResult && fullBlockResult) {
+		const splitSpecificity = getDirectivesTotalSpecificity(
+			splitBlockResult.directives,
+		)
+		const fullSpecificity = getDirectivesTotalSpecificity(
+			fullBlockResult.directives,
+		)
+		if (
+			hasBarePhraseOnlyDirective(fullBlockResult.directives) &&
+			splitSpecificity >= fullSpecificity
+		) {
+			return splitBlockResult
+		}
+	}
+	if (fullBlockResult) {
+		return fullBlockResult
+	}
 	if (splitBlockResult) {
 		return splitBlockResult
 	}

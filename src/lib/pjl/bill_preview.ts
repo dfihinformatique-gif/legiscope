@@ -126,11 +126,42 @@ function findActionParagraphForLink(
 	return paragraph
 }
 
+function getElementTextOffsetWithin(
+	container: Element,
+	target: Element,
+): number | null {
+	const ownerDocument = container.ownerDocument
+	const walker = ownerDocument.createTreeWalker(container, 4)
+	let offset = 0
+	while (walker.nextNode()) {
+		const node = walker.currentNode as Text
+		const parent = node.parentElement
+		if (parent && target.contains(parent)) {
+			return offset
+		}
+		offset += node.data.length
+	}
+	return null
+}
+
+function isElementInsideFrenchQuotes(
+	container: Element,
+	target: Element,
+): boolean {
+	const offset = getElementTextOffsetWithin(container, target)
+	if (offset === null) return false
+	const before = (container.textContent ?? "").slice(0, offset)
+	const openQuotes = (before.match(/«/gu) ?? []).length
+	const closeQuotes = (before.match(/»/gu) ?? []).length
+	return openQuotes > closeQuotes
+}
+
 function getLinkTargets(node: Element): string[] {
 	const actionLinks = Array.from(
 		node.querySelectorAll<HTMLAnchorElement>("a.law-article-link"),
 	)
 	return actionLinks
+		.filter((actionLink) => !isElementInsideFrenchQuotes(node, actionLink))
 		.map((actionLink) => {
 			const actionHref = actionLink.getAttribute("href")
 			if (!actionHref) return null
@@ -257,13 +288,20 @@ export function buildPjlArticleBlocks(
 }
 
 function getListMarkerLevel(text: string): number | null {
-	const match = /^\s*([IVXLCDM]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u.exec(
-		text,
-	)
+	const match =
+		/^\s*([IVXLCDM]+|[ivxlcdm]+|\d+|[a-zA-Z])\s*(°|\.|\)|-|–|—)\s+/u.exec(text)
 	if (!match) return null
 	const marker = match[1] ?? ""
+	const separator = match[2] ?? ""
 	if (!marker) return null
-	if (/^[IVXLCDM]+$/i.test(marker)) return 1
+	if (/^[IVXLCDM]+$/u.test(marker)) return 1
+	if (/^[A-Z]$/u.test(marker) && separator !== ")") return 1
+	if (
+		/^[ivxlcdm]+$/u.test(marker) &&
+		(marker.length > 1 || /^[ivx]$/u.test(marker))
+	) {
+		return 4
+	}
 	if (/^\d+$/u.test(marker)) return 2
 	if (/^[a-zA-Z]$/u.test(marker)) return 3
 	return null
@@ -338,7 +376,7 @@ export function collectPjlBlock(
 	}
 
 	const listItemRe =
-		/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
+		/^\s*(?:[IVXLCDM]+\s*(?:°|\.|\))|[ivxlcdm]+\s*(?:°|\.|\))|\d+\s*(?:°|\.|\))|[a-zA-Z]\s*\)|[a-zA-Z]\.)\s+/u
 	const topLevelLetterRe = /^\s*[A-Z]\s*(?:\.\s*(?:-|–|—)?|[-–—])\s+/u
 
 	for (let i = startIndex + 1; i < nodes.length; i += 1) {

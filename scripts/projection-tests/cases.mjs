@@ -244,6 +244,76 @@ export const projectionCases = [
     },
   },
   {
+    id: "article5-220quinquies-delete",
+    description:
+      "Article 5 - suppression ciblée dans l'article 220 quinquies malgré HTML lié dégradé",
+    async run(harness) {
+      const result = await harness.projectArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051765044",
+        blockNeedle:
+          "Au premier alinéa du I de l’article 220 quinquies, les mots : « ou qui a ouvert droit au crédit d’impôt prévu à l’article 220 quater » sont supprimés ;",
+      })
+      const projectedHtml = requireProjectedHtml(result, this.id)
+      assert.ok(
+        projectedHtml.includes("bg-red-50"),
+        "article5-220quinquies-delete: aucune suppression rouge détectée.",
+      )
+      assert.ok(
+        projectedHtml.includes("220 quater") &&
+          projectedHtml.includes("line-through-diff"),
+        "article5-220quinquies-delete: la portion supprimée n'est pas correctement balisée.",
+      )
+    },
+  },
+  {
+    id: "article5-235terzd-replace",
+    description:
+      "Article 5 - remplacement ciblé dans l'article 235 ter ZD malgré sélecteur de portion non résolu",
+    async run(harness) {
+      const result = await harness.projectArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051764916",
+        blockNeedle:
+          "Au 5° du II de l’article 235 ter ZD, les mots : « , 210 B et 220 quater » sont remplacés par les mots : « et 210 B » ;",
+      })
+      const projectedHtml = requireProjectedHtml(result, this.id)
+      assert.ok(
+        projectedHtml.includes("bg-red-50") &&
+          projectedHtml.includes("220 quater"),
+        "article5-235terzd-replace: la suppression attendue n'apparaît pas.",
+      )
+      assert.ok(
+        projectedHtml.includes("bg-green-50") &&
+          projectedHtml.includes("et 210 B"),
+        "article5-235terzd-replace: le texte de remplacement n'apparaît pas.",
+      )
+    },
+  },
+  {
+    id: "article5-l31279-table",
+    description:
+      "Article 5 - suppression de ligne et remplacement de montant dans le tableau de L. 312-79",
+    async run(harness) {
+      const result = await harness.projectArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051214618",
+        blockNeedle: "Au tableau du second alinéa de l’article L. 312-79",
+      })
+      const projectedHtml = requireProjectedHtml(result, this.id)
+      assert.ok(
+        projectedHtml.includes("Gazole B100") &&
+          projectedHtml.includes("line-through-diff"),
+        "article5-l31279-table: la ligne supprimée n'est pas signalée.",
+      )
+      assert.ok(
+        projectedHtml.includes("bg-green-50") &&
+          projectedHtml.includes("34,705"),
+        "article5-l31279-table: le nouveau montant n'apparaît pas.",
+      )
+    },
+  },
+  {
     id: "article5-25",
     description: "Article 5 - insertion du III à l'article 1395 B bis",
     async run(harness) {
@@ -261,6 +331,30 @@ export const projectionCases = [
       assert.ok(
         requireProjectedHtml(result, this.id).includes("bg-green-50"),
         "article5-25: aucune insertion verte détectée.",
+      )
+    },
+  },
+  {
+    id: "article5-39ah-abrogation",
+    description: "Article 5 - abrogation entière de l'article 39 AH",
+    async run(harness) {
+      const result = await harness.projectArticle({
+        pjlId: PJL_ID,
+        linkText: "article 39 AH",
+      })
+      assert.ok(
+        result.currentHtml && result.currentHtml.trim().length > 0,
+        "article5-39ah-abrogation: le texte en vigueur de départ est vide.",
+      )
+      assert.equal(
+        result.projectedHtml,
+        "",
+        "article5-39ah-abrogation: l'article n'est pas entièrement abrogé.",
+      )
+      assert.equal(
+        result.projectedText,
+        "",
+        "article5-39ah-abrogation: du texte subsiste après abrogation.",
       )
     },
   },
@@ -334,6 +428,57 @@ export const projectionCases = [
         projectedHtml.includes("bg-green-50") &&
           projectedHtml.includes("bg-red-50"),
         "article6-158: les insertions/suppressions attendues ne sont pas balisées.",
+      )
+    },
+  },
+  {
+    id: "article7-199undeciesb-insert-phrase",
+    description:
+      "Article 7 - insertion après une phrase sans cible textuelle explicite dans l'article 199 undecies B",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051202835",
+      })
+      const block = blocks.find((candidate) =>
+        candidate.blockText.includes("ii) Après la troisième phrase"),
+      )
+      assert.ok(
+        block,
+        "article7-199undeciesb-insert-phrase: bloc PJL contextualisé introuvable.",
+      )
+      const result = await harness.analyzeBlock({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051202835",
+        block,
+      })
+      const projectedHtml = result.projection.html
+      assert.ok(
+        projectedHtml,
+        "article7-199undeciesb-insert-phrase: HTML projeté introuvable.",
+      )
+      assert.ok(
+        projectedHtml.includes("bg-green-50") &&
+          projectedHtml.includes(
+            "La réduction d'impôt s'applique aux investissements consistant en l'acquisition de véhicules",
+          ),
+        "article7-199undeciesb-insert-phrase: la phrase insérée n'apparaît pas.",
+      )
+    },
+  },
+  {
+    id: "article7-quoted-links-do-not-create-targets",
+    description:
+      "Article 7 - les liens cités dans le texte de remplacement ne doivent pas créer de faux blocs ciblés",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051682572",
+      })
+      assert.equal(
+        blocks.length,
+        0,
+        "article7-quoted-links-do-not-create-targets: un lien cité dans une citation crée encore un bloc de projection parasite.",
       )
     },
   },
