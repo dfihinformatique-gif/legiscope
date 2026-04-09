@@ -218,6 +218,232 @@ try {
         const firstChangeCenter =
           firstChangeRect.top + firstChangeRect.height / 2
 
+        const manualHost = document.createElement("div")
+        manualHost.style.height = "900px"
+        manualHost.style.overflow = "auto"
+        manualHost.getBoundingClientRect = () => ({
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: 900,
+          bottom: 900,
+          width: 900,
+          height: 900,
+          toJSON() {
+            return this
+          },
+        })
+        document.body.append(manualHost)
+
+        const manualRoot = manualHost.attachShadow({ mode: "open" })
+        manualRoot.innerHTML = `
+          <div class="assnatSection99 projetloi">
+            <p>A. – <a class="law-article-link" href="/pjl/PRJLANR5L17B1906?article=LEGIARTI000051202835">A l’article 199 undecies B</a> :</p>
+            <p>1° Au I :</p>
+            <p>a) Au quinzième alinéa :</p>
+            <p>i) Après la première phrase, sont insérées deux phrases ainsi rédigées : « test » ;</p>
+            <p>ii) Après la troisième phrase, il est inséré une phrase ainsi rédigée : « test » ;</p>
+            <p>b) Au dix-septième alinéa :</p>
+            <p>i) A la première et à l'avant-dernière phrases, le taux : « 38,25 % » est remplacé par le taux : « 27,25 % » ;</p>
+          </div>
+        `
+
+        for (const section of manualRoot.querySelectorAll(
+          'div[class^="assnatSection"]',
+        )) {
+          section.getBoundingClientRect = () => ({
+            x: 0,
+            y: 0,
+            top: 20,
+            left: 0,
+            right: 800,
+            bottom: 320,
+            width: 800,
+            height: 300,
+            toJSON() {
+              return this
+            },
+          })
+        }
+
+        const manualController =
+          billPreviewModule.createPjlPreviewController(manualRoot)
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        )
+
+        const manualClickable = Array.from(
+          manualRoot.querySelectorAll(
+            '.pjl-preview-clickable[data-preview-mode="single_action_diff"]',
+          ),
+        ).find((element) => /38,25 %/.test(element.textContent ?? ""))
+
+        if (!(manualClickable instanceof HTMLElement)) {
+          throw new Error(
+            "Zone cliquable manuelle introuvable pour le cas 'Au dix-septième alinéa'.",
+          )
+        }
+
+        const manualPreviewId =
+          manualClickable.getAttribute("data-preview-id") ?? null
+        if (!manualPreviewId) {
+          throw new Error("Preview id manuelle introuvable.")
+        }
+
+        manualController.activatePreview(manualPreviewId, manualClickable)
+        const manualActiveTargetTexts = Array.from(
+          manualRoot.querySelectorAll(
+            ".is-preview-active.pjl-preview-part-target-reference",
+          ),
+        ).map((element) =>
+          (element.textContent ?? "").replace(/\s+/g, " ").trim(),
+        )
+
+        const siblingHost = document.createElement("div")
+        siblingHost.style.height = "900px"
+        siblingHost.style.overflow = "auto"
+        siblingHost.getBoundingClientRect = () => ({
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: 900,
+          bottom: 900,
+          width: 900,
+          height: 900,
+          toJSON() {
+            return this
+          },
+        })
+        document.body.append(siblingHost)
+
+        const siblingRoot = siblingHost.attachShadow({ mode: "open" })
+        siblingRoot.innerHTML = `
+          <div class="assnatSection98 projetloi">
+            <p>II. – <a class="law-article-link" href="/pjl/PRJLANR5L17B1906?article=JORFARTI000051054834">L’article 48 de la loi n° 2025-127 du 14 février 2025 de finances pour 2025</a> est ainsi modifié :</p>
+            <p>1° Au A :</p>
+            <p>a) Le premier alinéa est complété par les mots : « test » ;</p>
+            <p>b) Au deuxième alinéa, après les mots : « inférieur à 1,1 milliard d’euros », sont insérés les mots : « test » ;</p>
+            <p>2° Au B :</p>
+            <p>a) Le premier alinéa est complété par les mots : « test bis » ;</p>
+          </div>
+        `
+
+        for (const section of siblingRoot.querySelectorAll(
+          'div[class^="assnatSection"]',
+        )) {
+          section.getBoundingClientRect = () => ({
+            x: 0,
+            y: 0,
+            top: 20,
+            left: 0,
+            right: 800,
+            bottom: 320,
+            width: 800,
+            height: 300,
+            toJSON() {
+              return this
+            },
+          })
+        }
+
+        const siblingController =
+          billPreviewModule.createPjlPreviewController(siblingRoot)
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        )
+
+        const siblingFirstAlineaClickables = Array.from(
+          siblingRoot.querySelectorAll(
+            '.pjl-preview-clickable[data-preview-mode="single_action_diff"]',
+          ),
+        ).filter((element) =>
+          /Le premier alinéa/.test(element.textContent ?? ""),
+        )
+
+        const siblingFirstA = siblingFirstAlineaClickables[0] ?? null
+
+        const siblingClickable = Array.from(
+          siblingRoot.querySelectorAll(
+            '.pjl-preview-clickable[data-preview-mode="single_action_diff"]',
+          ),
+        ).find((element) =>
+          /Au deuxième alinéa, après les mots/.test(element.textContent ?? ""),
+        )
+
+        const siblingSecondA = siblingFirstAlineaClickables[1] ?? null
+
+        if (!(siblingFirstA instanceof HTMLElement)) {
+          throw new Error(
+            "Zone cliquable manuelle introuvable pour le cas 'Au A / Le premier alinéa'.",
+          )
+        }
+
+        if (!(siblingClickable instanceof HTMLElement)) {
+          throw new Error(
+            "Zone cliquable manuelle introuvable pour le cas 'Au deuxième alinéa'.",
+          )
+        }
+
+        if (!(siblingSecondA instanceof HTMLElement)) {
+          throw new Error(
+            "Zone cliquable manuelle introuvable pour le cas 'Au B / Le premier alinéa'.",
+          )
+        }
+
+        const siblingFirstAPreviewId =
+          siblingFirstA.getAttribute("data-preview-id") ?? null
+        if (!siblingFirstAPreviewId) {
+          throw new Error(
+            "Preview id du cas 'Au A / Le premier alinéa' introuvable.",
+          )
+        }
+
+        const siblingPreviewId =
+          siblingClickable.getAttribute("data-preview-id") ?? null
+        if (!siblingPreviewId) {
+          throw new Error("Preview id du cas 'Au deuxième alinéa' introuvable.")
+        }
+
+        const siblingSecondAPreviewId =
+          siblingSecondA.getAttribute("data-preview-id") ?? null
+        if (!siblingSecondAPreviewId) {
+          throw new Error(
+            "Preview id du cas 'Au B / Le premier alinéa' introuvable.",
+          )
+        }
+
+        siblingController.activatePreview(siblingFirstAPreviewId, siblingFirstA)
+        const siblingFirstAActiveTargetTexts = Array.from(
+          siblingRoot.querySelectorAll(
+            ".is-preview-active.pjl-preview-part-target-reference",
+          ),
+        ).map((element) =>
+          (element.textContent ?? "").replace(/\s+/g, " ").trim(),
+        )
+
+        siblingController.activatePreview(siblingPreviewId, siblingClickable)
+        const siblingActiveTargetTexts = Array.from(
+          siblingRoot.querySelectorAll(
+            ".is-preview-active.pjl-preview-part-target-reference",
+          ),
+        ).map((element) =>
+          (element.textContent ?? "").replace(/\s+/g, " ").trim(),
+        )
+
+        siblingController.activatePreview(
+          siblingSecondAPreviewId,
+          siblingSecondA,
+        )
+        const siblingSecondAActiveTargetTexts = Array.from(
+          siblingRoot.querySelectorAll(
+            ".is-preview-active.pjl-preview-part-target-reference",
+          ),
+        ).map((element) =>
+          (element.textContent ?? "").replace(/\s+/g, " ").trim(),
+        )
+
         const result = {
           previewRequests: controller.previewRequests.size,
           styleHasCursorText:
@@ -259,12 +485,20 @@ try {
           scrollDistanceFromCenter: Math.abs(
             firstChangeCenter - scrollHostCenter,
           ),
+          manualActiveTargetTexts,
+          siblingFirstAActiveTargetTexts,
+          siblingActiveTargetTexts,
+          siblingSecondAActiveTargetTexts,
         }
 
         controller.clearActivePreview()
         result.remainingActive =
           root.querySelectorAll(".is-preview-active").length
         controller.cleanup()
+        manualController.clearActivePreview()
+        manualController.cleanup()
+        siblingController.clearActivePreview()
+        siblingController.cleanup()
         return result
       },
       {
@@ -339,6 +573,54 @@ try {
     assert.ok(
       setupResult.scrollDistanceFromCenter < 120,
       "La première modification projetée n'est pas recentrée dans le volet.",
+    )
+    assert.ok(
+      setupResult.manualActiveTargetTexts.some((text) =>
+        /Au dix-septième alinéa/i.test(text),
+      ),
+      "Le ciblage manuel n'inclut pas 'Au dix-septième alinéa'.",
+    )
+    assert.ok(
+      !setupResult.manualActiveTargetTexts.some((text) =>
+        /Au quinzième alinéa/i.test(text),
+      ),
+      "Le ciblage manuel inclut à tort 'Au quinzième alinéa'.",
+    )
+    assert.ok(
+      setupResult.siblingActiveTargetTexts.some((text) =>
+        /Au deuxième alinéa/i.test(text),
+      ),
+      "Le ciblage manuel n'inclut pas 'Au deuxième alinéa'.",
+    )
+    assert.ok(
+      !setupResult.siblingActiveTargetTexts.some((text) =>
+        /Le premier alinéa/i.test(text),
+      ),
+      "Le ciblage manuel inclut à tort 'Le premier alinéa'.",
+    )
+    assert.ok(
+      setupResult.siblingFirstAActiveTargetTexts.some((text) =>
+        /Au A/i.test(text),
+      ),
+      "Le ciblage manuel n'inclut pas 'Au A' pour la première occurrence du premier alinéa.",
+    )
+    assert.ok(
+      !setupResult.siblingFirstAActiveTargetTexts.some((text) =>
+        /Au B/i.test(text),
+      ),
+      "Le ciblage manuel inclut à tort 'Au B' pour la première occurrence du premier alinéa.",
+    )
+    assert.ok(
+      setupResult.siblingSecondAActiveTargetTexts.some((text) =>
+        /Au B/i.test(text),
+      ),
+      "Le ciblage manuel n'inclut pas 'Au B' pour la seconde occurrence du premier alinéa.",
+    )
+    assert.ok(
+      !setupResult.siblingSecondAActiveTargetTexts.some((text) =>
+        /Au A/i.test(text),
+      ),
+      "Le ciblage manuel inclut à tort 'Au A' pour la seconde occurrence du premier alinéa.",
     )
     assert.equal(
       setupResult.remainingActive,

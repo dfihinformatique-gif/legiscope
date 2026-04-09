@@ -32,6 +32,14 @@ type TextRangeMatch = {
 	stop: number
 }
 
+type BlockLineInfo = {
+	index: number
+	text: string
+	start: number
+	stop: number
+	element: Element
+}
+
 type PreviewHighlightPart =
 	| "target-reference"
 	| "action-verb"
@@ -682,6 +690,23 @@ function findTextRangeInElements(
 	return null
 }
 
+function buildBlockLineInfos(context: PjlActionContext): BlockLineInfo[] {
+	let offset = 0
+	return context.blockNodes.map((element, index) => {
+		const text = normalizeLineText(element.textContent)
+		const start = offset
+		const stop = start + text.length
+		offset = stop + 1
+		return {
+			index,
+			text,
+			start,
+			stop,
+			element,
+		}
+	})
+}
+
 function annotatePreviewElement(
 	element: Element,
 	highlightId: string,
@@ -785,6 +810,44 @@ function findDirectiveActionRange(
 	return null
 }
 
+function getLineAtTextOffset(text: string, offset: number): string {
+	const clampedOffset = Math.max(0, Math.min(offset, text.length))
+	const lineStart = text.lastIndexOf("\n", clampedOffset - 1) + 1
+	const lineEnd = text.indexOf("\n", clampedOffset)
+	return text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd)
+}
+
+function findBlockLineInfoAtOffset(
+	lineInfos: BlockLineInfo[],
+	offset: number,
+): BlockLineInfo | undefined {
+	return lineInfos.find(
+		(lineInfo) => offset >= lineInfo.start && offset <= lineInfo.stop,
+	)
+}
+
+function getDirectiveSourceLineInfo(
+	context: PjlActionContext,
+	directive: ReturnType<
+		typeof buildDirectivesFromPjlBlock
+	>["directives"][number],
+): BlockLineInfo | undefined {
+	const lineInfos = buildBlockLineInfos(context)
+	return (
+		findBlockLineInfoAtOffset(lineInfos, directive.sourcePosition.start) ??
+		lineInfos.find(
+			(lineInfo) =>
+				lineInfo.text ===
+				normalizeLineText(
+					getLineAtTextOffset(
+						context.blockText,
+						directive.sourcePosition.start,
+					),
+				),
+		)
+	)
+}
+
 function findQuoteNodeBounds(
 	nodes: Element[],
 ): { first: Element; last: Element } | null {
@@ -812,29 +875,69 @@ function collectDirectiveReferenceSegments(
 	directive: ReturnType<
 		typeof buildDirectivesFromPjlBlock
 	>["directives"][number],
-): Array<{ text: string; clickScope: PreviewClickScope }> {
-	const segments: Array<{ text: string; clickScope: PreviewClickScope }> = []
+): Array<{
+	text: string
+	clickScope: PreviewClickScope
+	lineInfo?: BlockLineInfo
+}> {
+	const lineInfos = buildBlockLineInfos(context)
+	const segments: Array<{
+		text: string
+		clickScope: PreviewClickScope
+		lineInfo?: BlockLineInfo
+	}> = []
 	const seen = new Set<string>()
 	const pushSegment = (
 		text: string | null,
 		clickScope: PreviewClickScope,
+		lineInfo?: BlockLineInfo,
 	): void => {
 		const normalized = normalizeComparableText(text)
 		if (!normalized || seen.has(normalized)) return
 		seen.add(normalized)
-		segments.push({ text: text!.trim(), clickScope })
+		segments.push({ text: text!.trim(), clickScope, lineInfo })
 	}
 
-	const contextPrefix = context.blockText.slice(
-		0,
-		Math.min(context.blockText.length, directive.sourcePosition.start),
+	const sourceLineInfo = getDirectiveSourceLineInfo(context, directive)
+	const sourceLine =
+		sourceLineInfo?.text || (directive.sourceText.split("\n")[0] ?? "")
+	let currentLevel = getListMarkerLevel(sourceLine) ?? Number.POSITIVE_INFINITY
+
+	const contextSegments: Array<{ text: string; lineInfo: BlockLineInfo }> = []
+	for (
+		let i = (sourceLineInfo?.index ?? lineInfos.length) - 1;
+		i >= 0;
+		i -= 1
+	) {
+		const lineInfo = lineInfos[i]
+		if (!lineInfo) continue
+		const line = lineInfo.text
+		const referenceText = extractTargetReferenceTextFromLine(line)
+		if (!referenceText) continue
+
+		const level = getListMarkerLevel(line)
+		if (level !== null) {
+			if (level < currentLevel) {
+				contextSegments.push({ text: referenceText, lineInfo })
+				currentLevel = level
+			}
+			continue
+		}
+
+		if (line.endsWith(":")) {
+			contextSegments.push({ text: referenceText, lineInfo })
+		}
+	}
+
+	for (const segment of contextSegments.reverse()) {
+		pushSegment(segment.text, "context-target", segment.lineInfo)
+	}
+
+	pushSegment(
+		extractTargetReferenceTextFromLine(sourceLine),
+		"local-target",
+		sourceLineInfo,
 	)
-	for (const line of contextPrefix.split("\n")) {
-		pushSegment(extractTargetReferenceTextFromLine(line), "context-target")
-	}
-
-	const sourceLine = directive.sourceText.split("\n")[0] ?? ""
-	pushSegment(extractTargetReferenceTextFromLine(sourceLine), "local-target")
 	return segments
 }
 
@@ -845,11 +948,12 @@ function markDirectivePreviewHighlights(
 		typeof buildDirectivesFromPjlBlock
 	>["directives"][number],
 ): void {
+	const sourceLineInfo = getDirectiveSourceLineInfo(context, directive)
 	for (const segment of collectDirectiveReferenceSegments(context, directive)) {
-		const referenceMatch = findTextRangeInElements(
-			context.blockNodes,
-			segment.text,
-		)
+		const referenceMatch =
+			(segment.lineInfo
+				? findTextRangeInElements([segment.lineInfo.element], segment.text)
+				: null) ?? findTextRangeInElements(context.blockNodes, segment.text)
 		if (!referenceMatch) continue
 		wrapPreviewRangeInElement(
 			referenceMatch.element,
@@ -861,10 +965,11 @@ function markDirectivePreviewHighlights(
 		)
 	}
 
-	const actionMatch = findDirectiveActionRange(
-		context.blockNodes,
-		directive.sourceText,
-	)
+	const actionMatch =
+		(sourceLineInfo
+			? findDirectiveActionRange([sourceLineInfo.element], directive.sourceText)
+			: null) ??
+		findDirectiveActionRange(context.blockNodes, directive.sourceText)
 	if (actionMatch) {
 		wrapPreviewRangeInElement(
 			actionMatch.element,
@@ -878,7 +983,10 @@ function markDirectivePreviewHighlights(
 	const targetText =
 		"targetText" in directive ? directive.targetText : undefined
 	if (targetText) {
-		const targetMatch = findTextRangeInElements(context.blockNodes, targetText)
+		const targetMatch =
+			(sourceLineInfo
+				? findTextRangeInElements([sourceLineInfo.element], targetText)
+				: null) ?? findTextRangeInElements(context.blockNodes, targetText)
 		if (targetMatch) {
 			wrapPreviewRangeInElement(
 				targetMatch.element,
@@ -897,10 +1005,10 @@ function markDirectivePreviewHighlights(
 				? directive.insertText
 				: undefined
 	if (!replacementText) return
-	const replacementMatch = findTextRangeInElements(
-		context.blockNodes,
-		replacementText,
-	)
+	const replacementMatch =
+		(sourceLineInfo
+			? findTextRangeInElements([sourceLineInfo.element], replacementText)
+			: null) ?? findTextRangeInElements(context.blockNodes, replacementText)
 	if (replacementMatch) {
 		wrapPreviewRangeInElement(
 			replacementMatch.element,
