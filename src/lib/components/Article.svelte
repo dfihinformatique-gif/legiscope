@@ -34,6 +34,10 @@
 		buildDirectivesFromPjlBlock,
 		findDirectiveForPreviewRequest,
 	} from "$lib/pjl/block_directives"
+	import {
+		findFirstProjectedChangeElement,
+		scrollElementIntoMiddleView,
+	} from "$lib/pjl/scroll"
 	import type { PjlArticleBlock } from "$lib/pjl/types"
 	import {
 		assertNever,
@@ -44,7 +48,7 @@
 		type FragmentReverseTransformation,
 	} from "@tricoteuses/tisseuse"
 	import { Diff, diffArrays, type Change, type ChangeObject } from "diff"
-	import { onMount } from "svelte"
+	import { onMount, tick } from "svelte"
 	import { SvelteMap } from "svelte/reactivity"
 	import ArticleCitations from "./article_citations/ArticleCitations.svelte"
 	import ArticleHistory from "./ArticleHistory.svelte"
@@ -1088,6 +1092,71 @@
 		return `<div class="font-sans text-sm text-le-gris-dispositif-dark py-4 text-center ">Aucune modification projetée n'est disponible</div>`
 	})
 
+	let pjlDiffContainer = $state<HTMLElement | undefined>(undefined)
+	const pjlScrollRetryDelaysMs = [0, 120, 320, 700]
+
+	const pjlAutoScrollKey = $derived.by(() => {
+		const currentId =
+			page.url.searchParams.get("article") ?? articleInfo.article?.legi_id ?? ""
+		if (pjlPreviewForCurrentArticle) {
+			return [
+				"preview",
+				currentId,
+				pjlPreviewForCurrentArticle.directiveId,
+				pjlPreviewForCurrentArticle.blockText,
+				pjlDiffContent,
+			]
+				.filter(Boolean)
+				.join("::")
+		}
+		if (showPjlDiff && pjlAggregateProjection) {
+			return [
+				"aggregate",
+				currentId,
+				pjlAggregateProjection.reason ?? "",
+				pjlAggregateProjection.html ?? "",
+				pjlDiffContent,
+			].join("::")
+		}
+		return undefined
+	})
+
+	$effect(() => {
+		if (!pjlAutoScrollKey || !pjlDiffContainer) return
+
+		let cancelled = false
+		const timeoutIds: number[] = []
+
+		void tick().then(() => {
+			if (cancelled || !pjlDiffContainer) return
+			const scrollToFirstProjectedChange = (): void => {
+				if (cancelled || !pjlDiffContainer) return
+				const target = findFirstProjectedChangeElement(pjlDiffContainer)
+				if (!target) return
+				scrollElementIntoMiddleView(target, "auto")
+			}
+
+			for (const delayMs of pjlScrollRetryDelaysMs) {
+				if (delayMs === 0) {
+					requestAnimationFrame(scrollToFirstProjectedChange)
+					continue
+				}
+				timeoutIds.push(
+					window.setTimeout(() => {
+						requestAnimationFrame(scrollToFirstProjectedChange)
+					}, delayMs),
+				)
+			}
+		})
+
+		return () => {
+			cancelled = true
+			for (const timeoutId of timeoutIds) {
+				window.clearTimeout(timeoutId)
+			}
+		}
+	})
+
 	type DebugWindow = Window & {
 		__pjlProjectedHtml?: string | null
 		__pjlProjectedReason?: string | null
@@ -1674,6 +1743,7 @@
 					</div>
 				{:else if showPjlDiff === true || pjlPreviewForCurrentArticle}
 					<div
+						bind:this={pjlDiffContainer}
 						class="rounded-b-md bg-amber-50 px-5 py-4 font-serif text-lg leading-8 md:text-left"
 					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->

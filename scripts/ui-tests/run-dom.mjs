@@ -114,6 +114,7 @@ try {
         const billInteractionsModule = await import(
           `${baseUrl}/src/lib/pjl/bill_interactions.ts`
         )
+        const scrollModule = await import(`${baseUrl}/src/lib/pjl/scroll.ts`)
         const controller = billPreviewModule.createPjlPreviewController(root)
 
         for (const clickable of root.querySelectorAll(
@@ -176,6 +177,47 @@ try {
 
         controller.activatePreview(previewId, clickable)
 
+        const scrollHost = document.createElement("div")
+        scrollHost.style.height = "320px"
+        scrollHost.style.width = "720px"
+        scrollHost.style.overflow = "auto"
+        scrollHost.style.border = "1px solid transparent"
+        scrollHost.style.marginTop = "24px"
+
+        const diffContainer = document.createElement("div")
+        diffContainer.style.padding = "0"
+
+        const beforeSpacer = document.createElement("div")
+        beforeSpacer.style.height = "760px"
+        beforeSpacer.textContent = "Avant"
+
+        const changedParagraph = document.createElement("p")
+        changedParagraph.innerHTML =
+          'Texte <span class="rounded-md px-0.5 bg-green-50 text-green-900">modifié</span> ici.'
+
+        const afterSpacer = document.createElement("div")
+        afterSpacer.style.height = "560px"
+        afterSpacer.textContent = "Après"
+
+        diffContainer.append(beforeSpacer, changedParagraph, afterSpacer)
+        scrollHost.append(diffContainer)
+        document.body.append(scrollHost)
+
+        const firstChange =
+          scrollModule.findFirstProjectedChangeElement(diffContainer)
+        if (!(firstChange instanceof HTMLElement)) {
+          throw new Error("Première modification projetée introuvable.")
+        }
+
+        scrollModule.scrollElementIntoMiddleView(firstChange, "auto")
+        await new Promise((resolve) => requestAnimationFrame(() => resolve()))
+
+        const scrollHostRect = scrollHost.getBoundingClientRect()
+        const firstChangeRect = firstChange.getBoundingClientRect()
+        const scrollHostCenter = scrollHostRect.top + scrollHostRect.height / 2
+        const firstChangeCenter =
+          firstChangeRect.top + firstChangeRect.height / 2
+
         const result = {
           previewRequests: controller.previewRequests.size,
           styleHasCursorText:
@@ -212,6 +254,11 @@ try {
               collapsedSelection,
               root,
             ),
+          firstChangeText: firstChange.textContent ?? "",
+          scrollTopAfterPreview: scrollHost.scrollTop,
+          scrollDistanceFromCenter: Math.abs(
+            firstChangeCenter - scrollHostCenter,
+          ),
         }
 
         controller.clearActivePreview()
@@ -280,6 +327,19 @@ try {
       false,
       "Une sélection vide/collapsée ne doit pas bloquer le clic PJL.",
     )
+    assert.match(
+      setupResult.firstChangeText,
+      /modifié/i,
+      "Le helper de scroll ne trouve pas la première portion modifiée.",
+    )
+    assert.ok(
+      setupResult.scrollTopAfterPreview > 0,
+      "Le scroll automatique vers la première modification n'a pas été déclenché.",
+    )
+    assert.ok(
+      setupResult.scrollDistanceFromCenter < 120,
+      "La première modification projetée n'est pas recentrée dans le volet.",
+    )
     assert.equal(
       setupResult.remainingActive,
       0,
@@ -287,7 +347,7 @@ try {
     )
 
     console.log(
-      "[ui-tests] minimal browser smoke passed: preview annotations, popover action, and selection guard.",
+      "[ui-tests] minimal browser smoke passed: preview annotations, popover action, selection guard, and projected scroll centering.",
     )
   } finally {
     await browser.close()
