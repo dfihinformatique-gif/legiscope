@@ -38,6 +38,8 @@ type PreviewHighlightPart =
 	| "source-text"
 	| "replacement-text"
 
+type PreviewClickScope = "context-target" | "local-target"
+
 export type PjlPreviewController = {
 	previewRequests: Map<string, PjlPreviewRequestEntry>
 	activatePreview: (previewId: string, anchorElement: Element) => void
@@ -54,6 +56,20 @@ function normalizeComparableText(value: string | null): string {
 		.replace(/[’']/g, "'")
 		.replace(/[‐‑‒–—]/g, "-")
 }
+
+const ACTION_RANGE_PATTERNS = [
+	/\b(?:est|sont)\s+remplac(?:é|ée|és|ées)?s?\s+par\b/iu,
+	/\b(?:est|sont)\s+complét(?:é|ée|és|ées)?s?\s+par\b/iu,
+	/\b(?:est|sont)\s+insér(?:é|ée|és|ées)?s?\b/iu,
+	/\b(?:est|sont)\s+supprim(?:é|ée|és|ées)?s?\b/iu,
+	/\b(?:est|sont)\s+abrog(?:é|ée|és|ées)?s?\b/iu,
+	/\b(?:est|sont)\s+rétabli(?:e|es|s)?\b/iu,
+	/\b(?:est|sont)\s+ainsi\s+modifi(?:é|ée|és|ées)?s?\b/iu,
+	/\best\s+modifié\b/iu,
+]
+
+const LIST_MARKER_RE =
+	/^\s*(?:[IVXLCDM]+|[ivxlcdm]+|\d+|[a-zA-Z])\s*(?:°|\.|\)|-|–|—)\s+/u
 
 export function trimBlockTextAtSectionBreak(text: string): string {
 	const startsWithLetterMarker =
@@ -89,6 +105,40 @@ function hasActionVerb(text: string): boolean {
 	return /\b(insere|ajout|remplac|supprim|abrog|complet|retabl|modifi)/.test(
 		normalized,
 	)
+}
+
+function findDirectiveActionIndex(text: string): number | null {
+	const comparableText = normalizeComparableText(text)
+	for (const pattern of ACTION_RANGE_PATTERNS) {
+		const match = pattern.exec(comparableText)
+		if (match?.index !== undefined) {
+			return match.index
+		}
+	}
+	return null
+}
+
+function stripListMarker(text: string): string {
+	return text.replace(LIST_MARKER_RE, "").trim()
+}
+
+function trimReferenceSuffix(text: string): string {
+	return text.replace(/[,:;]\s*$/u, "").trim()
+}
+
+function extractTargetReferenceTextFromLine(line: string): string | null {
+	const normalized = normalizeLineText(line)
+	if (!normalized || normalized.startsWith("«")) return null
+	const withoutMarker = stripListMarker(normalized)
+	if (!withoutMarker) return null
+	const actionIndex = findDirectiveActionIndex(withoutMarker)
+	if (actionIndex !== null) {
+		return trimReferenceSuffix(withoutMarker.slice(0, actionIndex))
+	}
+	if (withoutMarker.endsWith(":")) {
+		return trimReferenceSuffix(withoutMarker.slice(0, -1))
+	}
+	return trimReferenceSuffix(withoutMarker)
 }
 
 function isDispositiveElement(node: Element): boolean {
@@ -636,9 +686,13 @@ function annotatePreviewElement(
 	element: Element,
 	highlightId: string,
 	part: PreviewHighlightPart,
+	clickScope?: PreviewClickScope,
 ): void {
 	element.classList.add("pjl-preview-part", `pjl-preview-part-${part}`)
 	element.setAttribute("data-preview-highlight-id", highlightId)
+	if (clickScope) {
+		element.setAttribute("data-preview-click-scope", clickScope)
+	}
 }
 
 function annotatePreviewClickableElement(
@@ -662,6 +716,7 @@ function wrapPreviewRangeInElement(
 	stop: number,
 	highlightId: string,
 	part: PreviewHighlightPart,
+	clickScope?: PreviewClickScope,
 ): boolean {
 	const index = buildElementTextIndex(element)
 	if (
@@ -681,7 +736,7 @@ function wrapPreviewRangeInElement(
 	range.setStart(startBoundary.node, startBoundary.offset)
 	range.setEnd(endBoundary.node, endBoundary.offset)
 	const span = document.createElement("span")
-	annotatePreviewElement(span, highlightId, part)
+	annotatePreviewElement(span, highlightId, part, clickScope)
 	try {
 		range.surroundContents(span)
 		return true
@@ -703,12 +758,13 @@ function markElementRange(
 	last: Element,
 	highlightId: string,
 	part: PreviewHighlightPart,
+	clickScope?: PreviewClickScope,
 ): void {
 	let inside = false
 	for (const node of nodes) {
 		if (node === first) inside = true
 		if (!inside) continue
-		annotatePreviewElement(node, highlightId, part)
+		annotatePreviewElement(node, highlightId, part, clickScope)
 		if (node === last) break
 	}
 }
@@ -717,18 +773,8 @@ function findDirectiveActionRange(
 	elements: Element[],
 	sourceText: string,
 ): TextRangeMatch | null {
-	const patterns = [
-		/\b(?:est|sont)\s+remplac(?:é|ée|és|ées)?s?\s+par\b/iu,
-		/\b(?:est|sont)\s+complét(?:é|ée|és|ées)?s?\s+par\b/iu,
-		/\b(?:est|sont)\s+insér(?:é|ée|és|ées)?s?\b/iu,
-		/\b(?:est|sont)\s+supprim(?:é|ée|és|ées)?s?\b/iu,
-		/\b(?:est|sont)\s+abrog(?:é|ée|és|ées)?s?\b/iu,
-		/\b(?:est|sont)\s+rétabli(?:e|es|s)?\b/iu,
-		/\b(?:est|sont)\s+ainsi\s+modifi(?:é|ée|és|ées)?s?\b/iu,
-		/\best\s+modifié\b/iu,
-	]
 	const comparableSource = normalizeComparableText(sourceText)
-	for (const pattern of patterns) {
+	for (const pattern of ACTION_RANGE_PATTERNS) {
 		const match = pattern.exec(comparableSource)
 		if (!match || match.index === undefined) continue
 		const matchedText = match[0] ?? ""
@@ -761,29 +807,64 @@ function findQuoteNodeBounds(
 	return first && last ? { first, last } : null
 }
 
+function collectDirectiveReferenceSegments(
+	context: PjlActionContext,
+	directive: ReturnType<
+		typeof buildDirectivesFromPjlBlock
+	>["directives"][number],
+): Array<{ text: string; clickScope: PreviewClickScope }> {
+	const segments: Array<{ text: string; clickScope: PreviewClickScope }> = []
+	const seen = new Set<string>()
+	const pushSegment = (
+		text: string | null,
+		clickScope: PreviewClickScope,
+	): void => {
+		const normalized = normalizeComparableText(text)
+		if (!normalized || seen.has(normalized)) return
+		seen.add(normalized)
+		segments.push({ text: text!.trim(), clickScope })
+	}
+
+	const contextPrefix = context.blockText.slice(
+		0,
+		Math.min(context.blockText.length, directive.sourcePosition.start),
+	)
+	for (const line of contextPrefix.split("\n")) {
+		pushSegment(extractTargetReferenceTextFromLine(line), "context-target")
+	}
+
+	const sourceLine = directive.sourceText.split("\n")[0] ?? ""
+	pushSegment(extractTargetReferenceTextFromLine(sourceLine), "local-target")
+	return segments
+}
+
 function markDirectivePreviewHighlights(
 	context: PjlActionContext,
 	highlightId: string,
-	referenceText: string,
-	targetText: string | undefined,
-	replacementText: string | undefined,
-	sourceText: string,
+	directive: ReturnType<
+		typeof buildDirectivesFromPjlBlock
+	>["directives"][number],
 ): void {
-	const referenceMatch = findTextRangeInElements(
-		context.blockNodes,
-		referenceText,
-	)
-	if (referenceMatch) {
+	for (const segment of collectDirectiveReferenceSegments(context, directive)) {
+		const referenceMatch = findTextRangeInElements(
+			context.blockNodes,
+			segment.text,
+		)
+		if (!referenceMatch) continue
 		wrapPreviewRangeInElement(
 			referenceMatch.element,
 			referenceMatch.start,
 			referenceMatch.stop,
 			highlightId,
 			"target-reference",
+			segment.clickScope,
 		)
 	}
 
-	const actionMatch = findDirectiveActionRange(context.blockNodes, sourceText)
+	const actionMatch = findDirectiveActionRange(
+		context.blockNodes,
+		directive.sourceText,
+	)
 	if (actionMatch) {
 		wrapPreviewRangeInElement(
 			actionMatch.element,
@@ -794,6 +875,8 @@ function markDirectivePreviewHighlights(
 		)
 	}
 
+	const targetText =
+		"targetText" in directive ? directive.targetText : undefined
 	if (targetText) {
 		const targetMatch = findTextRangeInElements(context.blockNodes, targetText)
 		if (targetMatch) {
@@ -807,6 +890,12 @@ function markDirectivePreviewHighlights(
 		}
 	}
 
+	const replacementText =
+		"replacementText" in directive
+			? directive.replacementText
+			: "insertText" in directive
+				? directive.insertText
+				: undefined
 	if (!replacementText) return
 	const replacementMatch = findTextRangeInElements(
 		context.blockNodes,
@@ -838,17 +927,29 @@ function collectPreviewPartElements(
 	nodes: Element[],
 	highlightId: string,
 	part: PreviewHighlightPart,
+	clickScope?: PreviewClickScope,
 ): Element[] {
 	const selector = `.pjl-preview-part-${part}[data-preview-highlight-id="${CSS.escape(highlightId)}"]`
 	const seen = new Set<Element>()
 	const result: Element[] = []
 
 	for (const node of nodes) {
-		if (node.matches(selector) && !seen.has(node)) {
+		if (
+			node.matches(selector) &&
+			(!clickScope ||
+				node.getAttribute("data-preview-click-scope") === clickScope) &&
+			!seen.has(node)
+		) {
 			seen.add(node)
 			result.push(node)
 		}
 		for (const nested of node.querySelectorAll(selector)) {
+			if (
+				clickScope &&
+				nested.getAttribute("data-preview-click-scope") !== clickScope
+			) {
+				continue
+			}
 			if (seen.has(nested)) continue
 			seen.add(nested)
 			result.push(nested)
@@ -892,27 +993,8 @@ function decoratePjlPreviewButtons(
 		for (const directive of directives) {
 			const directiveId = buildDirectivePreviewId(directive)
 			const highlightId = `${context.articleId}::highlight::${directiveId}`
-			const referenceText = directive.sourceText.slice(
-				directive.reference.position.start,
-				directive.reference.position.stop,
-			)
-			const sourceTargetText =
-				"targetText" in directive ? directive.targetText : undefined
-			const replacementText =
-				"replacementText" in directive
-					? directive.replacementText
-					: "insertText" in directive
-						? directive.insertText
-						: undefined
 
-			markDirectivePreviewHighlights(
-				context,
-				highlightId,
-				referenceText,
-				sourceTargetText,
-				replacementText,
-				directive.sourceText,
-			)
+			markDirectivePreviewHighlights(context, highlightId, directive)
 
 			const requestId = `${context.articleId}::single::${directiveId}`
 			if (decoratedDirectives.has(requestId)) continue
@@ -930,6 +1012,7 @@ function decoratePjlPreviewButtons(
 					context.blockNodes,
 					highlightId,
 					"target-reference",
+					"local-target",
 				),
 				...collectPreviewPartElements(
 					context.blockNodes,

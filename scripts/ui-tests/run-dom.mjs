@@ -134,9 +134,17 @@ try {
           })
         }
 
-        const clickable = root.querySelector(
-          '.pjl-preview-clickable[data-preview-mode="single_action_diff"]',
+        const clickables = Array.from(
+          root.querySelectorAll(
+            '.pjl-preview-clickable[data-preview-mode="single_action_diff"]',
+          ),
         )
+        const clickable =
+          clickables.find((element) =>
+            /Après le III/i.test(element.textContent ?? ""),
+          ) ??
+          clickables[0] ??
+          null
         const style = root.getElementById("pjl-preview-style")
         const previewId = clickable?.getAttribute("data-preview-id") ?? null
 
@@ -172,9 +180,17 @@ try {
           previewRequests: controller.previewRequests.size,
           styleHasCursorText:
             style?.textContent?.includes("cursor: text;") ?? false,
+          clickableText: clickable.textContent ?? "",
           activeTarget: root.querySelectorAll(
             ".is-preview-active.pjl-preview-part-target-reference",
           ).length,
+          activeTargetTexts: Array.from(
+            root.querySelectorAll(
+              ".is-preview-active.pjl-preview-part-target-reference",
+            ),
+          ).map((element) =>
+            (element.textContent ?? "").replace(/\s+/g, " ").trim(),
+          ),
           activeAction: root.querySelectorAll(
             ".is-preview-active.pjl-preview-part-action-verb",
           ).length,
@@ -219,9 +235,26 @@ try {
       true,
       "Le style PJL n'impose plus le curseur texte.",
     )
+    assert.match(
+      setupResult.clickableText,
+      /Après le III/i,
+      "La zone cliquable ne couvre plus la cible locale attendue.",
+    )
     assert.ok(
       setupResult.activeTarget > 0,
       "La cible n'est pas surlignée après activation.",
+    )
+    assert.ok(
+      setupResult.activeTargetTexts.some((text) => /Après le III/i.test(text)),
+      "La cible locale 'Après le III' n'est pas surlignée.",
+    )
+    assert.ok(
+      setupResult.activeTargetTexts.some((text) =>
+        /article 10 de la loi n° 2025-127 du 14 février 2025 de finances pour 2025/i.test(
+          text,
+        ),
+      ),
+      "Le contexte cible 'L'article 10 de la loi 2025-127…' n'est pas surligné.",
     )
     assert.ok(
       setupResult.activeAction > 0,
