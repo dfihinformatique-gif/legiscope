@@ -90,6 +90,36 @@ export const projectionCases = [
     },
   },
   {
+    id: "article10-208octies-insert",
+    description:
+      "Article 10 - insertion d'un nouvel article après l'article 208 septies",
+    async run(harness) {
+      const result = await harness.projectArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000031284026",
+        blockNeedle: "Après l’article 208 septies",
+      })
+      const projectedHtml = requireProjectedHtml(result, this.id)
+      const projectedText = requireProjectedText(result, this.id)
+      assert.ok(
+        harness
+          .normalizeText(projectedText)
+          .includes(harness.normalizeText("Art. 208 octies.")),
+        "article10-208octies-insert: le nouvel article inséré est absent.",
+      )
+      assert.ok(
+        projectedHtml.includes("bg-green-50"),
+        "article10-208octies-insert: aucune insertion verte détectée.",
+      )
+      assert.ok(
+        harness
+          .normalizeText(projectedText.slice(-1800))
+          .includes(harness.normalizeText("Art. 208 octies")),
+        "article10-208octies-insert: le nouvel article n'apparaît pas en fin de projection.",
+      )
+    },
+  },
+  {
     id: "article15-l1241-14-retabli",
     description: "Article 15 - rétablissement du L. 1241-14",
     async run(harness) {

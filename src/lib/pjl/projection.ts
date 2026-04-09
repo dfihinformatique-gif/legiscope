@@ -2666,6 +2666,32 @@ function applyProjectActionToHtml(
 		(action.kind === "insert_after" || action.kind === "insert_before") &&
 		(!action.targetText || action.targetText.trim() === "")
 	) {
+		if (
+			(action.targetType === "article" ||
+				action.targetType === "division" ||
+				action.targetType === "texte") &&
+			html.trim() !== ""
+		) {
+			const insertionHtml = formatInsertionParagraphs(action.insertText, {
+				preserveLineBreaks: action.insertText.includes("\n"),
+				highlight: true,
+			})
+			if (!insertionHtml) {
+				return {
+					html: null,
+					reason:
+						"Aucune valeur d'insertion trouvée pour appliquer la modification.",
+				}
+			}
+			return {
+				html:
+					action.kind === "insert_before"
+						? insertionHtml + html
+						: html + insertionHtml,
+				skipDiff: true,
+			}
+		}
+
 		const normalized = action.sourceText
 			.toLowerCase()
 			.normalize("NFD")
