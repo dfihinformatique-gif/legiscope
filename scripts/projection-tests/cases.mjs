@@ -43,6 +43,53 @@ export const projectionCases = [
     },
   },
   {
+    id: "article10-73-ii-2",
+    description:
+      "Article 10 - projection du 2 du II de l'article 73 avec sélecteurs spécifiques conservés",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051765352",
+      })
+      const block = blocks.find((candidate) =>
+        candidate.blockText.startsWith("A. – Au 2 du II de l’article 73"),
+      )
+      assert.ok(block, "article10-73-ii-2: bloc PJL contextualisé introuvable.")
+      const result = await harness.analyzeBlock({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051765352",
+        block,
+      })
+      assert.equal(
+        result.directives.length,
+        8,
+        "article10-73-ii-2: nombre de directives inattendu.",
+      )
+      assert.equal(
+        result.projection.failures.length,
+        0,
+        "article10-73-ii-2: la projection du bloc échoue encore.",
+      )
+      const projectedHtml = result.projection.html
+      assert.ok(projectedHtml, "article10-73-ii-2: HTML projeté introuvable.")
+      assert.match(
+        projectedHtml,
+        /bg-red-50[^>]*>\s*risques résultant\s*<\/span>\s*<span[^>]*bg-green-50[^>]*>\s*aléas suivants\s*<\/span>/u,
+        "article10-73-ii-2: le remplacement introductif n'apparaît pas en diff.",
+      )
+      assert.match(
+        projectedHtml,
+        /bg-red-50[^>]*>\s*L\. 361-4-1\s*<\/span>\s*<span[^>]*bg-green-50[^>]*>\s*L\. 361-4-2\s*<\/span>/u,
+        "article10-73-ii-2: le renvoi vers L. 361-4-2 n'apparaît pas en diff.",
+      )
+      assert.match(
+        projectedHtml,
+        /bg-red-50[^>]*>\s*De\s*<\/span>\s*<span[^>]*bg-green-50[^>]*>\s*Apparition de\s*<\/span>/u,
+        "article10-73-ii-2: la transformation du c) n'apparaît pas en diff.",
+      )
+    },
+  },
+  {
     id: "article15-l1241-14-retabli",
     description: "Article 15 - rétablissement du L. 1241-14",
     async run(harness) {
@@ -467,6 +514,103 @@ export const projectionCases = [
     },
   },
   {
+    id: "article7-244quaterw-multi-replace",
+    description:
+      "Article 7 - remplacement multi-cible sous un item numérique introductif dans l'article 244 quater W",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051203023",
+      })
+      const block = blocks.find((candidate) =>
+        candidate.blockText.includes("Aux a du 1° et au a du 2° du 4"),
+      )
+      assert.ok(
+        block,
+        "article7-244quaterw-multi-replace: bloc PJL contextualisé introuvable.",
+      )
+      const result = await harness.analyzeBlock({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051203023",
+        block,
+      })
+      const projectedHtml = result.projection.html
+      assert.ok(
+        projectedHtml,
+        "article7-244quaterw-multi-replace: HTML projeté introuvable.",
+      )
+      const projectedText = harness.htmlToText(projectedHtml)
+      assert.ok(
+        projectedHtml.includes("bg-red-50") &&
+          projectedHtml.includes("bg-green-50"),
+        "article7-244quaterw-multi-replace: le diff attendu n'est pas balisé.",
+      )
+      assert.ok(
+        harness.countOccurrences(projectedText, "neuf ans") >= 2,
+        "article7-244quaterw-multi-replace: les deux remplacements attendus n'apparaissent pas.",
+      )
+      assert.ok(
+        (
+          projectedHtml.match(
+            /bg-red-50[^>]*>\s*cinq\s*<\/span>\s*<span[^>]*bg-green-50[^>]*>\s*neuf\s*<\/span>\s*ans/gu,
+          ) ?? []
+        ).length >= 2,
+        "article7-244quaterw-multi-replace: les deux remplacements 'cinq' -> 'neuf' n'apparaissent pas en diff ciblé.",
+      )
+    },
+  },
+  {
+    id: "article7-244quatery-compact-phrase",
+    description:
+      "Article 7 - résolution de phrase sous préfixes compacts dans l'article 244 quater Y",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000048826464",
+      })
+      const block = blocks.find((candidate) =>
+        candidate.blockText.includes("A la seconde phrase du 1° du 2 du A"),
+      )
+      assert.ok(
+        block,
+        "article7-244quatery-compact-phrase: bloc PJL contextualisé introuvable.",
+      )
+      const result = await harness.analyzeBlock({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000048826464",
+        block,
+      })
+      const projectedHtml = result.projection.html
+      assert.ok(
+        projectedHtml,
+        "article7-244quatery-compact-phrase: HTML projeté introuvable.",
+      )
+      const projectedText = harness.htmlToText(projectedHtml)
+      assert.ok(
+        projectedHtml.includes("bg-red-50") &&
+          projectedHtml.includes("bg-green-50"),
+        "article7-244quatery-compact-phrase: le diff attendu n'est pas balisé.",
+      )
+      assert.ok(
+        projectedText.includes("cinquième phrase"),
+        "article7-244quatery-compact-phrase: la nouvelle référence n'apparaît pas.",
+      )
+      assert.ok(
+        (
+          projectedHtml.match(
+            /bg-red-50[^>]*>\s*troisieme|bg-red-50[^>]*>\s*troisième/gu,
+          ) ?? []
+        ).length >= 1 &&
+          (
+            projectedHtml.match(
+              /bg-green-50[^>]*>\s*cinquieme|bg-green-50[^>]*>\s*cinquième/gu,
+            ) ?? []
+          ).length >= 1,
+        "article7-244quatery-compact-phrase: le remplacement 'troisième' -> 'cinquième' n'apparaît pas en diff.",
+      )
+    },
+  },
+  {
     id: "article7-quoted-links-do-not-create-targets",
     description:
       "Article 7 - les liens cités dans le texte de remplacement ne doivent pas créer de faux blocs ciblés",
@@ -479,6 +623,52 @@ export const projectionCases = [
         blocks.length,
         0,
         "article7-quoted-links-do-not-create-targets: un lien cité dans une citation crée encore un bloc de projection parasite.",
+      )
+    },
+  },
+  {
+    id: "article8-199terdecies0a-split-bullets",
+    description:
+      "Article 8 - scission correcte des sous-puces d'action dans l'article 199 terdecies-0 A",
+    async run(harness) {
+      const { blocks } = await harness.getBlocksForArticle({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051213428",
+      })
+      const block = blocks.find((candidate) =>
+        candidate.blockText.startsWith("A. – A l’article 199 terdecies"),
+      )
+      assert.ok(
+        block,
+        "article8-199terdecies0a-split-bullets: bloc PJL contextualisé introuvable.",
+      )
+      const result = await harness.analyzeBlock({
+        pjlId: PJL_ID,
+        articleId: "LEGIARTI000051213428",
+        block,
+      })
+      const projectedHtml = result.projection.html
+      assert.ok(
+        projectedHtml,
+        "article8-199terdecies0a-split-bullets: HTML projeté introuvable.",
+      )
+      const projectedText = harness.htmlToText(projectedHtml)
+      assert.ok(
+        projectedText.includes(
+          "au plus tard le dernier jour du quarante-huitième mois",
+        ),
+        "article8-199terdecies0a-split-bullets: le remplacement de la seconde phrase est absent.",
+      )
+      assert.ok(
+        projectedHtml.includes("bg-red-50") &&
+          projectedHtml.includes("bg-green-50"),
+        "article8-199terdecies0a-split-bullets: le diff attendu n'est pas balisé.",
+      )
+      assert.ok(
+        projectedHtml.includes(
+          ", et à hauteur de 100 % au plus tard le dernier jour du quinzième mois suivant",
+        ),
+        "article8-199terdecies0a-split-bullets: la portion supprimée n'apparaît pas dans le diff.",
       )
     },
   },

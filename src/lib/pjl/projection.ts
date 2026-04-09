@@ -533,10 +533,16 @@ function specializeDirectiveForArticle(
 	})[0]
 	if (!best) return directive
 
+	const existingSpecificity = getSelectorsScore(directive.portionSelectors)
+	const chosenSelectors =
+		existingSpecificity >= best.specificity
+			? directive.portionSelectors
+			: best.selectors
+
 	return {
 		...directive,
 		reference: best.reference,
-		portionSelectors: best.selectors,
+		portionSelectors: chosenSelectors,
 	}
 }
 
@@ -579,9 +585,8 @@ export function filterDirectivesForArticle(
 }
 
 function isActionLikeText(text: string): boolean {
-	const prefix = text.split("«")[0] ?? text
-	const normalized = normalizeActionSource(prefix)
-	return /\b(insere|ajoute|remplace|supprime|abroge|complete|retabl|modifie)\b/.test(
+	const normalized = normalizeActionSource(text)
+	return /\b(insere|ajoute|remplac|supprim|abrog|complete|retabl|modifi)/u.test(
 		normalized,
 	)
 }
@@ -658,9 +663,11 @@ function getItemStepLevel(num: string | undefined): number | null {
 	const normalized = (num ?? "").trim()
 	if (!normalized) return null
 	if (/^[IVXLCDM]+(?:\s+\w+)*$/u.test(normalized)) return 1
-	if (/^\d+(?:°)?(?:\s+\w+)*$/u.test(normalized)) return 2
-	if (/^[a-z](?:\s+\w+)*$/u.test(normalized)) return 3
-	if (/^[ivxlcdm]+(?:\s+\w+)*$/u.test(normalized)) return 4
+	if (/^[A-Z](?:\s+\w+)*$/u.test(normalized)) return 2
+	if (/^\d+(?:\s+\w+)*$/u.test(normalized)) return 3
+	if (/^\d+°(?:\s+\w+)*$/u.test(normalized)) return 4
+	if (/^[a-z](?:\s+\w+)*$/u.test(normalized)) return 5
+	if (/^[ivxlcdm]+(?:\s+\w+)*$/u.test(normalized)) return 6
 	return null
 }
 
@@ -672,14 +679,20 @@ function detectParagraphItemLevel(text: string): number | null {
 	) {
 		return 1
 	}
-	if (/^\d+°(?:\s+|$)/u.test(trimmed) || /^\d+[.)]\s+/u.test(trimmed)) {
+	if (/^[A-Z](?:\s+\w+)*[.)]\s+/u.test(trimmed)) {
 		return 2
 	}
-	if (/^[a-z](?:\s+\w+)*\)\s+/u.test(trimmed)) {
+	if (/^\d+[.)]\s+/u.test(trimmed)) {
 		return 3
 	}
-	if (/^[ivxlcdm]+\)\s+/u.test(trimmed)) {
+	if (/^\d+°(?:\s+|$)/u.test(trimmed)) {
 		return 4
+	}
+	if (/^[a-z](?:\s+\w+)*[.)]\s+/u.test(trimmed)) {
+		return 5
+	}
+	if (/^[ivxlcdm]+\)\s+/u.test(trimmed)) {
+		return 6
 	}
 	return null
 }
@@ -842,6 +855,67 @@ function getSelectorSteps(
 	if (!selector) return undefined
 	if (selector.kind === "single") return selector.steps
 	return selector.last.length > 0 ? selector.last : selector.first
+}
+
+function areSelectorStepsEqual(
+	left: PortionSelectorStep[],
+	right: PortionSelectorStep[],
+): boolean {
+	return (
+		left.length === right.length &&
+		left.every((step, index) => {
+			const other = right[index]
+			return (
+				step?.type === other?.type &&
+				step?.index === other?.index &&
+				step?.num === other?.num
+			)
+		})
+	)
+}
+
+function isSelectorStepsSuffixOf(
+	candidate: PortionSelectorStep[],
+	reference: PortionSelectorStep[],
+): boolean {
+	if (candidate.length > reference.length) return false
+	return areSelectorStepsEqual(
+		candidate,
+		reference.slice(reference.length - candidate.length),
+	)
+}
+
+function areAlternativePortionSelectors(
+	left: PortionSelector,
+	right: PortionSelector,
+): boolean {
+	if (left.kind !== "single" || right.kind !== "single") {
+		return JSON.stringify(left) === JSON.stringify(right)
+	}
+	return (
+		areSelectorStepsEqual(left.steps, right.steps) ||
+		isSelectorStepsSuffixOf(left.steps, right.steps) ||
+		isSelectorStepsSuffixOf(right.steps, left.steps)
+	)
+}
+
+function groupPortionSelectors(
+	selectors: PortionSelector[],
+): PortionSelector[][] {
+	const groups: PortionSelector[][] = []
+	for (const selector of selectors) {
+		const group = groups.find((currentGroup) =>
+			currentGroup.some((candidate) =>
+				areAlternativePortionSelectors(candidate, selector),
+			),
+		)
+		if (group) {
+			group.push(selector)
+			continue
+		}
+		groups.push([selector])
+	}
+	return groups
 }
 
 function buildTableReplacementDirective(
@@ -1213,6 +1287,30 @@ function resolveReplacementAlinea(
 		}
 	}
 	return getMatchAlinea(match)
+}
+
+function findMatchContentBounds(
+	html: string,
+	match: ArticlePortionMatch,
+): FragmentPosition | null {
+	const nodes: ArticlePortionNode[] =
+		"node" in match ? [match.node] : [match.start, match.end]
+	let firstStart: number | null = null
+	let lastStop: number | null = null
+
+	for (const node of nodes) {
+		for (const alinea of collectAlineasDeep(node)) {
+			const bounds = findParagraphBounds(html, alinea.paragraphIndex)
+			if (!bounds) continue
+			firstStart =
+				firstStart === null ? bounds.start : Math.min(firstStart, bounds.start)
+			lastStop =
+				lastStop === null ? bounds.stop : Math.max(lastStop, bounds.stop)
+		}
+	}
+
+	if (firstStart === null || lastStop === null) return null
+	return { start: firstStart, stop: lastStop }
 }
 
 function resolveInsertionAlinea(
@@ -1947,6 +2045,49 @@ function applyReplacePortionTextActionToHtml(
 	html: string,
 	action: Extract<ActionDirective, { kind: "replace" }>,
 ): ProjectedHtmlResult {
+	const selectorGroups = groupPortionSelectors(action.portionSelectors)
+	if (selectorGroups.length > 1) {
+		let currentHtml = html
+		let appliedCount = 0
+		let lastError: ProjectedHtmlResult | null = null
+
+		for (const group of selectorGroups) {
+			let groupApplied = false
+			for (const selector of group) {
+				const result = applyReplacePortionTextActionToHtml(currentHtml, {
+					...action,
+					portionSelectors: [selector],
+				})
+				if (result.html === null) {
+					lastError = result
+					continue
+				}
+				currentHtml = result.html
+				groupApplied = true
+				appliedCount += 1
+				break
+			}
+			if (!groupApplied) {
+				lastError ??= {
+					html: null,
+					reason:
+						"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+				}
+			}
+		}
+
+		if (appliedCount > 0) {
+			return { html: currentHtml, skipDiff: true }
+		}
+		return (
+			lastError ?? {
+				html: null,
+				reason:
+					"Cible introuvable dans l'article en vigueur pour appliquer la modification.",
+			}
+		)
+	}
+
 	if (action.portionSelectors.length === 0) {
 		return {
 			html: null,
@@ -2077,6 +2218,36 @@ function applyReplacePortionTextActionToHtml(
 		selectorSteps,
 	)
 	if (!targetPosition) {
+		const subtreeBounds = match ? findMatchContentBounds(html, match) : null
+		if (
+			subtreeBounds &&
+			(subtreeBounds.start !== bounds.start ||
+				subtreeBounds.stop !== bounds.stop)
+		) {
+			const subtreeHtml = html.slice(subtreeBounds.start, subtreeBounds.stop)
+			const subtreeTargetPosition = findScopedTargetPositionInHtml(
+				subtreeHtml,
+				action.targetText,
+				selectorSteps,
+			)
+			if (subtreeTargetPosition) {
+				const replacementHtml = formatReplacementText(action.replacementText)
+				const removedHtml = subtreeHtml.slice(
+					subtreeTargetPosition.start,
+					subtreeTargetPosition.stop,
+				)
+				return {
+					html:
+						html.slice(0, subtreeBounds.start) +
+						subtreeHtml.slice(0, subtreeTargetPosition.start) +
+						`<span class="rounded-md px-0.5 bg-red-50 text-red-900 line-through-diff">${removedHtml}</span>` +
+						`<span class="rounded-md px-0.5 bg-green-50 text-green-900">${replacementHtml}</span>` +
+						subtreeHtml.slice(subtreeTargetPosition.stop) +
+						html.slice(subtreeBounds.stop),
+					skipDiff: true,
+				}
+			}
+		}
 		const fallbackMatch = findFallbackScopedTargetInItemBlock(
 			html,
 			matchedSelector ?? action.portionSelectors[0],
@@ -2753,7 +2924,17 @@ export function splitActionSourceBlocks(sourceText: string): string[] {
 	const lines = sourceText.split("\n")
 	const markerRe =
 		/^\s*(?!«)([IVXLCDM]+|[ivxlcdm]+|\d+|[a-zA-Z])\s*(°|\.|\))\s+/u
+	const bulletRe = /^\s*[-–—]\s+/u
 	const getMarkerLevel = (line: string): number | null => {
+		if (bulletRe.test(line)) {
+			const parentLevel = Array.from(contextByLevel.entries())
+				.sort(([left], [right]) => right - left)
+				.find(([, context]) => {
+					const trimmed = context.trim()
+					return trimmed.endsWith(":") && !trimmed.startsWith("«")
+				})?.[0]
+			return parentLevel === undefined ? null : parentLevel + 1
+		}
 		const match = markerRe.exec(line)
 		if (!match) return null
 		const marker = match[1] ?? ""
@@ -2849,6 +3030,60 @@ function getDirectivesTotalSpecificity(
 	)
 }
 
+function getDirectiveActionSignalCount(
+	directive: ActionDirectiveWithHtml,
+): number {
+	const normalized = normalizeActionSource(directive.sourceText)
+	const categories = [
+		/\b(remplac|substitu|ainsi redige)\b/u.test(normalized),
+		/\b(supprim|abrog)\b/u.test(normalized),
+		/\b(insere|ajoute|complete|retabl)\b/u.test(normalized),
+	].filter(Boolean)
+	return categories.length
+}
+
+function getDirectiveSemanticScore(directive: ActionDirectiveWithHtml): number {
+	const normalized = normalizeActionSource(directive.sourceText)
+	const signalCount = getDirectiveActionSignalCount(directive)
+	let score = 0
+
+	if (
+		(directive.kind === "replace" || directive.kind === "replace_portion") &&
+		/\b(remplac|substitu|ainsi redige)\b/u.test(normalized)
+	) {
+		score += 3
+	}
+	if (
+		(directive.kind === "delete" ||
+			directive.kind === "delete_portion" ||
+			directive.kind === "delete_article") &&
+		/\b(supprim|abrog)\b/u.test(normalized)
+	) {
+		score += 3
+	}
+	if (
+		(directive.kind === "insert_after" || directive.kind === "insert_before") &&
+		/\b(insere|ajoute|complete|retabl)\b/u.test(normalized)
+	) {
+		score += 3
+	}
+
+	if (signalCount > 1) {
+		score -= 2
+	}
+
+	return score
+}
+
+function getDirectivesSemanticScore(
+	directives: ActionDirectiveWithHtml[],
+): number {
+	return directives.reduce(
+		(total, directive) => total + getDirectiveSemanticScore(directive),
+		0,
+	)
+}
+
 function collectSplitBlockContextSteps(
 	blockText: string,
 ): PortionSelectorStep[] {
@@ -2859,7 +3094,10 @@ function collectSplitBlockContextSteps(
 	const contextSteps: PortionSelectorStep[] = []
 
 	for (const line of lines) {
-		if (extractActionDirectivesFromText(line).length > 0) {
+		if (
+			extractActionDirectivesFromText(line).length > 0 ||
+			isActionLikeText(line)
+		) {
 			break
 		}
 		const context = new TextParserContext(line)
@@ -2900,6 +3138,27 @@ function mergeSelectorWithContext(
 			break
 		}
 		sharedPrefixLength += 1
+	}
+	const contextItemStep = [...contextSteps]
+		.reverse()
+		.find((step) => step.type === "item")
+	const selectorFirstStep = selector.steps[0]
+	if (
+		sharedPrefixLength === 0 &&
+		contextItemStep?.type === "item" &&
+		selectorFirstStep?.type === "item" &&
+		contextItemStep.num &&
+		selectorFirstStep.num
+	) {
+		const contextLevel = getItemStepLevel(contextItemStep.num)
+		const selectorLevel = getItemStepLevel(selectorFirstStep.num)
+		if (
+			contextLevel !== null &&
+			selectorLevel !== null &&
+			contextLevel >= selectorLevel
+		) {
+			return selector
+		}
 	}
 	return {
 		...selector,
@@ -2969,6 +3228,9 @@ export function buildDirectivesFromSourceBlock(
 	const fullBlockResult = finalizeScopedDirectives(fullBlockScopedDirectives)
 
 	const sourceBlocks = splitActionSourceBlocks(blockText)
+	const hasSplitBulletActionBlocks = sourceBlocks.some((block) =>
+		block.split("\n").some((line) => /^\s*[-–—]\s+/u.test(line)),
+	)
 	const rawDirectives = sourceBlocks.flatMap((block) =>
 		enrichDirectivesWithSplitBlockContext(
 			block,
@@ -2977,6 +3239,9 @@ export function buildDirectivesFromSourceBlock(
 	)
 	const scopedDirectives = filterDirectivesForArticle(rawDirectives, articleNum)
 	const splitBlockResult = finalizeScopedDirectives(scopedDirectives)
+	if (hasSplitBulletActionBlocks && splitBlockResult) {
+		return splitBlockResult
+	}
 	if (splitBlockResult && fullBlockResult) {
 		const splitSpecificity = getDirectivesTotalSpecificity(
 			splitBlockResult.directives,
@@ -2984,6 +3249,24 @@ export function buildDirectivesFromSourceBlock(
 		const fullSpecificity = getDirectivesTotalSpecificity(
 			fullBlockResult.directives,
 		)
+		const splitSemanticScore = getDirectivesSemanticScore(
+			splitBlockResult.directives,
+		)
+		const fullSemanticScore = getDirectivesSemanticScore(
+			fullBlockResult.directives,
+		)
+		if (
+			splitSpecificity > fullSpecificity &&
+			splitBlockResult.directives.length >= fullBlockResult.directives.length
+		) {
+			return splitBlockResult
+		}
+		if (
+			splitSemanticScore > fullSemanticScore &&
+			splitBlockResult.directives.length >= fullBlockResult.directives.length
+		) {
+			return splitBlockResult
+		}
 		if (
 			hasBarePhraseOnlyDirective(fullBlockResult.directives) &&
 			splitSpecificity >= fullSpecificity
